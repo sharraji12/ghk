@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v10.3 - Token Config & Code Blocks)</title> <!-- Version Updated -->
+    <title>Gemini Chat + Mock Test (v10.3 - Token Config, YT URL, Code Blocks)</title> <!-- Version Updated -->
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -46,13 +46,21 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <!-- ***** TAMIL *****
+        Load Copy to Clipboard and Toolbar plugins for PrismJS
+        இது code block-ல் copy button காட்ட உதவும்.
+    -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
 
 
     <style>
-        /* --- Styles (v10.0 - Added Model Selector Style, Code Block Lang) --- */
+        /* --- Styles (v10.3 - Added YouTube Embed, Enhanced Code Block Styles) --- */
         /* ***** TAMIL *****
-           இங்க CSS styles உள்ளன. இதில் மாற்றம் செய்யப்படவில்லை.
-           PrismJS code block highlighting வேலை செய்ய தேவையான அடிப்படை styles ஏற்கனவே உள்ளன.
+           இங்க CSS styles உள்ளன.
+           YouTube video embed செய்வதற்கான style-ம், code block styling-ம் மேம்படுத்தப்பட்டுள்ளது.
+           குறிப்பாக `pre` tag-க்கு `white-space: pre-wrap;` அல்லது `white-space: pre;` மற்றும் `overflow-x: auto;` இருப்பதை உறுதிசெய்ய வேண்டும்.
         */
         :root { /* ... Theme Variables ... */
              --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; --sidebar-width: 260px; --message-font-size-base: 1rem;
@@ -148,12 +156,62 @@
         .user-message { background-color: var(--user-message-bg); color: var(--user-message-text); align-self: flex-end; border-bottom-right-radius: 5px; }
         .ai-message { background-color: var(--ai-message-bg); color: var(--ai-message-text); align-self: flex-start; border-bottom-left-radius: 5px; }
         .ai-message strong { font-weight: 600; } .ai-message em { font-style: italic; }
-        /* Code Block Styling */
-        .ai-message pre { background-color: var(--code-bg); color: var(--text-primary); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.9em; transition: background-color 0.3s ease, color 0.3s ease; border: 1px solid var(--border-color); margin: 8px 0; position: relative; }
-        .ai-message code { font-family: monospace; } /* General code tag */
-        /* Specific styling for code inside pre, handled by PrismJS */
-        .ai-message pre > code[class*="language-"] { display: block; /* Ensure block display */ padding: 0; /* Remove padding if added by Prism */ background: none; /* Override Prism bg if needed */ text-shadow: none; /* Override Prism shadow if needed */ color: inherit; /* Inherit color from pre */ font-family: monospace; /* Ensure monospace font */ }
-        .ai-message:not(pre) > code { /* Inline code */ background-color: var(--code-bg); color: var(--text-primary); padding: 2px 4px; border-radius: 3px; transition: background-color 0.3s ease, color 0.3s ease; font-size: 0.9em; font-family: monospace; /* Ensure monospace font */ }
+        /* --- Code Block Styling (Enhanced v10.3) --- */
+        /* ***** TAMIL *****
+           `pre` tag-க்கான style. இது code block-ன் background, padding, border, மற்றும் scrollbar-ஐ கையாளுகிறது.
+           `white-space: pre;` என்பது code formatting-ஐ அப்படியே காட்ட உதவும்.
+           `overflow-x: auto;` என்பது நீளமான code line-களுக்கு horizontal scrollbar காட்ட உதவும்.
+        */
+        .ai-message pre {
+            background-color: var(--code-bg);
+            color: var(--text-primary);
+            padding: 12px 15px; /* Slightly more padding */
+            border-radius: 6px; /* Slightly rounder */
+            overflow-x: auto; /* <<< Ensure horizontal scroll for long lines */
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border: 1px solid var(--border-color);
+            margin: 10px 0; /* More margin */
+            position: relative;
+            white-space: pre; /* <<< Preserve whitespace and line breaks as in the code */
+            word-wrap: normal; /* <<< Prevent wrapping inside pre */
+        }
+        /* ***** TAMIL *****
+           `pre` tag உள்ளே உள்ள `code` tag-க்கான style.
+           இது font family, background, padding போன்றவற்றை reset செய்கிறது, ஏன்னா PrismJS இதை handle செய்யும்.
+        */
+        .ai-message pre > code[class*="language-"] {
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace font */
+            display: block; /* Ensure block display */
+            padding: 0; /* Reset padding, pre tag handles it */
+            margin: 0; /* Reset margin */
+            overflow: visible; /* Code itself shouldn't scroll, pre tag handles it */
+            background: none; /* No background for code tag itself */
+            color: inherit; /* Inherit color from pre tag */
+            font-size: 1em; /* Inherit font size from pre */
+            text-shadow: none;
+            white-space: inherit; /* Inherit white-space from pre */
+            word-wrap: inherit; /* Inherit word-wrap from pre */
+        }
+        /* Inline code styling (`) */
+        .ai-message:not(pre) > code {
+            background-color: var(--code-bg);
+            color: var(--text-primary);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* PrismJS Toolbar/Copy Button Styling */
+        div.code-toolbar { position: relative; }
+        div.code-toolbar > .toolbar { position: absolute; top: 0.3em; right: 0.3em; transition: opacity 0.3s ease-in-out; opacity: 0; }
+        div.code-toolbar:hover > .toolbar { opacity: 1; }
+        div.code-toolbar > .toolbar .toolbar-item > button { background: var(--button-bg); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 4px; padding: 3px 8px; font-size: 0.8em; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; box-shadow: none; }
+        div.code-toolbar > .toolbar .toolbar-item > button:hover { background-color: var(--button-hover-bg); color: var(--text-primary); }
+        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button { background: var(--button-bg); color: var(--text-secondary); }
+        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button:hover { background-color: var(--button-hover-bg); color: var(--text-primary); }
+        /* --- End Code Block Styling --- */
 
         .ai-message.thinking { background-color: transparent; color: var(--text-secondary); font-style: italic; }
         .error-message { background-color: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); align-self: flex-start; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;}
@@ -162,6 +220,7 @@
         .message mjx-container { color: inherit !important; font-size: inherit !important; }
         .message img.chat-image, .message img.uploaded-image { max-width: 100%; height: auto; border-radius: 8px; margin-top: 8px; cursor: pointer; display: block; }
         .message img.uploaded-image { border: 1px solid var(--border-color); margin-bottom: 5px; }
+        /* YouTube Embed Styling */
         .message .youtube-embed-container { margin-top: 10px; position: relative; padding-bottom: 56.25%; /* 16:9 Aspect Ratio */ height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 8px; }
         .message iframe.chat-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         .message .chat-audio-player { margin-top: 10px; width: 100%; max-width: 350px; }
@@ -384,14 +443,19 @@
                     </div>
                     <div id="recording-status">Recording... <span>0s</span></div>
                     <div class="input-box">
-                         <input type="file" id="image-upload-input" accept="image/*" style="display: none;" multiple>
+                         <input type="file" id="image-upload-input" accept="image/png, image/jpeg, image/webp, image/heic, image/heif" style="display: none;" multiple> <!-- Updated Image MIME Types -->
                          <input type="file" id="pdf-upload-input" accept="application/pdf" style="display: none;" multiple>
                          <input type="file" id="audio-upload-input" accept="audio/wav, audio/mp3, audio/mpeg, audio/aac, audio/ogg, audio/flac, audio/aiff" style="display: none;">
+                         <!-- ***** TAMIL *****
+                              தேவைப்பட்டால் Video Upload சேர்க்கலாம், ஆனால் browser-ல் பெரிய video files handle செய்வது சிக்கலானது. File API பயன்படுத்துவது சிறந்தது.
+                              <input type="file" id="video-upload-input" accept="video/mp4, video/mpeg, video/mov, video/avi, video/x-flv, video/mpg, video/webm, video/wmv, video/3gpp" style="display: none;">
+                         -->
                          <div class="input-buttons">
                              <button id="image-upload-button" title="Upload image(s)" disabled>📎</button>
                              <button id="pdf-upload-button" title="Upload PDF file(s)" disabled>📄</button> <!-- Title is updated dynamically -->
                              <button id="audio-upload-button" title="Upload audio file" disabled>🎵</button>
                              <button id="record-audio-button" title="Record audio" disabled>🎙️</button>
+                              <!-- <button id="video-upload-button" title="Upload video file (File API)" disabled>🎬</button> -->
                          </div>
                          <textarea id="user-input" placeholder="Enter prompt, attach media, or paste URL" rows="1" disabled></textarea>
                          <div class="mcq-mode-control"> <input type="checkbox" id="mcq-mode-checkbox" title="Generate MCQs based on prompt/media" disabled> <label for="mcq-mode-checkbox">MCQs?</label> </div>
@@ -516,15 +580,17 @@
         // ***** TAMIL *****
         // இங்க application-க்கான சில முக்கியமான மாறிலிகளை (constants) அமைக்கிறோம்.
         // புது model-களையும், caching வேலை செய்யும் versioned model-களையும் சேர்த்துள்ளோம்.
+        // Token Limits: 2.5 Pro-க்கு 65536 tokens, மற்றவற்றுக்கு 8192 tokens.
         // Context Caching: caching வேலை செய்ய 'Cache OK' என்று குறிக்கப்பட்ட versioned model-ஐ தேர்வு செய்ய வேண்டும்.
         // Experimental மற்றும் 'latest' model-கள் caching-ஐ support செய்யாது.
         const AVAILABLE_MODELS = [
             { id: "gemini-1.5-flash-latest", name: "Gemini 1.5 Flash Latest", supportsCaching: false, maxTokens: 8192 },
             { id: "gemini-1.5-pro-latest", name: "Gemini 1.5 Pro Latest", supportsCaching: false, maxTokens: 8192 },
-            { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (New)", supportsCaching: false, maxTokens: 8192 }, // Assuming 8192, update if needed
+            { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (New)", supportsCaching: false, maxTokens: 8192 },
             { id: "gemini-2.5-pro-exp-03-25", name: "Gemini 2.5 Pro Exp (New)", supportsCaching: false, maxTokens: 65536 }, // Specific large token limit
             { id: "gemini-1.5-flash-001", name: "Gemini 1.5 Flash 001 (Cache OK)", supportsCaching: true, maxTokens: 8192 }, // Specific version for caching
             { id: "gemini-1.5-pro-001", name: "Gemini 1.5 Pro 001 (Cache OK)", supportsCaching: true, maxTokens: 8192 }, // Specific version for caching
+            // { id: "gemini-1.0-pro", name: "Gemini 1.0 Pro (Vision)", supportsCaching: false, maxTokens: 8192 }, // Removed older model for clarity
         ];
         const DEFAULT_MODEL_ID = AVAILABLE_MODELS[0].id; // Default to Flash Latest
         const DEFAULT_MAX_TOKENS = 8192; // Default max tokens for unknown models
@@ -542,14 +608,15 @@
         // ***** TAMIL *****
         // YouTube URL-ஐ கண்டுபிடிக்க உதவும் Regex.
         const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?/i;
-        const imageUrlRegex = /(?<!src=["'])(?<!href=["'])(https?:\/\/[^\s()<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp))/gi;
+        const imageUrlRegex = /(?<!src=["'])(?<!href=["'])(https?:\/\/[^\s()<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp|heic|heif))/gi; // Added more image types
         const MAX_IMAGE_SIZE_MB = 4;
         const MAX_TOTAL_IMAGE_SIZE_MB = 16;
-        const MAX_IMAGE_COUNT = 5;
+        const MAX_IMAGE_COUNT = 10; // Increased limit slightly
         const MAX_PDF_SIZE_MB = 50; // Limit for UI, File API can handle more
         const MAX_PDF_COUNT = 5;
-        const MAX_AUDIO_SIZE_MB = 10;
+        const MAX_AUDIO_SIZE_MB = 15; // Increased limit slightly
         const SUPPORTED_AUDIO_MIMES = ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/aiff', 'audio/aac', 'audio/ogg', 'audio/flac'];
+        const SUPPORTED_IMAGE_MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif']; // From Gemini docs
         const RECORDING_TIME_LIMIT_SECONDS = 300; // 5 minutes
         const FILE_API_POLLING_INTERVAL_MS = 5000; // 5 seconds
         const FILE_API_PROCESSING_TIMEOUT_MS = 180000; // 3 minutes per file
@@ -604,7 +671,14 @@
         // ***** TAMIL *****
         // இங்க user actions-க்கு (click, input etc.) ஏற்ப functions-ஐ trigger செய்ய listeners-ஐ அமைக்கிறோம்.
         sendButton.addEventListener('click', handleSendMessage);
-        userInput.addEventListener('input', autoGrowTextarea);
+        userInput.addEventListener('input', () => {
+            autoGrowTextarea();
+            updateButtonStates(); // Update button states when input changes (e.g., YT URL pasted)
+        });
+        userInput.addEventListener('paste', () => {
+            // Update button state slightly after paste allows the value to update
+            setTimeout(updateButtonStates, 50);
+        });
         userInput.addEventListener('keydown', handleInputKeydown);
         suggestionsContainer.addEventListener('click', handleSuggestionClick);
         startChatButton.addEventListener('click', createNewChat);
@@ -1053,7 +1127,9 @@
             let currentImageCount = selectedMediaItems.filter(item => item.type === 'image').length;
             let addedCount = 0;
             let totalSizeMB = selectedMediaItems.reduce((sum, item) => sum + (item.file?.size || 0), 0) / 1024 / 1024;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp'];
+            // ***** TAMIL *****
+            // Gemini support செய்யும் image mime type-களை பயன்படுத்துகிறோம்.
+            const allowedTypes = SUPPORTED_IMAGE_MIMES;
             for (const file of files) {
                 if (currentImageCount >= MAX_IMAGE_COUNT) { alert(`Maximum ${MAX_IMAGE_COUNT} images allowed.`); break; }
                 if (!allowedTypes.includes(file.type)) { console.warn(`Skipping invalid file type: ${file.name} (${file.type})`); continue; }
@@ -1141,6 +1217,7 @@
 
             if (selectedMediaItems.length === 0) {
                 mediaPreviewContainer.style.display = 'none';
+                updateButtonStates(); // Update buttons when media is cleared
                 return;
             }
 
@@ -1180,6 +1257,7 @@
 
             mediaPreviewInfo.textContent = infoText;
             mediaPreviewContainer.style.display = 'flex';
+            updateButtonStates(); // Update buttons when media is displayed
         }
         function renderImagePreviewItem(item) {
              try {
@@ -1216,7 +1294,7 @@
         function removeSelectedMediaItem(mediaId) {
              console.log(`Removing media item ID: ${mediaId}`);
              selectedMediaItems = selectedMediaItems.filter(item => item.id !== mediaId);
-             displayMediaPreview();
+             displayMediaPreview(); // This will also call updateButtonStates
              // If the removed media was the cached media, clear the cache state
              if (currentMediaCacheName && cachedMediaUris.length > 0 && !selectedMediaItems.some(item => item.type === 'pdf')) {
                   console.log("Removed last cached media type (PDF). Clearing cache state.");
@@ -1243,6 +1321,7 @@
                   cachedMediaUris = [];
              }
             console.log("All selected media removed, inputs reset, cache state cleared.");
+            updateButtonStates(); // Update buttons after clearing media
         }
 
 
@@ -1305,10 +1384,10 @@
                          if (reader.result && typeof reader.result === 'string' && reader.result.startsWith('data:')) {
                             let finalMimeType = actualMimeType.split(';')[0]; const mediaId = nextMediaId++;
                             selectedMediaItems = [{ id: mediaId, type: 'audio', file: new File([audioBlob], `recording.audio`, { type: finalMimeType }), base64: reader.result, mimeType: finalMimeType, name: `recording-${new Date().toISOString().substring(0, 19).replace(/[:T]/g, '-')}.${finalMimeType.split('/')[1] || 'audio'}` }];
-                            displayMediaPreview();
+                            displayMediaPreview(); // This will call updateButtonStates
                          } else { console.error("FileReader result invalid."); alert("Error processing recorded audio (Invalid data)."); }
                          setLoadingState(false); // Stop processing state
-                         updateButtonStates(); // Re-enable buttons after processing
+                         // updateButtonStates(); // displayMediaPreview handles this
                     };
                     reader.onerror = (error) => { console.error("Error converting recorded audio blob:", error); alert("Error processing recorded audio."); setLoadingState(false); updateButtonStates(); };
                     reader.readAsDataURL(audioBlob);
@@ -1503,16 +1582,26 @@
                         // இங்க Firestore-ல் உள்ள text-ஐ மட்டும் history array-ல் சேர்க்கிறோம்.
                         // Media data history-ல் சேர்க்கப்படவில்லை (current design).
                         // Long context வேலை செய்ய இந்த history முழுமையாக API call-ல் அனுப்பப்படும்.
-                        if (msgData.text) {
-                            parts.push({ text: msgData.text });
+                        // YouTube URLம் text ஆக historyல் சேமிக்கப்படும் (APIல் fileData ஆக அனுப்பப்பட்டாலும்).
+                        let historyText = msgData.text || "";
+                        if (msgData.youtubeVideoId) {
+                            // Append the YT URL to the text for history context if it wasn't already part of the main text
+                            const ytUrlInText = `https://www.youtube.com/watch?v=${msgData.youtubeVideoId}`;
+                            if (!historyText.includes(ytUrlInText)) {
+                                historyText = (historyText ? historyText + "\n" : "") + ytUrlInText;
+                            }
                         }
 
-                        // Add to in-memory history *only if* it has valid parts (currently, only text)
+                        if (historyText) {
+                            parts.push({ text: historyText });
+                        }
+
+                        // Add to in-memory history *only if* it has valid text parts
                         if (parts.length > 0) {
                              currentChatHistory.push({ role: role, parts: parts });
                         }
 
-                        // Display message in UI using Firestore data (this handles rendering media links/previews from DB data)
+                        // Display message in UI using Firestore data (this handles rendering media links/previews/YT from DB data)
                         displayMessage(msgData.text || '', msgData.role, [], null, msgData);
                     });
                 }
@@ -1613,9 +1702,7 @@
         // --- Message Sending (Gemini API & Firestore Save) ---
         // ***** TAMIL *****
         // இதுதான் user message-ஐயும், media-வையும் (image, audio, pdf, YouTube URL) வாங்கி, Gemini API-க்கு அனுப்பி, பதிலை வாங்கி காட்டுகின்ற முக்கிய function.
-        // இங்கதான் model selection, long context history, context caching logic பயன்படுத்தப்படுகிறது.
-        // YouTube URL-ஐ handle செய்ய தேவையான மாற்றங்கள் செய்யப்பட்டுள்ளன.
-        // NEW (v10.3): இங்க `generationConfig`-ல் `maxOutputTokens` சேர்க்கப்பட்டுள்ளது.
+        // இங்கதான் model selection, long context history, context caching, YouTube URL, max token limits போன்ற logic பயன்படுத்தப்படுகிறது.
         async function handleSendMessage() {
             const userMessageTextRaw = userInput.value.trim();
             const mediaItemsToSend = [...selectedMediaItems]; // Copy selected items
@@ -1677,7 +1764,7 @@
              else if (pdfItems.length > 0) { /* ... multi-pdf info ... */ userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); }
              // ***** TAMIL *****
              // YouTube video ID-ஐ Firestore-ல் save செய்கிறோம், இது chat-ல் video-வை காட்ட உதவும்.
-             if (youtubeUrl) userMsgData.youtubeVideoId = youtubeMatch[1]; // Store the video ID (group 1 from regex)
+             if (youtubeUrl && youtubeMatch && youtubeMatch[1]) userMsgData.youtubeVideoId = youtubeMatch[1]; // Store the video ID (group 1 from regex)
 
             // --- Save User Message to Firestore ---
              try {
@@ -1685,7 +1772,16 @@
                  const userMessageDocRef = await messagesColRef.add(userMsgData); // Store ref
                  await chatDocRef.update({ lastUpdated: timestamp }); console.log("User message saved to Firestore:", userMessageDocRef.id);
                  // Update in-memory history immediately after successful save
-                 const userPartsForHistory = []; if (userMsgData.text) userPartsForHistory.push({ text: userMsgData.text });
+                 const userPartsForHistory = [];
+                 let historyText = userMsgData.text;
+                 // Append YT URL to history text if present and not already included
+                  if (youtubeUrl && historyText && !historyText.includes(youtubeUrl)) {
+                       historyText += "\n" + youtubeUrl;
+                  } else if (youtubeUrl && !historyText) {
+                       historyText = youtubeUrl;
+                  }
+                 if (historyText) userPartsForHistory.push({ text: historyText });
+
                  // ***** TAMIL *****
                  // User message history-ல் YouTube URL-ஐ text ஆக சேர்க்கிறோம் (API call-க்கு தனியாக fileData அனுப்பினாலும்).
                  // இதனால் context history-ல் user என்ன கேட்டார் என்று தெரியும்.
@@ -1721,10 +1817,12 @@
                      // YouTube URL-ஐ Gemini API documentation-ல் உள்ள format-ல் fileData ஆக சேர்க்கிறோம்.
                      const youtubePart = {
                          fileData: {
-                             mimeType: "video/mp4", // Example mime type from docs
+                             // mimeType is optional for YouTube URLs according to latest docs, but doesn't hurt
+                             // mimeType: "video/mp4",
                              fileUri: youtubeUrl     // முழு YouTube URL
                          }
                      };
+                     // IMPORTANT: fileData parts should generally come *before* the text prompt part.
                      partsForApi.push(youtubePart);
                      console.log("Added YouTube URL as fileData part for API:", youtubeUrl);
 
@@ -1833,17 +1931,22 @@
 
 
                 // --- Combine Parts for Final API Request ---
+                // Order: Media first (inline or fileData), then text prompt
                 let finalPartsForApi = [];
                 if (isYouTubeRequest) {
-                    finalPartsForApi = partsForApi; // YouTube parts are already combined
+                    // Already handled: youtubePart then text part
+                    finalPartsForApi = partsForApi;
                 } else if (fileDataPartsForApi.length > 0) { // PDFs
                     if (useCache) {
-                        finalPartsForApi = partsForApi; // Text/inline parts + cache name handles files
+                        // Text/inline parts first, cache name handles files separately
+                        finalPartsForApi = partsForApi.filter(p => p.text || p.inlineData); // Filter out any fileData parts inadvertently added earlier
                     } else {
-                        finalPartsForApi = [...partsForApi, ...fileDataPartsForApi]; // Combine text/inline + fileData for PDFs
+                        // FileData parts first, then text/inline parts
+                        finalPartsForApi = [...fileDataPartsForApi, ...partsForApi.filter(p => p.text || p.inlineData)];
                     }
                 } else { // Text-only or inline media (audio/images)
-                    finalPartsForApi = partsForApi;
+                    // Media part first (if any), then text part
+                    finalPartsForApi = partsForApi; // partsForApi should already be in [media, text] order if both present
                 }
 
                  if (finalPartsForApi.length === 0 && !useCache) {
@@ -1884,7 +1987,8 @@
                 const historyForSDK = currentChatHistory
                     .map(msg => ({
                         role: msg.role,
-                        parts: msg.parts.filter(part => typeof part.text === 'string') // Only text parts in history
+                        // Ensure parts in history are only text for simplicity in SDK call history
+                        parts: msg.parts.filter(part => typeof part.text === 'string').map(part => ({ text: part.text }))
                     }))
                     .filter(msg => msg.parts.length > 0);
 
@@ -1988,7 +2092,7 @@
             } finally {
                  console.log("handleSendMessage finally block reached.");
                  // Clear media selection UI (for uploaded files) after everything is processed
-                 removeAllSelectedMedia();
+                 removeAllSelectedMedia(); // This calls updateButtonStates internally
                  setLoadingState(false); // Turn off loading state
                  if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); } // Refocus input
             }
@@ -2009,7 +2113,7 @@
         // autoGrowTextarea, handleInputKeydown, handleSuggestionClick remain the same
         function autoGrowTextarea() { userInput.style.height='auto'; userInput.style.height=(userInput.scrollHeight)+'px'; }
         function handleInputKeydown(event) { if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();if(!sendButton.disabled) handleSendMessage();} }
-        function handleSuggestionClick(event) { if(event.target.classList.contains('suggestion-chip')){ const prompt = event.target.dataset.prompt || ''; userInput.value = prompt; if (prompt.toLowerCase().includes("video") || prompt.toLowerCase().includes("youtube")) { userInput.value += " "; userInput.placeholder = "Paste YouTube URL after the prompt..."; } autoGrowTextarea();userInput.focus();} }
+        function handleSuggestionClick(event) { if(event.target.classList.contains('suggestion-chip')){ const prompt = event.target.dataset.prompt || ''; userInput.value = prompt; if (prompt.toLowerCase().includes("video") || prompt.toLowerCase().includes("youtube")) { userInput.value += " "; userInput.placeholder = "Paste YouTube URL after the prompt..."; } autoGrowTextarea();userInput.focus(); updateButtonStates();} } // Update buttons after suggestion click
         // displayError remains the same
         function displayError(text) { console.error("Displaying Error:", text); displayMessage(`${text}`, 'ai', ['error-message']); scrollToBottom(); }
         // scrollToBottom remains the same
@@ -2017,10 +2121,10 @@
         // removeMessageElement remains the same
         function removeMessageElement(element) { if(element && element.parentNode === chatArea) { try { chatArea.removeChild(element); } catch(e) { /* ignore */ } } }
 
-        // updateButtonStates: Checks model selector state and SDK capabilities
+        // updateButtonStates: Checks model selector state, SDK capabilities, and YouTube URL in input
         // ***** TAMIL *****
         // இந்த function UIல் உள்ள buttons (send, upload, etc.) enable/disable செய்ய உதவுகிறது.
-        // User login செய்திருக்கிறாரா, SDK ரெடியாக உள்ளதா, caching வேலை செய்யுமா போன்றவற்றை check செய்கிறது.
+        // User login செய்திருக்கிறாரா, SDK ரெடியாக உள்ளதா, caching வேலை செய்யுமா, input-ல் YouTube URL உள்ளதா போன்றவற்றை check செய்கிறது.
          function updateButtonStates(isLoading = false) {
             const isLoggedIn = !!currentUser;
             const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold; // More robust check
@@ -2028,33 +2132,43 @@
             const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
             const canUseCachingAPI = isSdkFullyReady && !!genAI.caching?.createCachedContent; // Check if SDK has caching methods
             const canAttemptCaching = canUseCachingAPI && currentModelInfo?.supportsCaching; // Check if SDK AND selected model support caching
+            // ***** TAMIL *****
+            // Input field-ல் YouTube URL இருக்கிறதா என்று check செய்கிறோம்.
             const hasYouTubeUrlInInput = youtubeRegex.test(userInput.value.trim());
             const hasSelectedMedia = selectedMediaItems.length > 0;
 
             const isChatSelected = !!activeChatId;
             const isAppReady = isSdkFullyReady; // Basic app readiness depends on SDK init
-            const canSendMessage = isAppReady && isChatSelected && !isLoading && !isRecording;
+            // ***** TAMIL *****
+            // Send செய்யலாமா என்று check செய்யும்போது, YouTube URL-ம், வேறு media-வும் ஒரே நேரத்தில் இருக்கக்கூடாது என்பதையும் check செய்கிறோம்.
+            const canSendCombination = !(hasYouTubeUrlInInput && hasSelectedMedia);
+            const canSendMessage = isAppReady && isChatSelected && !isLoading && !isRecording && canSendCombination && (userInput.value.trim() !== '' || hasSelectedMedia || hasYouTubeUrlInInput);
+
 
             // Input Area Buttons
             userInput.disabled = !isAppReady || !isChatSelected || isLoading || isRecording;
             sendButton.disabled = !canSendMessage;
             mcqModeCheckbox.disabled = !canSendMessage;
 
-            // Media buttons (disable if YouTube URL is present)
-            imageUploadButton.disabled = !canSendMessage || hasYouTubeUrlInInput;
-            pdfUploadButton.disabled = !canSendMessage || !canUseFileAPI || hasYouTubeUrlInInput; // Needs File API & no YT URL
-            audioUploadButton.disabled = !canSendMessage || hasYouTubeUrlInInput;
-            recordAudioButton.disabled = !canSendMessage || hasYouTubeUrlInInput; // Disable recording if YT URL present
+            // Media buttons (disable if YouTube URL is present *OR* other incompatible media is selected)
+            const disableFileUpload = isLoading || isRecording || !isAppReady || !isChatSelected || hasYouTubeUrlInInput;
+            const disableAudioRecord = isLoading || !isAppReady || !isChatSelected || hasYouTubeUrlInInput; // Recording button logic handles its own isRecording state
 
-            pdfUploadButton.title = (!canUseFileAPI) ? "PDF Upload disabled (File API unavailable/SDK issue)" : (hasYouTubeUrlInInput ? "PDF Upload disabled (YouTube URL present)" : "Upload PDF file(s)");
-            imageUploadButton.title = hasYouTubeUrlInInput ? "Image Upload disabled (YouTube URL present)" : "Upload image(s)";
-            audioUploadButton.title = hasYouTubeUrlInInput ? "Audio Upload disabled (YouTube URL present)" : "Upload audio file";
-            recordAudioButton.title = hasYouTubeUrlInInput ? "Audio Recording disabled (YouTube URL present)" : "Record audio";
+            imageUploadButton.disabled = disableFileUpload || (hasSelectedMedia && !selectedMediaItems.every(i => i.type === 'image'));
+            pdfUploadButton.disabled = disableFileUpload || !canUseFileAPI || (hasSelectedMedia && !selectedMediaItems.every(i => i.type === 'pdf'));
+            audioUploadButton.disabled = disableFileUpload || (hasSelectedMedia && !selectedMediaItems.every(i => i.type === 'audio'));
+            recordAudioButton.disabled = disableAudioRecord || hasSelectedMedia; // Also disable if any media selected
+
+            // Update titles based on disabled state
+            imageUploadButton.title = imageUploadButton.disabled ? "Image upload disabled (Check login, SDK, active chat, or conflicting input/media)" : "Upload image(s)";
+            pdfUploadButton.title = pdfUploadButton.disabled ? (canUseFileAPI ? "PDF upload disabled (Check login, SDK, active chat, or conflicting input/media)" : "PDF upload disabled (File API unavailable)") : "Upload PDF file(s)";
+            audioUploadButton.title = audioUploadButton.disabled ? "Audio upload disabled (Check login, SDK, active chat, or conflicting input/media)" : "Upload audio file";
+            recordAudioButton.title = recordAudioButton.disabled ? "Audio recording disabled (Check login, SDK, active chat, or conflicting input/media)" : (isRecording ? "Stop recording" : "Record audio");
 
 
             // Re-enable record button specifically if recording is active (to allow stopping)
             if (isRecording) {
-                recordAudioButton.disabled = false; // Allow stopping even if other conditions met
+                recordAudioButton.disabled = false; // Allow stopping
                 recordAudioButton.title = "Stop recording";
             }
 
@@ -2095,10 +2209,10 @@
         // switchView remains the same
         function switchView(viewName, cameFromTests = false) { console.log("Switching view to:", viewName); chatView.classList.remove('active'); reviewView.classList.remove('active'); testView.classList.remove('active'); appContainer.classList.remove('hidden'); isTestMode = false; isReviewMode = false; cameFromAllTestsList = cameFromTests; saveReviewBtn.style.display = 'none'; exitReviewBtn.style.display = 'none'; if(viewName === 'test'){ appContainer.classList.add('hidden'); testView.classList.add('active'); isTestMode = true; } else if(viewName === 'review'){ reviewView.classList.add('active'); isReviewMode = true; exitReviewBtn.style.display = 'inline-block'; exitReviewBtn.textContent = cameFromAllTestsList ? "Back to All Tests" : "Back to Chat"; } else { chatView.classList.add('active'); if (currentUser && activeChatId && API_KEY && genAI && !isRecording) { setTimeout(() => userInput.focus(), 100); } } if (viewName !== 'test' && testTimerInterval) { clearInterval(testTimerInterval); testTimerInterval = null; } }
 
-        // displayMessage: Includes code block handling with PrismJS and YouTube Embed
+        // displayMessage: Includes enhanced code block handling with PrismJS and YouTube Embed
         // ***** TAMIL *****
         // இந்த function message-களை chat area-வில் காட்டுகிறது. Code block-களையும், YouTube video-வையும் format செய்கிறது.
-        // NEW (v10.3): PrismJS code block highlighting சரியாக வேலை செய்வதை உறுதிசெய்கிறது.
+        // PrismJS மூலம் code highlighting சரியாக வேலை செய்யுமாறு மாற்றப்பட்டுள்ளது.
         function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
@@ -2115,24 +2229,25 @@
             if (text) {
                 const messageContentContainer = document.createElement('div');
                 try {
-                    // Sanitize basic HTML tags (example, very basic)
-                     const tempDiv = document.createElement('div');
-                     tempDiv.innerText = text; // Let browser handle basic text escaping
-                     let formattedText = tempDiv.innerHTML;
+                    // Basic text sanitization - let browser handle initial escaping
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerText = text;
+                    let formattedText = tempDiv.innerHTML;
 
-                    // Handle Images in Text (remains same)
-                    if (messageData?.mediaType !== 'image') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); }
+                    // Handle Images in Text (if not already handled as primary media)
+                    if (messageData?.mediaType !== 'image') {
+                        formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`);
+                    }
 
-                    // Handle Code Blocks (``` ... ```)
+                    // Handle Code Blocks (``` ... ```) - Enhanced for PrismJS
                     formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
                         containsCode = true;
-                        // Ensure lang is safe for class name, default to 'plain' if empty or invalid
                         const safeLang = lang?.trim()?.match(/^[a-zA-Z0-9_-]+$/) ? lang.trim().toLowerCase() : 'plain';
                         const languageClass = `language-${safeLang}`;
-                        // Escape HTML within the code block
+                        // Escape HTML within the code block *before* wrapping
                         const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         // ***** TAMIL *****
-                        // PrismJS வேலை செய்ய `<pre>` மற்றும் `<code>` tags-க்கு சரியான class சேர்க்கப்படுகிறது.
+                        // `<pre>` tag-க்கு class சேர்த்து, உள்ளே `<code>` tag-க்கு அதே class-ஐ சேர்க்கிறோம். இது PrismJS வேலை செய்ய அவசியம்.
                         return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`;
                     });
 
@@ -2145,11 +2260,26 @@
                     messageElement.appendChild(messageContentContainer);
                     hasContent = true;
 
-                    // MathJax typesetting
-                    if (text.includes('$') || text.includes('\\') || text.includes('^') || text.includes('_')) { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { setTimeout(() => { MathJax.typesetPromise([messageContentContainer]).catch(err => console.error('MathJax typesetting error:', err)); }, 50); } }
-
-                } catch (e) { console.error("Error formatting text content:", e); }
+                    // MathJax typesetting (run after content is added)
+                    if (text.includes('$') || text.includes('\\') || text.includes('^') || text.includes('_')) {
+                        if (typeof MathJax !== "undefined" && MathJax.typesetPromise) {
+                            // Run typesetting after a minimal delay to ensure DOM is ready
+                            setTimeout(() => {
+                                MathJax.typesetPromise([messageContentContainer]).catch(err => console.error('MathJax typesetting error:', err));
+                            }, 50);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error formatting text content:", e);
+                    // Fallback to plain text if formatting fails
+                    messageContentContainer.innerText = text;
+                    if (!messageElement.contains(messageContentContainer)) {
+                        messageElement.appendChild(messageContentContainer);
+                    }
+                    hasContent = true;
+                }
             }
+
 
             // --- YouTube Embed (Render based on Firestore data) ---
             // ***** TAMIL *****
@@ -2188,16 +2318,16 @@
                     chatArea.appendChild(messageElement);
                     // Apply PrismJS highlighting if code blocks were found
                     // ***** TAMIL *****
-                    // code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlighting செய்கிறோம்.
+                    // code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlighting செய்கிறோம். இது message DOM-ல் சேர்க்கப்பட்ட பிறகு செய்யப்படுகிறது.
                     if (containsCode && typeof Prism !== 'undefined') {
-                         setTimeout(() => {
+                         setTimeout(() => { // Use timeout to ensure DOM update
                              try {
-                                 console.log("Applying Prism highlighting..."); // Debug log
                                  Prism.highlightAllUnder(messageElement);
-                                 console.log("Prism highlighting applied."); // Debug log
+                                 console.log("Prism highlighting applied under element.");
+                             } catch (highlightError) {
+                                 console.error("Prism highlighting error:", highlightError);
                              }
-                              catch (highlightError) { console.error("Prism highlighting error:", highlightError); }
-                         }, 50); // Small delay to ensure element is fully in DOM
+                         }, 0); // Minimal delay is usually sufficient
                      }
                 }
             } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); }
@@ -2214,7 +2344,7 @@
         // exitReview, saveTestReviewToCloud, loadAndListenForTests, renderAllTestsList,
         // filterTestsInSidebar, handleAllTestsListClick, enterTestTitleEditMode,
         // exitTestTitleEditMode, saveTestTitle, deleteSavedTest, startReattempt
-        // (These functions remain unchanged from v10.2)
+        // (These functions remain unchanged from v10.3)
          function handleChatAreaClick(event) { const startButton = event.target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; } const clickedImage = event.target.closest('img.chat-image, img.uploaded-image'); if (clickedImage?.src && !clickedImage.src.startsWith('#') && clickedImage.src.trim() !== '') { try { if (!clickedImage.src.startsWith('data:image') || clickedImage.src.length < 2 * 1024 * 1024) { window.open(clickedImage.src, '_blank'); } else { console.log("Clicked large base64 image in chat."); } } catch (e) { console.error("Error opening image source:", e); } } }
          function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
          function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
@@ -2241,10 +2371,12 @@
 
         // ***** TAMIL *****
         // Web Browsing / Search பற்றி குறிப்பு:
-        // இந்த JavaScript SDK எடுத்துக்காட்டில், Gemini model-ஐ நேரடியாக web search செய்ய வைக்கும் `tool_code` போன்ற அமைப்பு இல்லை.
-        // ஆனால், Gemini models பயிற்சி செய்யப்பட்ட தரவுகளிலிருந்து இணையத் தகவலைப் பயன்படுத்த முடியும்.
-        // நீங்கள் ஒரு கேள்வியைக் கேட்டால், model அதனிடம் உள்ள தகவல்களிலிருந்து பதிலளிக்க முயற்சிக்கும்.
-        // ஒருவேளை model தானாகவே web search செய்து பதிலளித்தால், அது நமக்குத் தெரியாது.
+        // இந்த JavaScript SDK (@google/generative-ai) நேரடியாக web search செய்ய வைக்கும் `tool_code` போன்ற அமைப்பை client-side-ல் ஆதரிக்காது.
+        // Google Search போன்ற external tools-ஐ பயன்படுத்த, நீங்கள் ஒரு backend server (e.g., Cloud Functions, Node.js) பயன்படுத்த வேண்டும் அல்லது Vertex AI Agent போன்ற சேவைகளைப் பயன்படுத்த வேண்டும்.
+        // ஆனால், Gemini models பயிற்சி செய்யப்பட்ட பரந்த இணையத் தரவுகளிலிருந்து தகவல்களைப் பயன்படுத்த முடியும்.
+        // நீங்கள் ஒரு கேள்வியைக் கேட்டால், model அதனிடம் உள்ள தகவல்களின் அடிப்படையில் பதிலளிக்க முயற்சிக்கும்.
+        // ஒருவேளை model தானாகவே web search செய்து பதிலளித்தால், அது நமக்குத் தெரியாது (அது model-ன் உள் செயல்பாடு).
+        // நீங்கள் இங்கு கேட்கும் கேள்விகளுக்கு, model அதன் பயிற்சி தரவை வைத்து பதிலளிக்கும்.
 
     </script>
 
