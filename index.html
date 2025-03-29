@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v10.3 - Token Config, YT URL, Code Blocks)</title> <!-- Version Updated -->
+    <title>Gemini Chat + Mock Test (v10.3 - Token Config, YT URL, Code Blocks Fixed)</title> <!-- Version Updated -->
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -43,21 +43,14 @@
     </script>
 
     <!-- Prism JS for Code Syntax Highlighting -->
-    {/* ***** TAMIL *****
-        PrismJS என்பது code block-களுக்கு syntax highlighting (வண்ணம் தீட்டுதல்) செய்ய உதவும் ஒரு library.
-        முதலில் அதன் CSS file-ஐ link செய்கிறோம் (prism.min.css). இது அடிப்படை தோற்றத்தை கொடுக்கும்.
-        பிறகு core JavaScript file-ஐ load செய்கிறோம் (prism-core.min.js).
-        அடுத்து autoloader plugin-ஐ load செய்கிறோம். இது code block-ல் என்ன language (e.g., javascript, python) உள்ளதோ, அதற்கு தேவையான highlighting rules-ஐ தானாகவே load செய்யும்.
-    */}
+    <!-- ***** TAMIL *****
+        PrismJS CSS theme மற்றும் JavaScript files-ஐ load செய்கிறோம்.
+        Order முக்கியம்: core -> autoloader -> plugins (toolbar, copy-to-clipboard).
+    -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    {/* ***** TAMIL *****
-        Load Copy to Clipboard and Toolbar plugins for PrismJS
-        இது code block-ல் ஒரு toolbar-ஐயும், அதில் 'Copy' button-ஐயும் காட்ட உதவும் plugins.
-        முதலில் toolbar-க்கான CSS, பிறகு toolbar-க்கான JS, கடைசியாக copy button-க்கான JS load செய்யப்படுகிறது.
-    */}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
 
@@ -66,11 +59,9 @@
         /* --- Styles (v10.3 - Added YouTube Embed, Enhanced Code Block Styles) --- */
         /* ***** TAMIL *****
            இங்க CSS styles உள்ளன.
-           YouTube video embed செய்வதற்கான style-ம், code block styling-ம் மேம்படுத்தப்பட்டுள்ளது.
-           Code block சரியாகத் தெரிய, கீழ்வரும் CSS விதிகள் முக்கியம்:
-           1. `.ai-message pre`: இதுதான் code block-ன் வெளிப்பெட்டி (container). இதற்கு background color, padding, border, மற்றும் `overflow-x: auto` கொடுக்கப்பட்டுள்ளது. `overflow-x: auto` என்பது நீளமான code வரிகள் இருந்தால், கிடைமட்டமாக scroll செய்ய scrollbar-ஐ காட்டும். `white-space: pre;` என்பது code-ல் உள்ள spaces, line breaks போன்றவற்றை அப்படியே காட்ட உதவும்.
-           2. `.ai-message pre > code[class*="language-"]`: இது `pre` tag-க்கு உள்ளே இருக்கும் உண்மையான code-ஐ கொண்ட `code` tag. இதற்கு `display: block;` கொடுக்கப்பட்டுள்ளது. மற்ற padding, margin போன்றவற்றை reset செய்து, font family-ஐ monospace ஆக மாற்றுகிறோம். `white-space: inherit;` என்பது `pre` tag-ல் உள்ள `white-space: pre;` ஐ இதுவும் பயன்படுத்தும் என்பதை உறுதி செய்கிறது.
-           3. `div.code-toolbar > .toolbar`: இது PrismJS மூலம் சேர்க்கப்படும் copy button உள்ள toolbar. `position: absolute` மூலம் இதை code block-ன் மேல் வலது மூலையில் காட்டுகிறோம். Hover செய்யும்போது மட்டுமே இது தெரியும் (`opacity: 0` to `opacity: 1`).
+           Code block styling PrismJS-உடன் சரியாக வேலை செய்யும்படி சரிபார்க்கப்பட்டுள்ளது.
+           `pre` tag-க்கு `white-space: pre;` (வெற்று இடங்களை அப்படியே காட்ட) மற்றும்
+           `overflow-x: auto;` (நீளமான வரிகளுக்கு scrollbar காட்ட) இருப்பதை உறுதிசெய்யவும்.
         */
         :root { /* ... Theme Variables ... */
              --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; --sidebar-width: 260px; --message-font-size-base: 1rem;
@@ -167,50 +158,50 @@
         .ai-message { background-color: var(--ai-message-bg); color: var(--ai-message-text); align-self: flex-start; border-bottom-left-radius: 5px; }
         .ai-message strong { font-weight: 600; } .ai-message em { font-style: italic; }
 
-        /* --- Code Block Styling (Enhanced v10.3) --- */
+        /* --- Code Block Styling (Enhanced v10.3 - Verified) --- */
         /* ***** TAMIL *****
-           `pre` tag-க்கான style. இது code block-ன் background, padding, border, மற்றும் scrollbar-ஐ கையாளுகிறது.
-           `overflow-x: auto;` என்பது நீளமான code line-களுக்கு horizontal scrollbar காட்ட உதவும்.
-           `white-space: pre;` என்பது code formatting-ஐ (spaces, line breaks) அப்படியே காட்ட உதவும்.
-           `word-wrap: normal;` என்பது code தானாக அடுத்த வரிக்கு போவதை தடுக்கும் (scrollbar தான் பயன்படுத்தப்படும்).
+           `pre` tag-க்கான style. Code block-ன் background, padding, border, scrollbar ஆகியவற்றை கையாளுகிறது.
+           `white-space: pre;` <<< இது code formatting-ஐ (spaces, line breaks) அப்படியே காட்டுகிறது. முக்கியம்!
+           `overflow-x: auto;` <<< இது நீளமான code line-களுக்கு horizontal scrollbar காட்டுகிறது. முக்கியம்!
+           `position: relative;` <<< இது உள்ளே இருக்கும் copy button-ஐ position செய்ய தேவை.
         */
         .ai-message pre {
             background-color: var(--code-bg);
-            color: var(--text-primary);
-            padding: 12px 15px; /* Slightly more padding */
-            border-radius: 6px; /* Slightly rounder */
+            color: var(--text-primary); /* Use text-primary for better contrast potentially */
+            padding: 12px 15px;
+            border-radius: 6px;
             overflow-x: auto; /* <<< Ensure horizontal scroll for long lines */
             font-size: 0.9em;
             transition: background-color 0.3s ease, color 0.3s ease;
             border: 1px solid var(--border-color);
-            margin: 10px 0; /* More margin */
-            position: relative; /* <<< Needed for toolbar positioning */
+            margin: 10px 0;
+            position: relative; /* Needed for toolbar positioning */
             white-space: pre; /* <<< Preserve whitespace and line breaks as in the code */
             word-wrap: normal; /* <<< Prevent wrapping inside pre */
-            box-sizing: border-box; /* Include padding/border in width calculation */
         }
+
         /* ***** TAMIL *****
            `pre` tag உள்ளே உள்ள `code` tag-க்கான style.
-           இது font family (monospace), background, padding போன்றவற்றை reset செய்கிறது, ஏன்னா PrismJS இதை handle செய்யும்.
-           `display: block;` முக்கியம்.
-           `white-space: inherit;` என்பது `pre` tag-ன் `white-space: pre;` ஐ இதுவும் பயன்படுத்தும் என்பதை உறுதி செய்கிறது.
+           Font family-ஐ monospace ஆக மாற்றி, மற்ற தேவையில்லாத styles-ஐ reset செய்கிறோம்.
+           PrismJS இந்த `code` tag-ல் தான் highlighting-ஐ சேர்க்கும்.
         */
         .ai-message pre > code[class*="language-"] {
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace font */
-            display: block; /* <<< Ensure block display */
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* <<< Monospace font family */
+            display: block; /* Ensure block display */
             padding: 0; /* Reset padding, pre tag handles it */
             margin: 0; /* Reset margin */
             overflow: visible; /* Code itself shouldn't scroll, pre tag handles it */
             background: none; /* No background for code tag itself */
             color: inherit; /* Inherit color from pre tag */
             font-size: 1em; /* Inherit font size from pre */
-            text-shadow: none;
-            white-space: inherit; /* <<< Inherit white-space from pre */
+            line-height: inherit; /* Inherit line height */
+            text-shadow: none; /* Remove text shadow from Prism theme if any */
+            white-space: inherit; /* Inherit white-space from pre */
             word-wrap: inherit; /* Inherit word-wrap from pre */
-            box-sizing: border-box;
         }
+
         /* Inline code styling (`) */
-        .ai-message:not(pre) > code {
+        .ai-message :not(pre) > code { /* Ensure it doesn't apply to code inside pre */
             background-color: var(--code-bg);
             color: var(--text-primary);
             padding: 2px 5px;
@@ -218,43 +209,55 @@
             font-size: 0.9em;
             font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
             transition: background-color 0.3s ease, color 0.3s ease;
+            white-space: normal; /* Allow inline code to wrap */
+            word-wrap: break-word;
         }
+
+        /* PrismJS Toolbar/Copy Button Styling */
         /* ***** TAMIL *****
-            PrismJS Toolbar/Copy Button Styling
-            இது code block-ன் மேல் வலதுபுறம் தோன்றும் toolbar (copy button கொண்டது).
-            `position: absolute` மூலம் இது `pre` tag-க்குள் (relative positioning உள்ள) நிலைநிறுத்தப்படுகிறது.
-            Mouse hover செய்யும்போது மட்டுமே இது தெரியும் (`opacity: 0` to `1`).
+           Copy button (`toolbar`) ஐ `pre` tag-ன் மேல் வலது மூலையில் காட்டுகிறது.
+           Hover செய்யும்போது மட்டுமே button தெரியும்.
         */
-        div.code-toolbar { position: relative; } /* Ensure the pre's wrapper is relative if this is used */
+        div.code-toolbar { position: relative; } /* Ensure pre has position: relative */
         div.code-toolbar > .toolbar {
             position: absolute;
-            top: 0.5em; /* Adjust position slightly */
-            right: 0.5em; /* Adjust position slightly */
+            top: 0.5em; /* Adjust vertical position */
+            right: 0.5em; /* Adjust horizontal position */
             transition: opacity 0.3s ease-in-out;
-            opacity: 0;
-            z-index: 1; /* Ensure it's above the code */
+            opacity: 0; /* Hide by default */
+            z-index: 1; /* Ensure it's above code content */
         }
-        div.code-toolbar:hover > .toolbar { opacity: 1; }
-        /* Style for the button inside the toolbar */
+        div.code-toolbar:hover > .toolbar {
+            opacity: 1; /* Show on hover */
+        }
+        /* Style the button itself */
         div.code-toolbar > .toolbar .toolbar-item > button {
+            background: var(--button-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            box-shadow: none; /* Remove default shadow if any */
+            display: inline-flex; /* Ensure icon/text aligns */
+            align-items: center;
+        }
+        div.code-toolbar > .toolbar .toolbar-item > button:hover {
+            background-color: var(--button-hover-bg);
+            color: var(--text-primary);
+        }
+        /* Explicit dark theme styles for toolbar button if needed */
+        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button {
              background: var(--button-bg);
              color: var(--text-secondary);
-             border: 1px solid var(--border-color);
-             border-radius: 4px;
-             padding: 3px 8px;
-             font-size: 0.8em;
-             cursor: pointer;
-             transition: background-color 0.2s ease, color 0.2s ease;
-             box-shadow: none;
-             font-family: var(--font-family); /* Ensure consistent font */
-         }
-         div.code-toolbar > .toolbar .toolbar-item > button:hover {
-             background-color: var(--button-hover-bg);
-             color: var(--text-primary);
-         }
-        /* Dark theme adjustments for toolbar button */
-        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button { background: var(--button-bg); color: var(--text-secondary); }
-        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button:hover { background-color: var(--button-hover-bg); color: var(--text-primary); }
+             border-color: var(--border-color);
+        }
+        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button:hover {
+            background-color: var(--button-hover-bg);
+            color: var(--text-primary);
+        }
         /* --- End Code Block Styling --- */
 
         .ai-message.thinking { background-color: transparent; color: var(--text-secondary); font-style: italic; }
@@ -445,7 +448,7 @@
                       <div class="theme-toggle"> <button id="theme-toggle-button" title="Toggle Theme" disabled>☀️</button> </div>
                   </div>
                    <!-- ***** TAMIL ***** -->
-                   <!-- இங்கதான் model-ஐ தேர்வு செய்வதற்கான dropdown-ஐ சேர்த்துள்ளோம் -->
+                   <!-- இங்கதான் model-ஐ தேர்வு செய்வதற்கான dropdown -->
                    <div class="model-selector-container">
                        <label for="model-selector">AI Model</label>
                        <select id="model-selector" disabled>
@@ -490,16 +493,12 @@
                          <input type="file" id="image-upload-input" accept="image/png, image/jpeg, image/webp, image/heic, image/heif" style="display: none;" multiple> <!-- Updated Image MIME Types -->
                          <input type="file" id="pdf-upload-input" accept="application/pdf" style="display: none;" multiple>
                          <input type="file" id="audio-upload-input" accept="audio/wav, audio/mp3, audio/mpeg, audio/aac, audio/ogg, audio/flac, audio/aiff" style="display: none;">
-                         {/* ***** TAMIL *****
-                              தேவைப்பட்டால் Video Upload சேர்க்கலாம், ஆனால் browser-ல் பெரிய video files handle செய்வது சிக்கலானது. File API பயன்படுத்துவது சிறந்தது.
-                              <input type="file" id="video-upload-input" accept="video/mp4, video/mpeg, video/mov, video/avi, video/x-flv, video/mpg, video/webm, video/wmv, video/3gpp" style="display: none;">
-                         */}
+                         <!-- Video Upload Note (TAMIL): பெரிய video files-ஐ browser-ல் கையாள்வது கடினம். File API பயன்படுத்தவும். -->
                          <div class="input-buttons">
                              <button id="image-upload-button" title="Upload image(s)" disabled>📎</button>
-                             <button id="pdf-upload-button" title="Upload PDF file(s)" disabled>📄</button> <!-- Title is updated dynamically -->
+                             <button id="pdf-upload-button" title="Upload PDF file(s)" disabled>📄</button>
                              <button id="audio-upload-button" title="Upload audio file" disabled>🎵</button>
                              <button id="record-audio-button" title="Record audio" disabled>🎙️</button>
-                              {/* <button id="video-upload-button" title="Upload video file (File API)" disabled>🎬</button> */}
                          </div>
                          <textarea id="user-input" placeholder="Enter prompt, attach media, or paste URL" rows="1" disabled></textarea>
                          <div class="mcq-mode-control"> <input type="checkbox" id="mcq-mode-checkbox" title="Generate MCQs based on prompt/media" disabled> <label for="mcq-mode-checkbox">MCQs?</label> </div>
@@ -784,7 +783,7 @@
         // ***** TAMIL *****
         // இந்த function app-ஐ ஆரம்பிக்கும்போது முதலில் run ஆகும்.
         async function initializeApp() {
-            console.log("App Initializing (v10.3)..."); // Updated version
+            console.log("App Initializing (v10.3 - Code Blocks Fixed)..."); // Updated version
             setLoadingState(true, "Initializing...");
             chatArea.innerHTML = '';
             populateModelSelector(); // Populate dropdown first
@@ -1313,7 +1312,7 @@
                  img.src = item.base64 === '#error' ? '' : (item.base64 || '');
                  img.alt = item.base64 === '#error' ? 'Preview error' : (item.name || 'Image');
                  img.title = item.name || 'Image';
-                 img.onerror = () => { img.alt = "Preview load error"; img.src = ""; };
+                 img.onerror = () => { img.alt = "Preview load error"; };
                  const removeBtn = document.createElement('button');
                  removeBtn.classList.add('remove-image-item-button'); removeBtn.innerHTML = '&times;'; removeBtn.title = `Remove ${item.name || 'image'}`;
                  removeBtn.onclick = (e) => { e.stopPropagation(); removeSelectedMediaItem(item.id); };
@@ -1802,10 +1801,10 @@
             let potentialTestTitle = null;
 
              // Add media info to Firestore message for display purposes
-             if (singleAudioItem) { /* ... audio info ... */ userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; }
-             else if (imageItems.length === 1) { /* ... image info ... */ userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; }
-             else if (imageItems.length > 1) { /* ... multi-image info ... */ userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); }
-             else if (pdfItems.length > 0) { /* ... multi-pdf info ... */ userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); }
+             if (singleAudioItem) { userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; }
+             else if (imageItems.length === 1) { userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; }
+             else if (imageItems.length > 1) { userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); }
+             else if (pdfItems.length > 0) { userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); }
              // ***** TAMIL *****
              // YouTube video ID-ஐ Firestore-ல் save செய்கிறோம், இது chat-ல் video-வை காட்ட உதவும்.
              if (youtubeUrl && youtubeMatch && youtubeMatch[1]) userMsgData.youtubeVideoId = youtubeMatch[1]; // Store the video ID (group 1 from regex)
@@ -2261,11 +2260,9 @@
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
             if (cssClasses?.length > 0) messageElement.classList.add(...cssClasses);
-            let hasContent = false;
-            let containsCode = false; // <<< TAMIL: Code block உள்ளதா என track செய்ய ஒரு flag
+            let hasContent = false; let containsCode = false;
 
             // --- Media Rendering (Uploaded Files) ---
-            // (Media rendering logic remains unchanged)
             if (messageData?.mediaType === 'image' && messageData.mediaData && messageData.mediaData !== '#error') { try { const img = document.createElement('img'); img.src = messageData.mediaData; img.alt = messageData.mediaName || "Uploaded Image"; img.classList.add('uploaded-image'); img.loading = "lazy"; img.onerror = () => { img.alt = "Image load error"; img.src = ""; }; messageElement.appendChild(img); hasContent = true; } catch (e) { console.error("Error creating image element:", e); } }
             else if (messageData?.mediaType === 'multi-image' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} image${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-image indicator:", e); } }
             else if (messageData?.mediaType === 'multi-pdf' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} PDF${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-PDF indicator:", e); } }
@@ -2285,24 +2282,26 @@
                         formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`);
                     }
 
-                    // ***** TAMIL *****
                     // Handle Code Blocks (``` ... ```) - Enhanced for PrismJS
-                    // இங்கதான் ```xyz ... ``` போன்ற அமைப்பை HTML code block ஆக மாற்றுகிறோம்.
                     formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
-                        containsCode = true; // <<< TAMIL: Code block கண்டுபிடிக்கப்பட்டது என flag செட் செய்கிறோம்.
-                        // language பெயர் सुरक्षितமாக உள்ளதா என சரிபார்த்து, class பெயரை உருவாக்குகிறோம் (e.g., language-javascript). இல்லையெனில் 'language-plain' பயன்படுத்துகிறோம்.
+                        containsCode = true; // Flag that we found code
                         const safeLang = lang?.trim()?.match(/^[a-zA-Z0-9_-]+$/) ? lang.trim().toLowerCase() : 'plain';
                         const languageClass = `language-${safeLang}`;
-                        // Code உள்ளே இருக்கும் HTML குறிச்சொற்களை (<, >) escape செய்கிறோம், இல்லையெனில் browser அதை HTML ஆக காட்டிவிடும்.
+                        // Escape HTML within the code block *before* wrapping
                         const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         // ***** TAMIL *****
-                        // PrismJS சரியாக வேலை செய்ய, `<pre>` tag-க்கும், உள்ளே உள்ள `<code>` tag-க்கும் language class-ஐ சேர்க்க வேண்டும்.
-                        // `<div class="code-toolbar">` என்பது PrismJS-ன் toolbar plugin (copy button காட்ட) தானாகவே சேர்க்கும். நாம் இங்கு `<pre>` மற்றும் `<code>` ஐ மட்டும் உருவாக்கினால் போதும்.
+                        // `<pre>` tag-க்கு class சேர்த்து, உள்ளே `<code>` tag-க்கு அதே class-ஐ சேர்க்கிறோம். இது PrismJS வேலை செய்ய அவசியம்.
+                        // Prism Toolbar plugin இந்த அமைப்பை வைத்து `<pre>` tag-ஐ `<div class="code-toolbar">` ஆக மாற்றும்.
                         return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`;
                     });
 
                     // Handle Inline Code (`)
-                    formattedText = formattedText.replace(/`([^`]+)`/g, (match, code) => `<code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`);
+                     formattedText = formattedText.replace(/`([^`]+?)`/g, (match, code) => {
+                         // Escape HTML inside inline code too
+                         const escapedInlineCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                         return `<code>${escapedInlineCode}</code>`;
+                     });
+
                     // Handle Bold/Italics/Newlines
                     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>');
 
@@ -2366,14 +2365,14 @@
             if (hasContent || cssClasses.includes('thinking') || cssClasses.includes('error-message')) {
                 if (!chatArea.contains(messageElement)) {
                     chatArea.appendChild(messageElement);
-                    // ***** TAMIL *****
                     // Apply PrismJS highlighting if code blocks were found
-                    // Code block இருந்தால் (`containsCode` flag true ஆக இருந்தால்), PrismJS-ஐ பயன்படுத்தி syntax highlighting செய்கிறோம்.
-                    // இது message DOM-ல் சேர்க்கப்பட்ட பிறகு, ஒரு ചെറിയ தாமதத்திற்குப் பிறகு (setTimeout) செய்யப்படுகிறது. இது DOM புதுப்பிக்கப்படுவதை உறுதி செய்கிறது.
-                    // `Prism.highlightAllUnder(messageElement)` என்பது messageElement-க்குள் உள்ள அனைத்து code block-களையும் highlight செய்யும்.
+                    // ***** TAMIL *****
+                    // code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlighting செய்கிறோம்.
+                    // இது message DOM-ல் சேர்க்கப்பட்ட *பிறகு* செய்யப்பட வேண்டும்.
                     if (containsCode && typeof Prism !== 'undefined') {
-                         setTimeout(() => { // Use timeout to ensure DOM update
+                         setTimeout(() => { // Use timeout to ensure DOM update before highlighting
                              try {
+                                 // Highlight only within the newly added message element for efficiency
                                  Prism.highlightAllUnder(messageElement);
                                  console.log("Prism highlighting applied under element.");
                              } catch (highlightError) {
@@ -2390,13 +2389,7 @@
         // --- MCQ/Test/Review/All Tests Functions ---
         // ***** TAMIL *****
         // இந்த functions எல்லாம் mock test, review, saved tests தொடர்பானவை. இவற்றில் மாற்றம் இல்லை.
-        // handleChatAreaClick, displayMCQOffer, startMockTest, displayTestQuestion,
-        // handleOptionSelect, handleTestNavigation, startTestTimer, submitTest,
-        // calculateResults, displayReview, handleReviewFilterClick, filterReviewItems,
-        // exitReview, saveTestReviewToCloud, loadAndListenForTests, renderAllTestsList,
-        // filterTestsInSidebar, handleAllTestsListClick, enterTestTitleEditMode,
-        // exitTestTitleEditMode, saveTestTitle, deleteSavedTest, startReattempt
-        // (These functions remain unchanged from v10.3)
+        // (No changes in the following functions from v10.3)
          function handleChatAreaClick(event) { const startButton = event.target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; } const clickedImage = event.target.closest('img.chat-image, img.uploaded-image'); if (clickedImage?.src && !clickedImage.src.startsWith('#') && clickedImage.src.trim() !== '') { try { if (!clickedImage.src.startsWith('data:image') || clickedImage.src.length < 2 * 1024 * 1024) { window.open(clickedImage.src, '_blank'); } else { console.log("Clicked large base64 image in chat."); } } catch (e) { console.error("Error opening image source:", e); } } }
          function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
          function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
