@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v10.3 - Token Config, YT URL, Code Blocks)</title> <!-- Version Updated -->
+    <title>Gemini Chat + Mock Test (v10.4 - Code Block Fix)</title> <!-- Version Updated -->
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -43,7 +43,7 @@
     </script>
 
     <!-- Prism JS for Code Syntax Highlighting -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" /> <!-- Changed theme for better visibility -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     <!-- ***** TAMIL *****
@@ -56,21 +56,22 @@
 
 
     <style>
-        /* --- Styles (v10.3 - Added YouTube Embed, Enhanced Code Block Styles) --- */
+        /* --- Styles (v10.4 - Updated Code Block Styles) --- */
         /* ***** TAMIL *****
            இங்க CSS styles உள்ளன.
            YouTube video embed செய்வதற்கான style-ம், code block styling-ம் மேம்படுத்தப்பட்டுள்ளது.
-           குறிப்பாக `pre` tag-க்கு `white-space: pre-wrap;` அல்லது `white-space: pre;` மற்றும் `overflow-x: auto;` இருப்பதை உறுதிசெய்ய வேண்டும்.
+           குறிப்பாக `pre` tag-க்கு `white-space: pre;` மற்றும் `overflow-x: auto;` இருப்பதை உறுதிசெய்துள்ளோம்.
+           Code block background/text color-ம் சரிசெய்யப்பட்டுள்ளது.
         */
         :root { /* ... Theme Variables ... */
              --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; --sidebar-width: 260px; --message-font-size-base: 1rem;
-            /* LIGHT */ --sidebar-bg: #f7f7f7; --main-bg: #ffffff; --input-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #2c2c2c; --text-secondary: #5f5f5f; --text-placeholder: #999999; --accent-color: #d97a7a; --user-message-bg: #cce0ff; --user-message-text: #1c1c1c; --ai-message-bg: #f0f0f0; --ai-message-text: #2c2c2c; --button-bg: #f0f0f0; --button-hover-bg: #e0e0e0; --active-item-bg: #e0e0e0; --code-bg: #e8e8e8; --scrollbar-thumb: #ccc; --scrollbar-thumb-hover: #bbb; --app-outer-bg: #e8e8e8; --send-button-bg: var(--accent-color); --send-button-hover-bg: #c76b6b; --send-button-text: #ffffff; --error-bg: #ffebee; --error-text: #c62828; --error-border: #ef9a9a; --message-font-size: var(--message-font-size-base); --delete-button-color: #aaa; --delete-button-hover-color: #dc3545; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text);
+            /* LIGHT */ --sidebar-bg: #f7f7f7; --main-bg: #ffffff; --input-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #2c2c2c; --text-secondary: #5f5f5f; --text-placeholder: #999999; --accent-color: #d97a7a; --user-message-bg: #cce0ff; --user-message-text: #1c1c1c; --ai-message-bg: #f0f0f0; --ai-message-text: #2c2c2c; --button-bg: #f0f0f0; --button-hover-bg: #e0e0e0; --active-item-bg: #e0e0e0; --code-bg: #f5f2f0; --code-text: #333; --scrollbar-thumb: #ccc; --scrollbar-thumb-hover: #bbb; --app-outer-bg: #e8e8e8; --send-button-bg: var(--accent-color); --send-button-hover-bg: #c76b6b; --send-button-text: #ffffff; --error-bg: #ffebee; --error-text: #c62828; --error-border: #ef9a9a; --message-font-size: var(--message-font-size-base); --delete-button-color: #aaa; --delete-button-hover-color: #dc3545; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text);
             /* Audio Specific */
             --record-button-bg: #ff6b6b; --record-button-text: #ffffff; --stop-button-bg: #4a4a4a; --stop-button-text: #ffffff;
             /* Model Selector Specific */
              --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
-        body.dark-theme { /* DARK */ --sidebar-bg: #2a2a2e; --main-bg: #1e1e1e; --input-bg: #2a2a2e; --border-color: #404040; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --text-placeholder: #777777; --accent-color: #e58b8b; --user-message-bg: #3a4a6b; --user-message-text: #e8e8e8; --ai-message-bg: #333333; --ai-message-text: #e0e0e0; --button-bg: #404040; --button-hover-bg: #505050; --active-item-bg: #454545; --code-bg: #2c2c2e; --scrollbar-thumb: #555; --scrollbar-thumb-hover: #666; --app-outer-bg: #121212; --send-button-bg: var(--accent-color); --send-button-hover-bg: #f09f9f; --send-button-text: #1e1e1e; --error-bg: #5c2b2b; --error-text: #ffcdd2; --error-border: #8c4343; --delete-button-color: #666; --delete-button-hover-color: #f09f9f; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text);
+        body.dark-theme { /* DARK */ --sidebar-bg: #2a2a2e; --main-bg: #1e1e1e; --input-bg: #2a2a2e; --border-color: #404040; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --text-placeholder: #777777; --accent-color: #e58b8b; --user-message-bg: #3a4a6b; --user-message-text: #e8e8e8; --ai-message-bg: #333333; --ai-message-text: #e0e0e0; --button-bg: #404040; --button-hover-bg: #505050; --active-item-bg: #454545; --code-bg: #2d2d2d; --code-text: #ccc; --scrollbar-thumb: #555; --scrollbar-thumb-hover: #666; --app-outer-bg: #121212; --send-button-bg: var(--accent-color); --send-button-hover-bg: #f09f9f; --send-button-text: #1e1e1e; --error-bg: #5c2b2b; --error-text: #ffcdd2; --error-border: #8c4343; --delete-button-color: #666; --delete-button-hover-color: #f09f9f; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text);
             /* Audio Specific */
              --record-button-bg: #ff8787; --record-button-text: #1e1e1e; --stop-button-bg: #777777; --stop-button-text: #e0e0e0;
             /* Model Selector Specific */
@@ -156,61 +157,94 @@
         .user-message { background-color: var(--user-message-bg); color: var(--user-message-text); align-self: flex-end; border-bottom-right-radius: 5px; }
         .ai-message { background-color: var(--ai-message-bg); color: var(--ai-message-text); align-self: flex-start; border-bottom-left-radius: 5px; }
         .ai-message strong { font-weight: 600; } .ai-message em { font-style: italic; }
-        /* --- Code Block Styling (Enhanced v10.3) --- */
+
+        /* --- Code Block Styling (Enhanced v10.4) --- */
         /* ***** TAMIL *****
            `pre` tag-க்கான style. இது code block-ன் background, padding, border, மற்றும் scrollbar-ஐ கையாளுகிறது.
-           `white-space: pre;` என்பது code formatting-ஐ அப்படியே காட்ட உதவும்.
+           `white-space: pre;` என்பது code formatting-ஐ (spaces, newlines) அப்படியே காட்ட உதவும்.
            `overflow-x: auto;` என்பது நீளமான code line-களுக்கு horizontal scrollbar காட்ட உதவும்.
+           `word-wrap: normal;` என்பது text wrapping-ஐ தவிர்க்கிறது (scrollbar handle செய்யும்).
+           Background, color ஆகியவை theme variables மூலம் அமைக்கப்பட்டுள்ளன.
         */
         .ai-message pre {
-            background-color: var(--code-bg);
-            color: var(--text-primary);
-            padding: 12px 15px; /* Slightly more padding */
-            border-radius: 6px; /* Slightly rounder */
+            background-color: var(--code-bg); /* Theme variable for background */
+            color: var(--code-text); /* Theme variable for text color */
+            padding: 15px; /* Increased padding */
+            border-radius: 8px; /* More rounded */
             overflow-x: auto; /* <<< Ensure horizontal scroll for long lines */
-            font-size: 0.9em;
+            font-size: 0.9em; /* Slightly smaller font for code */
             transition: background-color 0.3s ease, color 0.3s ease;
             border: 1px solid var(--border-color);
-            margin: 10px 0; /* More margin */
+            margin: 12px 0; /* Increased margin */
             position: relative;
-            white-space: pre; /* <<< Preserve whitespace and line breaks as in the code */
-            word-wrap: normal; /* <<< Prevent wrapping inside pre */
+            white-space: pre; /* <<< IMPORTANT: Preserve whitespace and line breaks exactly */
+            word-wrap: normal; /* <<< IMPORTANT: Prevent wrapping inside pre, rely on scrollbar */
+            line-height: 1.45; /* Slightly adjust line height for readability */
         }
         /* ***** TAMIL *****
            `pre` tag உள்ளே உள்ள `code` tag-க்கான style.
            இது font family, background, padding போன்றவற்றை reset செய்கிறது, ஏன்னா PrismJS இதை handle செய்யும்.
+           `white-space` மற்றும் `word-wrap` ஐ `pre` tag-லிருந்து inherit செய்கிறது.
+           Text color is now handled by PrismJS theme, but we set a base color.
         */
         .ai-message pre > code[class*="language-"] {
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace font */
+            font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace font */
             display: block; /* Ensure block display */
             padding: 0; /* Reset padding, pre tag handles it */
             margin: 0; /* Reset margin */
             overflow: visible; /* Code itself shouldn't scroll, pre tag handles it */
             background: none; /* No background for code tag itself */
-            color: inherit; /* Inherit color from pre tag */
+            color: inherit; /* Inherit color from pre tag (Prism theme overrides this) */
             font-size: 1em; /* Inherit font size from pre */
             text-shadow: none;
             white-space: inherit; /* Inherit white-space from pre */
             word-wrap: inherit; /* Inherit word-wrap from pre */
+            direction: ltr; /* Ensure code is always left-to-right */
+            text-align: left; /* Ensure code is left-aligned */
         }
-        /* Inline code styling (`) */
-        .ai-message:not(pre) > code {
+        /* Inline code styling (`) - Use theme variables */
+        .ai-message code:not([class*="language-"]) { /* Target inline code specifically */
             background-color: var(--code-bg);
-            color: var(--text-primary);
+            color: var(--code-text);
             padding: 2px 5px;
             border-radius: 4px;
-            font-size: 0.9em;
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.85em; /* Slightly smaller for inline */
+            font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
             transition: background-color 0.3s ease, color 0.3s ease;
+            border: 1px solid var(--border-color);
+            white-space: normal; /* Allow inline code to wrap */
         }
-        /* PrismJS Toolbar/Copy Button Styling */
+        /* PrismJS Toolbar/Copy Button Styling (Adapted for better theme compatibility) */
         div.code-toolbar { position: relative; }
-        div.code-toolbar > .toolbar { position: absolute; top: 0.3em; right: 0.3em; transition: opacity 0.3s ease-in-out; opacity: 0; }
+        div.code-toolbar > .toolbar { position: absolute; top: 0.5em; right: 0.5em; transition: opacity 0.3s ease-in-out; opacity: 0; z-index: 1; } /* Added z-index */
         div.code-toolbar:hover > .toolbar { opacity: 1; }
-        div.code-toolbar > .toolbar .toolbar-item > button { background: var(--button-bg); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: 4px; padding: 3px 8px; font-size: 0.8em; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; box-shadow: none; }
-        div.code-toolbar > .toolbar .toolbar-item > button:hover { background-color: var(--button-hover-bg); color: var(--text-primary); }
-        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button { background: var(--button-bg); color: var(--text-secondary); }
-        body.dark-theme div.code-toolbar > .toolbar .toolbar-item > button:hover { background-color: var(--button-hover-bg); color: var(--text-primary); }
+        div.code-toolbar > .toolbar .toolbar-item > button {
+            background: var(--button-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            box-shadow: none;
+            opacity: 0.8; /* Slightly transparent */
+        }
+        div.code-toolbar > .toolbar .toolbar-item > button:hover {
+            background-color: var(--button-hover-bg);
+            color: var(--text-primary);
+            opacity: 1;
+        }
+        /* Override Prism theme background/color if necessary, using our variables */
+        /* Example for Okaidia theme: */
+        body.dark-theme pre[class*="language-"] { background: #272822 !important; color: #f8f8f2 !important; } /* Force dark theme colors */
+        body:not(.dark-theme) pre[class*="language-"] { background: var(--code-bg) !important; color: var(--code-text) !important; } /* Use light theme vars */
+
+        /* Add scrollbar styling for code blocks */
+        .ai-message pre::-webkit-scrollbar { height: 8px; background-color: rgba(0,0,0,0.1); }
+        .ai-message pre::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; border: 1px solid var(--code-bg); }
+        .ai-message pre::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
         /* --- End Code Block Styling --- */
 
         .ai-message.thinking { background-color: transparent; color: var(--text-secondary); font-style: italic; }
@@ -740,7 +774,7 @@
         // ***** TAMIL *****
         // இந்த function app-ஐ ஆரம்பிக்கும்போது முதலில் run ஆகும்.
         async function initializeApp() {
-            console.log("App Initializing (v10.3)..."); // Updated version
+            console.log("App Initializing (v10.4)..."); // Updated version
             setLoadingState(true, "Initializing...");
             chatArea.innerHTML = '';
             populateModelSelector(); // Populate dropdown first
@@ -2213,6 +2247,7 @@
         // ***** TAMIL *****
         // இந்த function message-களை chat area-வில் காட்டுகிறது. Code block-களையும், YouTube video-வையும் format செய்கிறது.
         // PrismJS மூலம் code highlighting சரியாக வேலை செய்யுமாறு மாற்றப்பட்டுள்ளது.
+        // CSS-ல் செய்த மாற்றங்களையும் கருத்தில் கொள்கிறது (`white-space: pre`).
         function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
@@ -2240,19 +2275,23 @@
                     }
 
                     // Handle Code Blocks (``` ... ```) - Enhanced for PrismJS
+                    // ***** TAMIL *****
+                    // இங்கதான் code block (` ``` `) ஐ கண்டுபிடித்து, HTML ஆக மாற்றுகிறோம்.
+                    // `pre` மற்றும் `code` tag களை class உடன் சேர்க்கிறோம். இது PrismJS வேலை செய்ய அவசியம்.
+                    // உள்ளே இருக்கும் code ஐ HTML escaping செய்கிறோம் (< > போன்ற characters).
                     formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
                         containsCode = true;
                         const safeLang = lang?.trim()?.match(/^[a-zA-Z0-9_-]+$/) ? lang.trim().toLowerCase() : 'plain';
                         const languageClass = `language-${safeLang}`;
                         // Escape HTML within the code block *before* wrapping
                         const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                        // ***** TAMIL *****
-                        // `<pre>` tag-க்கு class சேர்த்து, உள்ளே `<code>` tag-க்கு அதே class-ஐ சேர்க்கிறோம். இது PrismJS வேலை செய்ய அவசியம்.
+                        // Wrap in pre and code tags with the correct classes
                         return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`;
                     });
 
-                    // Handle Inline Code (`)
+                    // Handle Inline Code (`) - Use the improved CSS selector
                     formattedText = formattedText.replace(/`([^`]+)`/g, (match, code) => `<code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`);
+
                     // Handle Bold/Italics/Newlines
                     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>');
 
@@ -2318,16 +2357,17 @@
                     chatArea.appendChild(messageElement);
                     // Apply PrismJS highlighting if code blocks were found
                     // ***** TAMIL *****
-                    // code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlighting செய்கிறோம். இது message DOM-ல் சேர்க்கப்பட்ட பிறகு செய்யப்படுகிறது.
+                    // code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlighting செய்கிறோம்.
+                    // இது message DOM-ல் சேர்க்கப்பட்ட *பிறகு* தாமதமாக (setTimeout) செய்யப்படுகிறது. இதுதான் முக்கியம்.
                     if (containsCode && typeof Prism !== 'undefined') {
-                         setTimeout(() => { // Use timeout to ensure DOM update
+                         setTimeout(() => { // Use timeout to ensure DOM update before highlighting
                              try {
                                  Prism.highlightAllUnder(messageElement);
                                  console.log("Prism highlighting applied under element.");
                              } catch (highlightError) {
                                  console.error("Prism highlighting error:", highlightError);
                              }
-                         }, 0); // Minimal delay is usually sufficient
+                         }, 10); // Small delay (10ms) is usually sufficient
                      }
                 }
             } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); }
@@ -2344,7 +2384,7 @@
         // exitReview, saveTestReviewToCloud, loadAndListenForTests, renderAllTestsList,
         // filterTestsInSidebar, handleAllTestsListClick, enterTestTitleEditMode,
         // exitTestTitleEditMode, saveTestTitle, deleteSavedTest, startReattempt
-        // (These functions remain unchanged from v10.3)
+        // (These functions remain unchanged from v10.4)
          function handleChatAreaClick(event) { const startButton = event.target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; } const clickedImage = event.target.closest('img.chat-image, img.uploaded-image'); if (clickedImage?.src && !clickedImage.src.startsWith('#') && clickedImage.src.trim() !== '') { try { if (!clickedImage.src.startsWith('data:image') || clickedImage.src.length < 2 * 1024 * 1024) { window.open(clickedImage.src, '_blank'); } else { console.log("Clicked large base64 image in chat."); } } catch (e) { console.error("Error opening image source:", e); } } }
          function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
          function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
