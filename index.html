@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v9.11 - File API Check Refinement)</title>
+    <title>Gemini Chat + Mock Test (v10.0 - Model Selector & Cache Attempt)</title>
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -25,29 +25,44 @@
     <script type="module">
         // Make SDK accessible globally after import
         try {
-            const { GoogleGenerativeAI } = await import("https://esm.run/@google/generative-ai");
+            // ***** TAMIL *****
+            // இங்க Google Generative AI SDK-ஐ import செய்கிறோம். இதுதான் Gemini API உடன் பேச உதவும்.
+            const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = await import("https://esm.run/@google/generative-ai");
             window.GoogleGenerativeAI = GoogleGenerativeAI;
+            // பாதுகாப்பு அமைப்புகளையும் import செய்கிறோம்
+            window.HarmCategory = HarmCategory;
+            window.HarmBlockThreshold = HarmBlockThreshold;
             console.log("GoogleGenerativeAI SDK loaded successfully via module.");
-            // Optionally trigger an event or set a flag if needed by non-module script
+            // SDK load ஆனதும் ஒரு event-ஐ trigger செய்கிறோம்.
             window.dispatchEvent(new Event('google-ai-sdk-loaded'));
         } catch (error) {
             console.error("Failed to load GoogleGenerativeAI SDK:", error);
-            // Display error to user?
-            window.googleAiSdkLoadError = error; // Store error globally if needed
+            // பிழை ஏற்பட்டால் console-ல் காட்டுவதோடு, ஒரு global variable-ல் store செய்கிறோம்.
+            window.googleAiSdkLoadError = error;
         }
     </script>
 
+    <!-- Prism JS for Code Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+
     <style>
-        /* --- Styles (v9.11 - No CSS changes from 9.10) --- */
+        /* --- Styles (v10.0 - Added Model Selector Style, Code Block Lang) --- */
         :root { /* ... Theme Variables ... */
              --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; --sidebar-width: 260px; --message-font-size-base: 1rem;
             /* LIGHT */ --sidebar-bg: #f7f7f7; --main-bg: #ffffff; --input-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #2c2c2c; --text-secondary: #5f5f5f; --text-placeholder: #999999; --accent-color: #d97a7a; --user-message-bg: #cce0ff; --user-message-text: #1c1c1c; --ai-message-bg: #f0f0f0; --ai-message-text: #2c2c2c; --button-bg: #f0f0f0; --button-hover-bg: #e0e0e0; --active-item-bg: #e0e0e0; --code-bg: #e8e8e8; --scrollbar-thumb: #ccc; --scrollbar-thumb-hover: #bbb; --app-outer-bg: #e8e8e8; --send-button-bg: var(--accent-color); --send-button-hover-bg: #c76b6b; --send-button-text: #ffffff; --error-bg: #ffebee; --error-text: #c62828; --error-border: #ef9a9a; --message-font-size: var(--message-font-size-base); --delete-button-color: #aaa; --delete-button-hover-color: #dc3545; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text);
             /* Audio Specific */
             --record-button-bg: #ff6b6b; --record-button-text: #ffffff; --stop-button-bg: #4a4a4a; --stop-button-text: #ffffff;
+            /* Model Selector Specific */
+             --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
         body.dark-theme { /* DARK */ --sidebar-bg: #2a2a2e; --main-bg: #1e1e1e; --input-bg: #2a2a2e; --border-color: #404040; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --text-placeholder: #777777; --accent-color: #e58b8b; --user-message-bg: #3a4a6b; --user-message-text: #e8e8e8; --ai-message-bg: #333333; --ai-message-text: #e0e0e0; --button-bg: #404040; --button-hover-bg: #505050; --active-item-bg: #454545; --code-bg: #2c2c2e; --scrollbar-thumb: #555; --scrollbar-thumb-hover: #666; --app-outer-bg: #121212; --send-button-bg: var(--accent-color); --send-button-hover-bg: #f09f9f; --send-button-text: #1e1e1e; --error-bg: #5c2b2b; --error-text: #ffcdd2; --error-border: #8c4343; --delete-button-color: #666; --delete-button-hover-color: #f09f9f; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text);
             /* Audio Specific */
              --record-button-bg: #ff8787; --record-button-text: #1e1e1e; --stop-button-bg: #777777; --stop-button-text: #e0e0e0;
+            /* Model Selector Specific */
+             --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
         body { font-family: var(--font-family); margin: 0; padding: 0; background-color: var(--app-outer-bg); color: var(--text-primary); font-size: 15px; transition: background-color 0.3s ease, color 0.3s ease; }
 
@@ -99,11 +114,20 @@
          .chat-list-item:hover .delete-chat-button { display: block; }
          .delete-chat-button:hover { color: var(--delete-button-hover-color); opacity: 1; }
          .sidebar-footer { border-top: 1px solid var(--border-color); padding: 10px 15px; transition: border-color 0.3s ease; flex-shrink: 0; }
-         .sidebar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+         .sidebar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;} /* Added wrap and gap */
+         .text-size-controls, .theme-toggle { display: flex; align-items: center; gap: 5px; }
          .text-size-controls span, .theme-toggle span { font-size: 0.85em; color: var(--text-secondary); }
-         .text-size-buttons button, .theme-toggle button { background: var(--button-bg); border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 4px; padding: 2px 8px; margin-left: 5px; cursor: pointer; font-size: 1.1em; line-height: 1; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+         .text-size-buttons button, .theme-toggle button { background: var(--button-bg); border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 1.1em; line-height: 1; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
          .text-size-buttons button:hover, .theme-toggle button:hover { background-color: var(--button-hover-bg); color: var(--text-primary); }
          .text-size-buttons button:disabled, .theme-toggle button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+         /* Model Selector Styling */
+         .model-selector-container { margin-top: 10px; width: 100%; }
+         .model-selector-container label { font-size: 0.85em; color: var(--text-secondary); display: block; margin-bottom: 4px; }
+         #model-selector { width: 100%; padding: 6px 8px; border: 1px solid var(--selector-border); background-color: var(--selector-bg); color: var(--selector-text); border-radius: 6px; font-size: 0.85em; -webkit-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${'var(--text-secondary)'.substring(4, 10)}%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 8px top 50%; background-size: .65em auto; }
+         #model-selector:disabled { opacity: 0.6; cursor: not-allowed; background-color: var(--button-bg); }
+         #model-selector:focus { outline: none; border-color: var(--input-focus-border-color); }
+
          .account-info { display: flex; align-items: center; gap: 10px; font-size: 0.9em; margin-top: 10px; }
          .account-avatar { width: 30px; height: 30px; border-radius: 50%; background-color: #6c757d; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; }
          .account-details { overflow: hidden; }
@@ -120,9 +144,13 @@
         .user-message { background-color: var(--user-message-bg); color: var(--user-message-text); align-self: flex-end; border-bottom-right-radius: 5px; }
         .ai-message { background-color: var(--ai-message-bg); color: var(--ai-message-text); align-self: flex-start; border-bottom-left-radius: 5px; }
         .ai-message strong { font-weight: 600; } .ai-message em { font-style: italic; }
-        .ai-message pre { background-color: var(--code-bg); color: var(--text-primary); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.9em; transition: background-color 0.3s ease, color 0.3s ease; }
-        .ai-message code { font-family: monospace; background-color: var(--code-bg); color: var(--text-primary); padding: 2px 4px; border-radius: 3px; transition: background-color 0.3s ease, color 0.3s ease;}
-        .ai-message pre code { background-color: transparent; padding: 0; }
+        /* Code Block Styling */
+        .ai-message pre { background-color: var(--code-bg); color: var(--text-primary); padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.9em; transition: background-color 0.3s ease, color 0.3s ease; border: 1px solid var(--border-color); margin: 8px 0; position: relative; }
+        .ai-message code { font-family: monospace; } /* General code tag */
+        /* Specific styling for code inside pre, handled by PrismJS */
+        .ai-message pre > code[class*="language-"] { display: block; /* Ensure block display */ padding: 0; /* Remove padding if added by Prism */ background: none; /* Override Prism bg if needed */ text-shadow: none; /* Override Prism shadow if needed */ color: inherit; /* Inherit color from pre */ }
+        .ai-message:not(pre) > code { /* Inline code */ background-color: var(--code-bg); color: var(--text-primary); padding: 2px 4px; border-radius: 3px; transition: background-color 0.3s ease, color 0.3s ease; font-size: 0.9em; }
+
         .ai-message.thinking { background-color: transparent; color: var(--text-secondary); font-style: italic; }
         .error-message { background-color: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); align-self: flex-start; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;}
         .info-message { text-align: center; color: var(--text-secondary); padding: 50px 20px; font-style: italic; }
@@ -255,6 +283,13 @@
              #user-input { min-height: 40px; font-size: 0.95rem; }
              #send-button { width: 32px; height: 32px; }
              .mcq-mode-control label { font-size: 0.8em; }
+            /* Responsive Sidebar Footer */
+            .sidebar-footer { padding: 10px; }
+            .sidebar-controls { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .model-selector-container { margin-top: 5px; }
+            .account-info { margin-top: 15px; }
+            #auth-controls { margin-top: 12px; }
+
             .mock-test-view, .review-view { padding: 10px; }
             .test-header, .review-header { margin-bottom: 15px; padding-bottom: 8px; flex-direction: column; align-items: flex-start; }
             .test-header h2, .review-header h2 { font-size: 1.1em; margin-bottom: 5px;}
@@ -274,7 +309,7 @@
 <body>
 
     <div class="app-container" id="app-container">
-        <!-- Sidebar remains the same -->
+        <!-- Sidebar -->
         <div class="sidebar">
              <!-- Sidebar content -->
              <div class="sidebar-header">Gemini Chat</div>
@@ -302,6 +337,14 @@
                       </div>
                       <div class="theme-toggle"> <button id="theme-toggle-button" title="Toggle Theme" disabled>☀️</button> </div>
                   </div>
+                   <!-- ***** TAMIL ***** -->
+                   <!-- இங்கதான் model-ஐ தேர்வு செய்வதற்கான dropdown-ஐ சேர்த்துள்ளோம் -->
+                   <div class="model-selector-container">
+                       <label for="model-selector">AI Model</label>
+                       <select id="model-selector" disabled>
+                            <!-- Options will be populated by JavaScript -->
+                       </select>
+                   </div>
                    <div id="auth-controls"> <button id="login-google-btn">Login with Google</button> <button id="logout-btn" style="display: none;">Logout</button> </div>
                    <div class="account-info">
                        <div class="account-avatar" id="account-avatar">?</div>
@@ -310,7 +353,7 @@
              </div>
         </div>
 
-        <!-- Main container remains the same -->
+        <!-- Main container -->
         <div class="main-container">
             <div class="main-content active" id="main-content-chat">
                  <div class="chat-area" id="chat-area">
@@ -353,7 +396,7 @@
                     </div>
                  </div>
             </div>
-            <!-- Review View remains the same -->
+            <!-- Review View -->
             <div class="review-view" id="review-view">
                  <div class="review-header">
                      <h2 id="review-title">Test Review</h2>
@@ -367,7 +410,7 @@
               </div>
         </div>
     </div>
-    <!-- Mock Test View remains the same -->
+    <!-- Mock Test View -->
     <div class="mock-test-view" id="mock-test-view">
          <div class="test-header">
             <h2 id="test-title">Mock Test</h2>
@@ -385,7 +428,8 @@
 
     <script>
         // --- Firebase Config ---
-        // Use the config you provided
+        // ***** TAMIL *****
+        // இது உங்கள் Firebase project-ன் configuration. இதை மாற்ற வேண்டாம்.
         const firebaseConfig = {
           apiKey: "AIzaSyDgw604fe5jnNu4kTOv1cQ-3n7PL8gcN58", // <- REPLACE IF NEEDED
           authDomain: "krish-c5db8.firebaseapp.com", // <- REPLACE IF NEEDED
@@ -401,7 +445,9 @@
         const fbAuth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- DOM Elements (remains the same) ---
+        // --- DOM Elements ---
+        // ***** TAMIL *****
+        // இங்க HTML-ல் உள்ள elements-ஐ JavaScript-ல் பயன்படுத்துவதற்காக variables-ல் store செய்கிறோம்.
         const appContainer = document.getElementById('app-container');
         const chatArea = document.getElementById('chat-area');
         const userInput = document.getElementById('user-input');
@@ -418,6 +464,7 @@
         const decreaseTextBtn = document.getElementById('decrease-text-size');
         const increaseTextBtn = document.getElementById('increase-text-size');
         const themeToggleButton = document.getElementById('theme-toggle-button');
+        const modelSelector = document.getElementById('model-selector'); // New Element
         const mainContainer = document.querySelector('.main-container');
         const chatView = document.getElementById('main-content-chat');
         const testView = document.getElementById('mock-test-view');
@@ -461,9 +508,22 @@
         const recordingStatus = document.getElementById('recording-status');
         const recordingTimerSpan = recordingStatus.querySelector('span');
 
-        // --- Config & Constants (remains the same) ---
-        const MODEL_NAME = "gemini-1.5-flash-latest"; // Ensure this model supports File API
+        // --- Config & Constants ---
+        // ***** TAMIL *****
+        // இங்க application-க்கான சில முக்கியமான மாறிலிகளை (constants) அமைக்கிறோம்.
+        // Context Caching குறிப்பு: User கேட்ட experimental models context caching-க்கு support செய்யாது.
+        // அதனால், caching வேலை செய்வதற்காக versioned models-ஐ பயன்படுத்துகிறோம்.
+        const AVAILABLE_MODELS = [
+            // User requested models (Caching likely won't work reliably with these 'latest' tags)
+            { id: "gemini-1.5-flash-latest", name: "Gemini 1.5 Flash Latest", supportsCaching: false }, // Assume latest doesn't guarantee caching
+            { id: "gemini-1.5-pro-latest", name: "Gemini 1.5 Pro Latest", supportsCaching: false },
+             // Models known to support caching (Example)
+             { id: "gemini-1.5-flash-001", name: "Gemini 1.5 Flash 001 (Cache OK)", supportsCaching: true },
+             { id: "gemini-1.5-pro-001", name: "Gemini 1.5 Pro 001 (Cache OK)", supportsCaching: true },
+        ];
+        const DEFAULT_MODEL_ID = AVAILABLE_MODELS[0].id; // Default to Flash Latest
         const STORAGE_KEY_API_KEY = 'geminiApiKey_insecureDemo';
+        const STORAGE_KEY_MODEL_ID = 'geminiSelectedModelId'; // New key for model selection
         const NEW_CHAT_TITLE = "(New Chat)";
         const TEXT_SIZE_STEP = 0.1;
         const MIN_TEXT_SIZE_MULTIPLIER = 0.7;
@@ -485,13 +545,19 @@
         const RECORDING_TIME_LIMIT_SECONDS = 300; // 5 minutes
         const FILE_API_POLLING_INTERVAL_MS = 5000; // 5 seconds
         const FILE_API_PROCESSING_TIMEOUT_MS = 180000; // 3 minutes per file
+        const CACHE_TTL_SECONDS = 3600; // Cache Time To Live: 1 hour
 
-        // --- State Variables (remains the same) ---
+        // --- State Variables ---
+        // ***** TAMIL *****
+        // இங்க application-ன் நிலையை (state) track செய்ய variables-ஐ பயன்படுத்துகிறோம்.
         let API_KEY = '';
         let genAI = null; // GoogleGenerativeAI SDK instance
+        let HarmCategory = null; // To store HarmCategory enum
+        let HarmBlockThreshold = null; // To store HarmBlockThreshold enum
         let currentUser = null;
         let activeChatId = null;
         let currentChatHistory = []; // Stores history in {role, parts} format for SDK
+        let selectedModelId = DEFAULT_MODEL_ID; // New state for selected model
         let currentTextSizeMultiplier = 1.0;
         let currentTheme = 'light';
         let isTestMode = false;
@@ -519,11 +585,16 @@
         let recorderStream = null;
         // Flag for SDK loading state
         let isAISdkReady = false;
+        // Context Caching State
+        let currentMediaCacheName = null; // Stores the name of the active cache for the current chat's media
+        let cachedMediaUris = []; // Stores the URIs that are currently cached
 
         // --- Initialization ---
         initializeApp();
 
-        // --- Event Listeners (remains the same) ---
+        // --- Event Listeners ---
+        // ***** TAMIL *****
+        // இங்க user actions-க்கு (click, input etc.) ஏற்ப functions-ஐ trigger செய்ய listeners-ஐ அமைக்கிறோம்.
         sendButton.addEventListener('click', handleSendMessage);
         userInput.addEventListener('input', autoGrowTextarea);
         userInput.addEventListener('keydown', handleInputKeydown);
@@ -535,6 +606,7 @@
         decreaseTextBtn.addEventListener('click', () => adjustTextSize(-TEXT_SIZE_STEP));
         increaseTextBtn.addEventListener('click', () => adjustTextSize(TEXT_SIZE_STEP));
         themeToggleButton.addEventListener('click', toggleTheme);
+        modelSelector.addEventListener('change', handleModelSelectionChange); // New Listener
         prevQuestionBtn.addEventListener('click', () => handleTestNavigation('prev'));
         nextQuestionBtn.addEventListener('click', () => handleTestNavigation('next'));
         submitTestBtn.addEventListener('click', submitTest);
@@ -568,6 +640,8 @@
         window.addEventListener('google-ai-sdk-loaded', () => {
             console.log("Caught 'google-ai-sdk-loaded' event.");
             isAISdkReady = true;
+            HarmCategory = window.HarmCategory; // Get enums from window
+            HarmBlockThreshold = window.HarmBlockThreshold;
             // If API key is already loaded, try initializing genAI now
             if (API_KEY && !genAI) {
                  initializeGenAIInstance(); // This now includes the .files check
@@ -581,112 +655,118 @@
 
 
         // --- Initialization Functions ---
-        // initializeApp remains the same
+        // ***** TAMIL *****
+        // இந்த function app-ஐ ஆரம்பிக்கும்போது முதலில் run ஆகும்.
         async function initializeApp() {
-            console.log("App Initializing (v9.11)...");
-            // Initial UI state (most things disabled until login/API key/SDK ready)
+            console.log("App Initializing (v10.0)...");
             setLoadingState(true, "Initializing...");
-            chatArea.innerHTML = ''; // Clear chat area initially
-            renderGreetingOrLoginPrompt(); // Show initial prompt
-
-            loadUserSettingsFromLocalStorage(); // Load theme/text size early
-            await loadGeminiApiKey(); // Tries to load key and initialize SDK instance if possible
-            fbAuth.onAuthStateChanged(handleAuthStateChange); // Firebase listener will handle further setup
+            chatArea.innerHTML = '';
+            populateModelSelector(); // Populate dropdown first
+            loadUserSettingsFromLocalStorage(); // Load theme/text size/model early
+            await loadGeminiApiKey();
+            fbAuth.onAuthStateChanged(handleAuthStateChange);
             switchView('chat');
             userInput.focus();
             console.log("App Initialization Complete.");
         }
 
-        // loadGeminiApiKey remains the same
+        // ***** TAMIL *****
+        // இங்க model selector dropdown-ல் options-ஐ சேர்க்கிறோம்.
+        function populateModelSelector() {
+            modelSelector.innerHTML = ''; // Clear existing options
+            AVAILABLE_MODELS.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.name;
+                // Set selected attribute if it matches the current state
+                if (model.id === selectedModelId) {
+                     option.selected = true;
+                }
+                modelSelector.appendChild(option);
+            });
+        }
+
+        // loadGeminiApiKey remains mostly the same, ensures SDK init is called
         async function loadGeminiApiKey() {
              console.log("Attempting to load Gemini API Key...");
              API_KEY = localStorage.getItem(STORAGE_KEY_API_KEY);
              if(!API_KEY){
                  console.warn("!!! SECURITY WARNING !!! Using insecure API key storage. Use Cloud Functions in production.");
-                 // --- START: Replace with your actual API Key if using insecure method ---
-                 // API_KEY = "YOUR_GEMINI_API_KEY"; // <<<<<<<<<<<<< TEMPORARY INSECURE KEY
-                 // --- END: Replace ---
+                 // API_KEY = "YOUR_API_KEY"; // FOR LOCAL TESTING ONLY - REMOVE BEFORE DEPLOYING
                  if(API_KEY){
                      localStorage.setItem(STORAGE_KEY_API_KEY, API_KEY);
                      console.log("Using potentially hardcoded insecure API Key.");
                  } else {
                      console.error("Gemini API Key is required. Please configure it in the script or localStorage.");
                      displayMessage("Error: Gemini API Key is not configured. AI features are disabled.", 'ai', ['error-message']);
-                     API_KEY = ''; // Ensure API_KEY is empty
-                     genAI = null; // Ensure genAI is null
-                     isAISdkReady = false; // SDK cannot be used without key
-                     updateButtonStates(); // Update UI to reflect missing key
-                     return false; // Indicate failure
+                     API_KEY = ''; genAI = null; isAISdkReady = false;
+                     updateButtonStates(); return false;
                  }
              } else {
                  console.log("Loaded insecure API Key from localStorage.");
              }
 
-             // Attempt to initialize genAI if SDK is ready and we have a key
              if (API_KEY && isAISdkReady && !genAI) {
                 return initializeGenAIInstance();
              } else if (API_KEY && !isAISdkReady) {
                  console.log("API Key loaded, but AI SDK not ready yet. Waiting for 'google-ai-sdk-loaded' event.");
-                 return true; // Key is present, but SDK init deferred
+                 return true;
              } else {
-                 // Either no key or genAI already initialized
-                 return !!API_KEY; // Return true if key exists, false otherwise
+                 return !!API_KEY;
              }
         }
 
-        // UPDATED initializeGenAIInstance with more logging
+        // initializeGenAIInstance: Checks for File API and Harm types
         function initializeGenAIInstance() {
-            if (!API_KEY || !isAISdkReady) { // Check only prerequisites
+            if (!API_KEY || !isAISdkReady) {
                 console.warn("Skipping genAI initialization. Conditions not met:", { API_KEY: !!API_KEY, isAISdkReady });
                 return false;
             }
-            // Reset genAI if it exists, to ensure we re-evaluate .files property
-            if (genAI) {
-                 console.log("Existing genAI instance found, will re-initialize.");
-                 genAI = null;
-            }
+            // Check if HarmCategory/HarmBlockThreshold are loaded
+             if (!HarmCategory || !HarmBlockThreshold) {
+                 console.error("HarmCategory or HarmBlockThreshold enums not loaded from SDK. Cannot initialize safety settings correctly.");
+                 // Proceed without safety settings? Or fail? Let's fail for now.
+                  displayError("Error: Failed to load required safety components from AI SDK.");
+                  genAI = null; isAISdkReady = false; // Indicate SDK isn't fully ready
+                  updateButtonStates(); return false;
+             }
+
+            if (genAI) { genAI = null; console.log("Re-initializing genAI instance."); }
 
             console.log("Initializing GoogleGenerativeAI SDK instance...");
             try {
                  if (window.GoogleGenerativeAI) {
-                     console.log("Attempting: new window.GoogleGenerativeAI(API_KEY)");
                      genAI = new window.GoogleGenerativeAI(API_KEY);
-                     console.log("genAI object created:", genAI != null); // Log if object exists
+                     console.log("genAI object created:", genAI != null);
 
-                     // *** Crucial check: Verify genAI.files exists ***
                      if (genAI && genAI.files) {
                         console.log("SUCCESS: GoogleGenerativeAI SDK instance created successfully with File API support (`genAI.files` FOUND).");
                         return true;
                      } else {
-                        console.error("ERROR: GoogleGenerativeAI SDK instance created, but `genAI.files` is MISSING. File uploads will fail. Check model compatibility, SDK version, or API key region restrictions.");
-                        displayError("Error: AI SDK initialized but File API is unavailable. PDF/Large File upload disabled.");
-                        // Basic AI might still work, return true but log the error.
-                        return true;
+                        console.warn("WARNING: GoogleGenerativeAI SDK instance created, but `genAI.files` is MISSING. File uploads might fail or use older methods. Caching will likely fail.");
+                        // Don't fail completely, basic chat might still work
+                         return true;
                      }
                  } else {
-                     console.error("ERROR: GoogleGenerativeAI SDK constructor not found on window object, despite 'isAISdkReady' flag.");
+                     console.error("ERROR: GoogleGenerativeAI SDK constructor not found on window object.");
                      displayError("Error: AI SDK loaded but failed to initialize.");
-                     genAI = null; // Ensure genAI is null
-                     isAISdkReady = false; // Reset flag as SDK seems broken
-                     return false;
+                     genAI = null; isAISdkReady = false; return false;
                  }
             } catch (e) {
                  console.error("CRITICAL ERROR initializing GoogleGenerativeAI:", e);
                  displayError(`Critical Error initializing AI SDK: ${e.message}. Check API Key & Console.`);
-                 API_KEY = ''; // Clear potentially invalid key
-                 localStorage.removeItem(STORAGE_KEY_API_KEY); // Remove bad key
-                 genAI = null; // Ensure genAI is null
-                 isAISdkReady = false; // Reset flag
-                 return false;
+                 API_KEY = ''; localStorage.removeItem(STORAGE_KEY_API_KEY);
+                 genAI = null; isAISdkReady = false; return false;
             } finally {
-                 // Update button states regardless of success/failure
                  console.log("Updating button states finally after genAI initialization attempt.");
-                 updateButtonStates(); // Ensure this is called
+                 updateButtonStates();
             }
         }
 
 
-        // --- Authentication Functions (remains the same) ---
+        // --- Authentication Functions ---
+        // ***** TAMIL *****
+        // இந்த functions Google login/logout-ஐ கையாளுகின்றன.
         async function signInWithGoogle() {
              const provider = new firebase.auth.GoogleAuthProvider();
              try { setLoadingState(true, "Logging in..."); await fbAuth.signInWithPopup(provider); }
@@ -697,7 +777,7 @@
              catch (error) { console.error("Sign Out Error:", error); displayError(`Logout failed: ${error.message || 'Unknown error'}`); setLoadingState(false); }
          }
 
-        // handleAuthStateChange remains the same
+        // handleAuthStateChange: Resets cache state on logout/login
         function handleAuthStateChange(user) {
             console.log("Auth state changed. User:", user ? user.uid : 'None');
             setLoadingState(true, user ? "Loading user data..." : "Logging out...");
@@ -706,13 +786,14 @@
             if (activeChatListener) { activeChatListener(); activeChatListener = null; console.log("Cleared active chat listener."); }
             if (chatListListener) { chatListListener(); chatListListener = null; console.log("Cleared chat list listener.");}
             if (testListListener) { testListListener(); testListListener = null; console.log("Cleared test list listener."); }
-            stopRecording(true); // Force stop recording
+            stopRecording(true);
             chatArea.innerHTML = '';
             chatListContainer.innerHTML = `<div style="padding:10px;color:var(--text-secondary);font-size:0.9em;">${user ? 'Loading chats...' : 'Please log in...'}</div>`;
             allTestsListContainer.innerHTML = `<div style="padding:10px;color:var(--text-secondary);font-size:0.9em;">${user ? 'Loading tests...' : 'Login to see tests.'}</div>`;
             allTestsSection.classList.remove('visible');
             testSearchInput.value = '';
             activeChatId = null; currentChatHistory = []; isDeletingChat = false; allSavedTestsData = [];
+            currentMediaCacheName = null; cachedMediaUris = []; // Reset cache state on auth change
             removeAllSelectedMedia();
 
             if (user) {
@@ -720,16 +801,16 @@
                 loginBtn.style.display = 'none'; logoutBtn.style.display = 'inline-block';
                 accountEmail.textContent = currentUser.email || currentUser.displayName || `User`;
                 accountAvatar.textContent = (currentUser.displayName || currentUser.email || 'U')[0].toUpperCase();
-                accountPlan.textContent = "Firebase User"; // Placeholder
+                accountPlan.textContent = "Firebase User";
 
                 inputContainer.style.display = 'block';
                 suggestionsContainer.style.display = 'flex';
                 allTestsSection.classList.add('visible');
 
-                loadUserSettings(currentUser.uid); // Includes applying theme/text size
+                loadUserSettings(currentUser.uid); // Includes applying theme/text size/model
                 loadAndListenForChats(currentUser.uid);
                 loadAndListenForTests(currentUser.uid);
-                renderGreetingOrLoginPrompt(); // Show greeting
+                renderGreetingOrLoginPrompt();
 
             } else {
                 currentUser = null; console.log("User logged out");
@@ -740,16 +821,16 @@
                 suggestionsContainer.style.display = 'none';
                 allTestsSection.classList.remove('visible');
 
-                renderGreetingOrLoginPrompt(); // Show login prompt
-                // Reset settings to default visually (but don't save over potential logged-in user's settings)
+                renderGreetingOrLoginPrompt();
+                // Reset settings visually, also reset selected model to default
                 currentTheme = 'light'; applyTheme();
                 currentTextSizeMultiplier = 1.0; applyTextSize();
+                selectedModelId = DEFAULT_MODEL_ID; applyModelSelection(); // Reset model selector UI
             }
 
-            // Update button states based on the new auth status, API key, and SDK readiness
             console.log("Updating button states after auth change.");
             updateButtonStates();
-            setLoadingState(false); // Done with auth change processing
+            setLoadingState(false);
         }
 
         // renderGreetingOrLoginPrompt remains the same
@@ -764,7 +845,7 @@
                      displayMessage("Select a chat from the list or start a new one.", 'ai');
                  } else if (!API_KEY || !genAI) {
                      displayMessage("API Key missing or AI SDK failed to initialize. AI features are disabled. Please check API Key or reload.", 'ai', ['error-message']);
-                 } else if (genAI && !genAI.files) { // Check specifically for file API AFTER checking genAI exists
+                 } else if (genAI && !genAI.files) {
                      displayMessage("File API is unavailable with the current AI configuration. PDF/Large File uploads are disabled.", 'ai', ['error-message']);
                  }
              }
@@ -776,14 +857,21 @@
              scrollToBottom(true);
          }
 
-        // --- Settings (Theme/Text Size) (remains the same) ---
+        // --- Settings (Theme/Text Size/Model) ---
+        // ***** TAMIL *****
+        // இந்த functions theme, text size, மற்றும் model selection-ஐ load/save செய்கின்றன.
         function loadUserSettingsFromLocalStorage() {
              const savedTheme = localStorage.getItem('chatTheme');
              const savedTextSize = localStorage.getItem('chatTextSizeMultiplier');
+             const savedModelId = localStorage.getItem(STORAGE_KEY_MODEL_ID); // Load saved model
              currentTheme = savedTheme || 'light';
              currentTextSizeMultiplier = savedTextSize ? parseFloat(savedTextSize) : 1.0;
+             // Validate saved model ID against available models
+             selectedModelId = AVAILABLE_MODELS.some(m => m.id === savedModelId) ? savedModelId : DEFAULT_MODEL_ID;
+
              applyTheme();
              applyTextSize();
+             applyModelSelection(); // Apply model selection to UI
         }
         async function loadUserSettings(userId) {
             const userDocRef = db.collection('users').doc(userId);
@@ -791,31 +879,37 @@
                 const docSnap = await userDocRef.get();
                 if (docSnap.exists) {
                     const settings = docSnap.data();
-                    currentTheme = settings.theme || currentTheme; // Keep local if Firestore empty
+                    currentTheme = settings.theme || currentTheme;
                     currentTextSizeMultiplier = settings.textSizeMultiplier || currentTextSizeMultiplier;
+                    // Load and validate model from Firestore
+                    const firestoreModelId = settings.selectedModelId;
+                    selectedModelId = AVAILABLE_MODELS.some(m => m.id === firestoreModelId) ? firestoreModelId : selectedModelId; // Keep local if FS invalid or empty
                     console.log("Loaded user settings from Firestore:", settings);
                 } else {
                     console.log("No user settings found in Firestore, using local/defaults.");
-                    // Optionally save current local settings to Firestore for new users
-                    // await saveUserSettings();
                 }
             } catch (error) {
                 console.error("Error loading user settings from Firestore:", error);
-                // Keep using local storage settings on error
             } finally {
                 applyTheme();
                 applyTextSize();
+                applyModelSelection(); // Apply loaded model selection to UI
             }
         }
         async function saveUserSettings() {
-            // Save to Local Storage immediately for persistence
+            // Save to Local Storage immediately
             localStorage.setItem('chatTheme', currentTheme);
             localStorage.setItem('chatTextSizeMultiplier', currentTextSizeMultiplier.toString());
+            localStorage.setItem(STORAGE_KEY_MODEL_ID, selectedModelId); // Save selected model
 
             // Save to Firestore if logged in
             if (!currentUser) return;
             const userDocRef = db.collection('users').doc(currentUser.uid);
-            const settings = { theme: currentTheme, textSizeMultiplier: currentTextSizeMultiplier };
+            const settings = {
+                theme: currentTheme,
+                textSizeMultiplier: currentTextSizeMultiplier,
+                selectedModelId: selectedModelId // Save model to Firestore
+            };
             try {
                 await userDocRef.set(settings, { merge: true });
                 console.log("User settings saved to Firestore:", settings);
@@ -824,13 +918,49 @@
             }
         }
         function applyTheme() { if(currentTheme==='dark'){ document.body.classList.add('dark-theme'); themeToggleButton.textContent=LIGHT_THEME_ICON; themeToggleButton.title="Switch to Light Theme"; } else { document.body.classList.remove('dark-theme'); themeToggleButton.textContent=DARK_THEME_ICON; themeToggleButton.title="Switch to Dark Theme"; } }
-        function toggleTheme() { currentTheme = (currentTheme === 'light') ? 'dark' : 'light'; applyTheme(); saveUserSettings(); } // Save automatically
-        function applyTextSize() { const newSize = `calc(var(--message-font-size-base) * ${currentTextSizeMultiplier})`; document.documentElement.style.setProperty('--message-font-size', newSize); updateButtonStates(); /* Re-check text size button limits */ }
-        function adjustTextSize(change) { let newMultiplier = Math.max(MIN_TEXT_SIZE_MULTIPLIER, Math.min(MAX_TEXT_SIZE_MULTIPLIER, currentTextSizeMultiplier + change)); newMultiplier = Math.round(newMultiplier * 10) / 10; if (newMultiplier !== currentTextSizeMultiplier) { currentTextSizeMultiplier = newMultiplier; applyTextSize(); saveUserSettings(); } } // Save automatically
+        function toggleTheme() { currentTheme = (currentTheme === 'light') ? 'dark' : 'light'; applyTheme(); saveUserSettings(); }
+        function applyTextSize() { const newSize = `calc(var(--message-font-size-base) * ${currentTextSizeMultiplier})`; document.documentElement.style.setProperty('--message-font-size', newSize); updateButtonStates(); }
+        function adjustTextSize(change) { let newMultiplier = Math.max(MIN_TEXT_SIZE_MULTIPLIER, Math.min(MAX_TEXT_SIZE_MULTIPLIER, currentTextSizeMultiplier + change)); newMultiplier = Math.round(newMultiplier * 10) / 10; if (newMultiplier !== currentTextSizeMultiplier) { currentTextSizeMultiplier = newMultiplier; applyTextSize(); saveUserSettings(); } }
 
+        // ***** TAMIL *****
+        // இங்க model selector-ல் user தேர்வு செய்த model-ஐ UI-ல் காட்டுகிறோம்.
+        function applyModelSelection() {
+            if (modelSelector) {
+                 modelSelector.value = selectedModelId;
+                 console.log(`Applied model selection: ${selectedModelId}`);
+             }
+             // Reset cache state if the new model doesn't support it
+             const modelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
+             if (currentMediaCacheName && (!modelInfo || !modelInfo.supportsCaching)) {
+                 console.warn(`Model ${selectedModelId} might not support caching. Clearing active cache state.`);
+                 // Optionally delete the cache from the backend here if needed
+                 // try { await genAI.caching.deleteCachedContent(currentMediaCacheName); } catch(e) {}
+                 currentMediaCacheName = null;
+                 cachedMediaUris = [];
+             }
+        }
+        // ***** TAMIL *****
+        // இங்க user model-ஐ மாற்றும்போது அதை state-ல் update செய்து save செய்கிறோம்.
+        function handleModelSelectionChange(event) {
+            const newModelId = event.target.value;
+            if (newModelId !== selectedModelId) {
+                console.log(`Model selection changed to: ${newModelId}`);
+                selectedModelId = newModelId;
+                applyModelSelection(); // Update UI and potentially clear cache state
+                saveUserSettings(); // Save the new selection
+                 // Provide feedback if caching might be affected
+                const modelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
+                if (modelInfo && !modelInfo.supportsCaching) {
+                     console.warn(`Selected model ${selectedModelId} might not support context caching.`);
+                } else if (modelInfo && modelInfo.supportsCaching) {
+                     console.log(`Selected model ${selectedModelId} should support context caching.`);
+                }
+            }
+        }
 
-        // --- Chat Storage & Loading (Firestore) (remains the same) ---
-         function loadAndListenForChats(userId) {
+        // --- Chat Storage & Loading (Firestore) ---
+        // loadAndListenForChats remains the same
+        function loadAndListenForChats(userId) {
             if (chatListListener) { chatListListener(); chatListListener = null; }
             const chatsRef = db.collection('chats').where('userId', '==', userId).orderBy('lastUpdated', 'desc');
             console.log(`Listening for chats for user ${userId}`);
@@ -839,8 +969,7 @@
                 const chats = []; snapshot.forEach(doc => { chats.push({ id: doc.id, ...doc.data() }); });
                 console.log("Received chat list snapshot:", chats.length, "chats");
                 renderSidebarChatList(chats);
-                let chatToLoad = activeChatId; // Keep current if possible
-                // If current activeChatId is no longer in the list, or no chat was active, select the newest one
+                let chatToLoad = activeChatId;
                 if (!chatToLoad || !chats.some(c => c.id === chatToLoad)) {
                      chatToLoad = chats.length > 0 ? chats[0].id : null;
                      if (chatToLoad) console.log("Active chat gone or none selected, switching to newest:", chatToLoad);
@@ -848,39 +977,38 @@
                 }
 
                 if (chatToLoad && chatToLoad !== activeChatId) {
-                     switchChat(chatToLoad); // This will handle loading state and button updates
+                     switchChat(chatToLoad);
                 } else if (chatToLoad && chatToLoad === activeChatId) {
-                     // Still the same active chat, just ensure UI is correct
                      highlightActiveChatInSidebar();
                      console.log("Chat list updated, keeping same active chat. Updating button states.");
-                     updateButtonStates(); // Ensure buttons are enabled/disabled correctly
-                     setLoadingState(false); // Ensure loading indicator is off
-                } else {
-                     // No chats exist for the user OR initial load with no selection
-                     activeChatId = null;
-                     currentChatHistory = []; // Clear history
-                     if (activeChatListener) { activeChatListener(); activeChatListener = null; }
-                     renderGreetingOrLoginPrompt(); // Show appropriate prompt
-                     console.log("No chat selected. Updating button states.");
-                     updateButtonStates(); // Disable chat-specific buttons
+                     updateButtonStates();
                      setLoadingState(false);
+                } else {
+                     activeChatId = null; currentChatHistory = [];
+                     if (activeChatListener) { activeChatListener(); activeChatListener = null; }
+                     renderGreetingOrLoginPrompt();
+                     console.log("No chat selected. Updating button states.");
+                     updateButtonStates(); setLoadingState(false);
+                     currentMediaCacheName = null; cachedMediaUris = []; // Clear cache state if no chat selected
                 }
             }, error => { console.error("Error listening for chats:", error); displayError("Could not load chat list."); chatListContainer.innerHTML = '<div style="padding:10px;color:var(--error-text);">Error loading chats.</div>'; setLoadingState(false); });
         }
+        // renderSidebarChatList remains the same
         function renderSidebarChatList(chats) {
             chatListContainer.innerHTML = ''; if (!currentUser) { chatListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">Please log in.</div>'; return; }
             if (chats.length === 0) { chatListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">No chats yet. Start one!</div>'; }
             else { chats.forEach(chatData => { const itemElement = document.createElement('div'); itemElement.classList.add('chat-list-item'); let title = chatData.title; if (typeof title !== 'string' || !title.trim()) { title = '(Untitled Chat)'; } title = title.trim(); itemElement.textContent = title; itemElement.dataset.id = chatData.id; itemElement.title = title; const deleteBtn = document.createElement('button'); deleteBtn.classList.add('delete-chat-button'); deleteBtn.innerHTML = DELETE_ICON; deleteBtn.title = "Delete chat"; deleteBtn.dataset.id = chatData.id; itemElement.appendChild(deleteBtn); chatListContainer.appendChild(itemElement); }); }
             highlightActiveChatInSidebar();
         }
+        // highlightActiveChatInSidebar remains the same
         function highlightActiveChatInSidebar() { const items = chatListContainer.querySelectorAll('.chat-list-item'); items.forEach(item => { item.classList.toggle('active', item.dataset.id === activeChatId); }); }
 
 
-        // --- Media Handling Functions (remains the same) ---
-        // handleImageFileSelect, handlePdfFileSelect, handleAudioFileSelect,
-        // displayMediaPreview, renderImagePreviewItem, renderPdfPreviewItem,
-        // removeSelectedMediaItem, removeAllSelectedMedia
-        function handleImageFileSelect(event) {
+        // --- Media Handling Functions ---
+        // ***** TAMIL *****
+        // இந்த functions image, pdf, audio upload செய்வதை கையாளுகின்றன.
+        // handleImageFileSelect, handlePdfFileSelect, handleAudioFileSelect remain the same
+         function handleImageFileSelect(event) {
             console.log("handleImageFileSelect triggered");
             if (selectedMediaItems.length > 0 && selectedMediaItems.some(item => item.type === 'pdf' || item.type === 'audio')) {
                 alert("Cannot select images when PDF(s) or audio are already selected. Please remove other media first.");
@@ -911,11 +1039,9 @@
                 alert("Cannot select PDF(s) when image(s) or audio are already selected. Please remove other media first.");
                 pdfUploadInput.value = ''; return;
             }
-             // Check if File API is available before proceeding
-            if (!genAI || !genAI.files) {
+             if (!genAI || !genAI.files) {
                  alert("PDF upload is currently disabled because the File API is unavailable.");
-                 pdfUploadInput.value = '';
-                 return;
+                 pdfUploadInput.value = ''; return;
             }
             const files = event.target.files;
             if (!files || files.length === 0) { pdfUploadInput.value = ''; return; }
@@ -925,7 +1051,7 @@
                 if (currentPdfCount >= MAX_PDF_COUNT) { alert(`Maximum ${MAX_PDF_COUNT} PDF files allowed.`); break; }
                 if (file.type !== 'application/pdf') { console.warn(`Skipping non-PDF file: ${file.name} (${file.type})`); continue; }
                 const fileSizeMB = file.size / 1024 / 1024;
-                if (fileSizeMB > MAX_PDF_SIZE_MB) { alert(`PDF "${file.name}" (${fileSizeMB.toFixed(1)}MB) exceeds ${MAX_PDF_SIZE_MB}MB limit (for preview). It might still work with the API.`); console.warn(`Large PDF selected: ${fileSizeMB.toFixed(1)}MB`); } // Warn but allow for File API
+                if (fileSizeMB > MAX_PDF_SIZE_MB) { alert(`PDF "${file.name}" (${fileSizeMB.toFixed(1)}MB) exceeds ${MAX_PDF_SIZE_MB}MB limit (for preview). It might still work with the API.`); console.warn(`Large PDF selected: ${fileSizeMB.toFixed(1)}MB`); }
                  const mediaId = nextMediaId++;
                  selectedMediaItems.push({ id: mediaId, type: 'pdf', file: file, name: file.name, mimeType: file.type });
                  currentPdfCount++; addedCount++;
@@ -956,6 +1082,7 @@
             audioUploadInput.value = '';
             reader.readAsDataURL(file);
         }
+        // displayMediaPreview, renderImagePreviewItem, renderPdfPreviewItem remain the same
         function displayMediaPreview() {
             console.log("displayMediaPreview. Items:", selectedMediaItems.length);
             imagePreviewsList.innerHTML = ''; // Clear both image and PDF previews here
@@ -965,7 +1092,6 @@
             imagePreviewsList.style.display = 'none'; // Hide initially
             imagePreviewsList.style.flexDirection = ''; // Reset style
             imagePreviewsList.style.alignItems = ''; // Reset style
-
 
             if (selectedMediaItems.length === 0) {
                 mediaPreviewContainer.style.display = 'none';
@@ -1040,10 +1166,19 @@
                  itemContainer.appendChild(icon); itemContainer.appendChild(nameSpan); itemContainer.appendChild(removeBtn); imagePreviewsList.appendChild(itemContainer);
              } catch (e) { console.error("Error creating PDF preview element:", e); }
         }
+        // removeSelectedMediaItem, removeAllSelectedMedia remain the same
         function removeSelectedMediaItem(mediaId) {
              console.log(`Removing media item ID: ${mediaId}`);
              selectedMediaItems = selectedMediaItems.filter(item => item.id !== mediaId);
              displayMediaPreview();
+             // If the removed media was the cached media, clear the cache state
+             if (currentMediaCacheName && cachedMediaUris.length > 0 && !selectedMediaItems.some(item => item.type === 'pdf')) {
+                  console.log("Removed last cached media type (PDF). Clearing cache state.");
+                  // Optionally delete the cache from backend here
+                  // try { await genAI.caching.deleteCachedContent(currentMediaCacheName); } catch(e){}
+                  currentMediaCacheName = null;
+                  cachedMediaUris = [];
+             }
         }
         function removeAllSelectedMedia() {
             console.log("removeAllSelectedMedia called.");
@@ -1052,30 +1187,37 @@
             imagePreviewsList.innerHTML = ''; previewAudio.removeAttribute('src');
             previewAudioContainer.style.display = 'none'; mediaPreviewContainer.style.display = 'none';
             mediaPreviewInfo.textContent = ''; imagePreviewsList.style.flexDirection = ''; imagePreviewsList.style.alignItems = '';
-            // Reset file input values
-            imageUploadInput.value = '';
-            pdfUploadInput.value = '';
-            audioUploadInput.value = '';
-            console.log("All selected media removed and file inputs reset.");
+            imageUploadInput.value = ''; pdfUploadInput.value = ''; audioUploadInput.value = '';
+             // Clear cache state if media is removed
+             if (currentMediaCacheName) {
+                  console.log("All media removed. Clearing active media cache state.");
+                   // Optionally delete the cache from backend here
+                   // try { await genAI.caching.deleteCachedContent(currentMediaCacheName); } catch(e){}
+                  currentMediaCacheName = null;
+                  cachedMediaUris = [];
+             }
+            console.log("All selected media removed, inputs reset, cache state cleared.");
         }
 
 
-        // --- Audio Recording Functions (remains the same) ---
-        // toggleRecording, startRecording, stopRecording, resetRecordingUI
+        // --- Audio Recording Functions ---
+        // ***** TAMIL *****
+        // இந்த functions audio record செய்வதை கையாளுகின்றன.
+        // toggleRecording, startRecording, stopRecording, resetRecordingUI remain the same
         async function toggleRecording() {
             if (isRecording) { stopRecording(); }
             else {
                 if (selectedMediaItems.some(item => item.type === 'image' || item.type === 'pdf')) { alert("Cannot record audio when images or PDFs are selected. Remove them first."); return; }
-                if (sendButton.disabled && !isRecording) { // Check if app is busy
+                if (sendButton.disabled && !isRecording) {
                      const appReady = currentUser && API_KEY && genAI && activeChatId;
-                     if (!appReady || userInput.placeholder.includes("Generating") || userInput.placeholder.includes("Sending") || userInput.placeholder.includes("Uploading")) {
+                     if (!appReady || userInput.placeholder.includes("Generating") || userInput.placeholder.includes("Sending") || userInput.placeholder.includes("Uploading") || userInput.placeholder.includes("Recording")) {
                           alert("Please wait for the current action to complete or ensure you are logged in with a valid API key and active chat."); return;
                      }
                 }
                 await startRecording();
             }
         }
-        async function startRecording() { /* ... (no changes needed in startRecording logic itself) ... */
+        async function startRecording() {
             console.log("Attempting to start recording...");
             if (selectedMediaItems.length > 0) { alert("Cannot record audio when other media is selected. Please remove it first."); return; }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert("Audio recording is not supported by your browser."); console.error("getUserMedia not supported."); return; }
@@ -1083,7 +1225,7 @@
                 console.log("Requesting microphone access...");
                 if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); recorderStream = null; console.warn("Stopped lingering recorder stream."); }
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                recorderStream = stream; console.log("Microphone access granted."); recordAudioButton.disabled = true; // Temporarily disable while initializing
+                recorderStream = stream; console.log("Microphone access granted."); recordAudioButton.disabled = true;
                 let options = {};
                 const preferredMimeTypes = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/aac', 'audio/mp4'];
                 for (const mimeType of preferredMimeTypes) { if (MediaRecorder.isTypeSupported(mimeType)) { options.mimeType = mimeType; break; } }
@@ -1098,14 +1240,14 @@
                     isRecording = false; recordingStatus.classList.remove('visible');
                     recordAudioButton.classList.remove('recording'); recordAudioButton.textContent = '🎙️'; recordAudioButton.title = 'Record audio';
                     if (recordingTimerInterval) { clearInterval(recordingTimerInterval); recordingTimerInterval = null; }
-                    if (audioChunks.length === 0) { console.warn("No audio data recorded."); updateButtonStates(); return; }
+                    if (audioChunks.length === 0) { console.warn("No audio data recorded."); setLoadingState(false); updateButtonStates(); return; } // Added setLoadingState(false) here
                     const audioBlob = new Blob(audioChunks, { type: actualMimeType });
                     audioChunks = []; const fileSizeMB = audioBlob.size / 1024 / 1024;
                     console.log(`Recording complete. Blob size: ${fileSizeMB.toFixed(3)} MB, Type: ${actualMimeType}`);
-                    if (audioBlob.size === 0) { console.warn("Created Blob has size 0."); alert("Recording failed: No audio data captured."); updateButtonStates(); return; }
-                    if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Recorded audio too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); updateButtonStates(); return; }
+                    if (audioBlob.size === 0) { console.warn("Created Blob has size 0."); alert("Recording failed: No audio data captured."); setLoadingState(false); updateButtonStates(); return; } // Added setLoadingState(false) here
+                    if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Recorded audio too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); setLoadingState(false); updateButtonStates(); return; } // Added setLoadingState(false) here
                     const reader = new FileReader();
-                    setLoadingState(true, "Processing audio..."); // Show processing state HERE
+                    setLoadingState(true, "Processing audio...");
                     reader.onloadend = () => {
                          if (reader.result && typeof reader.result === 'string' && reader.result.startsWith('data:')) {
                             let finalMimeType = actualMimeType.split(';')[0]; const mediaId = nextMediaId++;
@@ -1118,69 +1260,83 @@
                     reader.onerror = (error) => { console.error("Error converting recorded audio blob:", error); alert("Error processing recorded audio."); setLoadingState(false); updateButtonStates(); };
                     reader.readAsDataURL(audioBlob);
                 };
-                mediaRecorder.onerror = (event) => { console.error("MediaRecorder error:", event.error || event); alert(`Recording error: ${event.error?.name || 'Unknown'}`); stopRecording(true); };
+                mediaRecorder.onerror = (event) => { console.error("MediaRecorder error:", event.error || event); alert(`Recording error: ${event.error?.name || 'Unknown'}`); stopRecording(true); }; // stopRecording will handle setLoadingState(false)
                 mediaRecorder.start(); isRecording = true; recordingStartTime = Date.now();
                 recordAudioButton.classList.add('recording'); recordAudioButton.textContent = '🛑'; recordAudioButton.title = 'Stop recording';
                 recordingStatus.classList.add('visible'); recordingTimerSpan.textContent = '0s';
-                setLoadingState(true, "Recording..."); // Disables other inputs
+                setLoadingState(true, "Recording..."); // Set loading state for recording
                 recordingTimerInterval = setInterval(() => {
                     const elapsedSeconds = Math.floor((Date.now() - recordingStartTime) / 1000);
                     recordingTimerSpan.textContent = `${elapsedSeconds}s`;
                     if (elapsedSeconds >= RECORDING_TIME_LIMIT_SECONDS) { console.log("Recording time limit."); stopRecording(); alert(`Stopped after ${RECORDING_TIME_LIMIT_SECONDS} seconds.`); }
                 }, 1000);
-                console.log("Recording started..."); recordAudioButton.disabled = false; // Ensure stop button is clickable
+                console.log("Recording started..."); recordAudioButton.disabled = false;
             } catch (error) {
                 console.error("Error starting recording:", error);
                 if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') { alert("Microphone access denied. Please allow access in browser settings."); }
                 else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') { alert("No microphone found."); }
                 else { alert(`Could not start recording: ${error.name}`); }
-                stopRecording(true); // Ensure cleanup on error
+                stopRecording(true); // Ensure cleanup and setLoadingState(false) on error
             }
         }
-        function stopRecording(force = false) { /* ... (no changes needed in stopRecording logic itself) ... */
+        function stopRecording(force = false) {
             console.log("stopRecording called. isRecording:", isRecording, "force:", force);
             if (mediaRecorder && (isRecording || force)) {
                 try {
                     if (mediaRecorder.state === "recording" || mediaRecorder.state === "paused") {
-                         mediaRecorder.stop();
+                         mediaRecorder.stop(); // onstop handler will manage UI reset and state
                          console.log("MediaRecorder.stop() called.");
-                         // Note: The onstop handler will perform most cleanup and state changes.
+                         // Let onstop handle setLoadingState(false) unless forcing
+                         if (force && !isRecording) { // If forcing stop on an already stopped recorder
+                              resetRecordingUI();
+                              setLoadingState(false); // Explicitly turn off loading if forced stop on inactive
+                         }
                     } else if (force) {
                          console.log("Recorder not active, forcing cleanup.");
-                         resetRecordingUI(); // Directly reset UI if forcing stop on inactive recorder
+                         resetRecordingUI();
+                         setLoadingState(false);
                     }
                 }
                 catch (error) {
                     console.error("Error calling mediaRecorder.stop():", error);
-                    resetRecordingUI(); // Reset UI on error
-                    setLoadingState(false); // Ensure loading state is off
+                    resetRecordingUI();
+                    setLoadingState(false); // Ensure loading state is off on error
                 }
             } else if (force) {
-                resetRecordingUI(); // Reset UI if forced and no recorder
-                 setLoadingState(false);
+                 console.log("No recorder or not recording, forced stop.");
+                resetRecordingUI();
+                setLoadingState(false);
             } else {
                 console.log("Not recording or recorder not available.");
+                 // If stop was called naturally but wasn't recording, ensure loading is off
+                 if (!isRecording) {
+                      setLoadingState(false);
+                      updateButtonStates();
+                 }
             }
         }
-        function resetRecordingUI() { /* ... (no changes needed in resetRecordingUI logic itself) ... */
+        function resetRecordingUI() {
             console.log("Resetting recording UI/state."); isRecording = false;
             if (recordAudioButton) { recordAudioButton.classList.remove('recording'); recordAudioButton.textContent = '🎙️'; recordAudioButton.title = 'Record audio'; }
             if (recordingStatus) recordingStatus.classList.remove('visible');
             if (recordingTimerInterval) { clearInterval(recordingTimerInterval); recordingTimerInterval = null; }
             if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); console.log("Mic stream stopped (reset UI)."); recorderStream = null; }
             mediaRecorder = null; audioChunks = [];
-            // Don't call setLoadingState(false) here, let the caller handle overall state if needed
+            // Don't call setLoadingState(false) here directly
+            // Call updateButtonStates to reflect non-recording state
             console.log("Updating button states after resetting recording UI.");
-            updateButtonStates(); // Make sure buttons reflect non-recording state
+            updateButtonStates();
         }
 
 
-        // --- Chat Creation, Deletion, Switching (remains the same) ---
-        // createNewChat, handleChatListClick, confirmAndDeleteChat, deleteChatFromFirestore, switchChat
+        // --- Chat Creation, Deletion, Switching ---
+        // ***** TAMIL *****
+        // இந்த functions புதிய chat உருவாக்குவது, அழிப்பது, வேறு chat-க்கு மாறுவது ஆகியவற்றை கையாளுகின்றன.
+        // createNewChat remains the same
         async function createNewChat() {
             if (!currentUser || startChatButton.disabled) { displayError("Please log in or wait for current action."); return; }
             setLoadingState(true, "Creating chat...");
-            removeAllSelectedMedia();
+            removeAllSelectedMedia(); // Clears media and cache state
             const newChatRef = db.collection('chats').doc();
             const timestamp = firebase.firestore.FieldValue.serverTimestamp();
             try {
@@ -1189,141 +1345,159 @@
                 // Listener will automatically pick it up and switch
             } catch (error) { console.error("Error creating new chat:", error); displayError("Failed to create chat."); setLoadingState(false); }
         }
-        function handleChatListClick(event) { /* ... (no changes needed) ... */
+        // handleChatListClick remains the same
+        function handleChatListClick(event) {
              const target = event.target;
              const deleteButton = target.closest('.delete-chat-button');
              if (deleteButton) { event.stopPropagation(); const chatId = deleteButton.dataset.id; const chatListItem = deleteButton.closest('.chat-list-item'); const chatTitle = chatListItem?.textContent?.replace(deleteButton.textContent, '').trim() || 'this chat'; if (chatId) { confirmAndDeleteChat(chatId, chatTitle); } return; }
              const item = target.closest('.chat-list-item'); const clickedId = item?.dataset?.id; if (item && clickedId && clickedId !== activeChatId) { switchChat(clickedId); }
          }
-        function confirmAndDeleteChat(chatId, chatTitle) { /* ... (no changes needed) ... */
-             if (!currentUser || !chatId) return; if (confirm(`Delete chat "${chatTitle}" permanently?`)) { deleteChatFromFirestore(chatId); } else { console.log(`Deletion cancelled for chat: ${chatId}`); }
-         }
-        async function deleteChatFromFirestore(chatId) { /* ... (no changes needed) ... */
+        // confirmAndDeleteChat remains the same
+        function confirmAndDeleteChat(chatId, chatTitle) { if (!currentUser || !chatId) return; if (confirm(`Delete chat "${chatTitle}" permanently?`)) { deleteChatFromFirestore(chatId); } else { console.log(`Deletion cancelled for chat: ${chatId}`); } }
+        // deleteChatFromFirestore remains the same
+        async function deleteChatFromFirestore(chatId) {
             if (!currentUser || !chatId) return; isDeletingChat = true; console.log(`[Delete Start] Chat: ${chatId}`); setLoadingState(true, "Deleting chat...");
             const chatDocRef = db.collection('chats').doc(chatId); const messagesRef = chatDocRef.collection('messages');
             try {
                 const messagesSnapshot = await messagesRef.get(); if (!messagesSnapshot.empty) { const batch = db.batch(); messagesSnapshot.docs.forEach(doc => { batch.delete(doc.ref); }); await batch.commit(); console.log(`[Delete] Deleted ${messagesSnapshot.size} messages.`); }
                 await chatDocRef.delete(); console.log(`[Delete Success] Chat doc: ${chatId}`);
-                if (activeChatId === chatId) { // If the deleted chat was active
+                 // Also attempt to delete any associated context cache (best effort)
+                 const cacheNameToDelete = `cache-${chatId}-media`; // Simple potential name
+                 try {
+                     // Need genAI instance to delete cache
+                     if (genAI && genAI.caching && genAI.caching.deleteCachedContent) { // Check if caching API exists
+                         await genAI.caching.deleteCachedContent(cacheNameToDelete);
+                         console.log(`[Delete Cache Attempt] Tried to delete cache: ${cacheNameToDelete}`);
+                     } else {
+                          console.log("[Delete Cache Attempt] Skipped cache deletion, SDK/API unavailable.");
+                     }
+                 } catch(cacheError) {
+                      if (cacheError.message?.includes("not found")) {
+                         console.log(`[Delete Cache Attempt] Cache ${cacheNameToDelete} not found, likely already deleted or never created.`);
+                      } else {
+                         console.warn(`[Delete Cache Attempt] Error deleting cache ${cacheNameToDelete}:`, cacheError);
+                      }
+                 }
+
+                if (activeChatId === chatId) {
                     activeChatId = null; currentChatHistory = []; if (activeChatListener) { activeChatListener(); activeChatListener = null; }
                     chatArea.innerHTML = ''; renderGreetingOrLoginPrompt();
-                    removeAllSelectedMedia();
-                    // No need to explicitly disable buttons here, loadAndListenForChats will handle selecting a new chat or showing the no-chat state.
+                    removeAllSelectedMedia(); // Clears media and cache state
                 }
             } catch (error) { console.error(`[Delete Error] Chat ${chatId}:`, error); displayError(`Failed to delete chat.`); }
-            finally { isDeletingChat = false; setLoadingState(false); console.log(`[Delete End] Chat: ${chatId}`); /* Listener might trigger now */ }
+            finally { isDeletingChat = false; setLoadingState(false); console.log(`[Delete End] Chat: ${chatId}`); }
         }
+        // switchChat: Clears cache state when switching chats
         function switchChat(chatId) {
              if (!currentUser || !chatId || chatId === activeChatId) {
                  console.log(`Switch chat skipped: currentUser=${!!currentUser}, chatId=${chatId}, activeChatId=${activeChatId}`);
                  return;
              }
              console.log("Switching to chat:", chatId);
-             setLoadingState(true, "Loading chat..."); // Disable buttons while switching
+             setLoadingState(true, "Loading chat...");
              activeChatId = chatId;
+             currentMediaCacheName = null; // Reset cache state for the new chat
+             cachedMediaUris = [];
              removeAllSelectedMedia();
              highlightActiveChatInSidebar();
              userInput.value = ''; autoGrowTextarea(); mcqModeCheckbox.checked = false;
-             // Listener setup will handle enabling buttons and setting placeholder
              loadAndListenForActiveChat(chatId);
         }
 
-        // --- Message Loading (Firestore) (remains the same) ---
-        // loadAndListenForActiveChat
+        // --- Message Loading (Firestore) ---
+        // loadAndListenForActiveChat remains the same
         function loadAndListenForActiveChat(chatId) {
             if (!currentUser || !chatId) {
                 chatArea.innerHTML = ''; if (activeChatListener) { activeChatListener(); activeChatListener = null; }
                 renderGreetingOrLoginPrompt(); updateButtonStates(); setLoadingState(false);
                 return;
             }
-            if (activeChatListener) { activeChatListener(); activeChatListener = null; } // Detach previous listener
+            if (activeChatListener) { activeChatListener(); activeChatListener = null; }
 
             const messagesRef = db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp', 'asc');
-            chatArea.innerHTML = ''; // Clear area
+            chatArea.innerHTML = '';
             const loadingMsg = displayMessage("Loading chat history...", 'ai', ['thinking']);
             scrollToBottom(true);
             console.log(`Listening for messages in chat ${chatId}`);
 
             activeChatListener = messagesRef.onSnapshot(snapshot => {
                 console.log(`Received messages snapshot for chat ${chatId}:`, snapshot.size, "messages");
-                removeMessageElement(loadingMsg); // Remove thinking indicator
-                chatArea.innerHTML = ''; // Clear again before rendering full list
+                removeMessageElement(loadingMsg);
+                chatArea.innerHTML = '';
                 currentChatHistory = []; // Reset history for SDK
 
                 if (snapshot.empty && activeChatId === chatId) {
-                    // Handle empty chat display
                     const chatListItem = chatListContainer.querySelector(`.chat-list-item[data-id="${chatId}"]`);
                     const chatTitle = chatListItem?.textContent?.replace(DELETE_ICON, '').trim() || '';
                     if (chatTitle && chatTitle !== NEW_CHAT_TITLE) {
                         displayMessage("Chat is empty. Send a message to start!", 'ai');
                     } else {
-                        // It's a new, empty chat - show standard greeting
                         renderGreetingOrLoginPrompt();
                     }
                 } else {
-                    // Render messages from snapshot
                     snapshot.forEach(doc => {
                         const msgData = doc.data();
-                        // Convert Firestore data to SDK history format {role, parts}
                         const role = msgData.role === 'user' ? 'user' : 'model';
                         const parts = [];
-                        // IMPORTANT: Rebuild history based on *saved* data, not just text.
+                        // ***** TAMIL *****
+                        // இங்க Firestore-ல் உள்ள text-ஐ மட்டும் history-ல் சேர்க்கிறோம்.
+                        // Long context வேலை செய்ய இந்த history முழுமையாக அனுப்பப்படும்.
                         if (msgData.text) parts.push({ text: msgData.text });
-                        // Add logic here if you need to reconstruct media parts for history (complex).
+                         // Complex: Need to reconstruct FileDataPart or InlineDataPart if we want to include
+                         // media *directly* in the history object for the API. Currently, we only store
+                         // text history and re-process/re-upload media on each send.
+                         // For long context *text*, this is sufficient.
+                         // For long context *media*, the File API handles it via URIs passed in the *current* prompt.
 
-                        // Store text-only history for API context
                         if (parts.length > 0) {
                              currentChatHistory.push({ role: role, parts: parts });
                         }
-
-                        // Display message using Firestore data (handles media rendering)
+                        // Display message using Firestore data (handles rendering media links/previews)
                         displayMessage(msgData.text || '', msgData.role, [], null, msgData);
                     });
                 }
-                scrollToBottom(true); // Scroll after rendering
+                scrollToBottom(true);
                 console.log("Finished loading/displaying messages. Updating button states.");
-                updateButtonStates(); // Ensure buttons are correctly enabled/disabled
-                setLoadingState(false); // Loading finished
-                if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); } // Refocus input
+                updateButtonStates(); setLoadingState(false);
+                if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); }
 
             }, error => {
                 console.error(`Error listening messages chat ${chatId}:`, error);
                 displayError("Could not load messages for this chat.");
                 removeMessageElement(loadingMsg); chatArea.innerHTML = ''; currentChatHistory = [];
                  console.error("Error loading messages. Updating button states.");
-                updateButtonStates(); // Disable buttons on error
-                setLoadingState(false);
+                updateButtonStates(); setLoadingState(false);
             });
         }
 
-        // --- File Upload Helper (Gemini File API) (remains the same) ---
-        // uploadAndProcessFile
+        // --- File Upload Helper (Gemini File API) ---
+        // ***** TAMIL *****
+        // இந்த function பெரிய files (PDF போன்றவை)-ஐ Gemini File API-க்கு upload செய்கிறது.
+        // uploadAndProcessFile remains the same
         async function uploadAndProcessFile(file, index, totalFiles) {
-            if (!genAI || !genAI.files) { // Check for genAI.files existence
-                 console.error("[File API] Error: genAI.files service is not available. SDK might not be initialized correctly or model doesn't support it.");
-                 throw new Error("AI SDK File Service not initialized.");
+             // Double-check genAI and genAI.files existence
+            if (!genAI?.files?.upload || !genAI?.files?.get || !genAI?.files?.delete) {
+                 console.error("[File API] Error: genAI.files service or required methods (upload, get, delete) are not available.");
+                 throw new Error("AI SDK File Service not initialized or missing methods.");
              }
 
             const progressMsg = `Uploading file ${index + 1}/${totalFiles}: ${file.name}...`;
             console.log(`[File API] ${progressMsg}`);
-            setLoadingState(true, progressMsg); // Show upload progress
+            setLoadingState(true, progressMsg);
+
+            let uploadResult = null; // Define here to be accessible in finally/catch
 
             try {
-                // 1. Upload the file using genAI.files.upload
-                const uploadResult = await genAI.files.upload({
-                    file: file,
-                    mimeType: file.type,
-                    displayName: file.name,
+                uploadResult = await genAI.files.upload({
+                    file: file, mimeType: file.type, displayName: file.name,
                 });
-                console.log(`[File API] Upload initiated for ${file.name}. API File Name: ${uploadResult.file.name}, State: ${uploadResult.file.state}`);
+                console.log(`[File API] Upload initiated for ${file.name}. API File Name: ${uploadResult?.file?.name}, State: ${uploadResult?.file?.state}`);
 
-                 // Defensive check for uploadResult and file name
                  if (!uploadResult?.file?.name) {
                      throw new Error(`File upload for ${file.name} did not return a valid file name.`);
                  }
                  const apiFileName = uploadResult.file.name;
 
-                // 2. Poll for processing completion using genAI.files.get
                 let fileResponse = await genAI.files.get({ name: apiFileName });
                 const startTime = Date.now();
 
@@ -1334,7 +1508,7 @@
                     const processMsg = `Processing file ${index + 1}/${totalFiles}: ${file.name}... (State: ${fileResponse.file.state})`;
                     setLoadingState(true, processMsg);
                     console.log(`[File API] File ${file.name} state: ${fileResponse.file.state}. Waiting ${FILE_API_POLLING_INTERVAL_MS / 1000}s...`);
-                    await new Promise(resolve => setTimeout(resolve, FILE_API_POLLING_INTERVAL_MS)); // Wait
+                    await new Promise(resolve => setTimeout(resolve, FILE_API_POLLING_INTERVAL_MS));
 
                     try {
                         fileResponse = await genAI.files.get({ name: apiFileName });
@@ -1343,62 +1517,60 @@
                         }
                     } catch (pollError) {
                         console.error(`[File API] Error polling file ${apiFileName}:`, pollError);
-                        // Optional: Implement retry logic here if needed
                         throw new Error(`Error checking processing status for ${file.name}: ${pollError.message}`);
                     }
                 }
 
-                // 3. Check final state
                 if (fileResponse.file.state !== 'ACTIVE') {
                     console.error(`[File API] File processing failed for ${file.name}. Final State: ${fileResponse.file.state}`, fileResponse.file);
-                    // Optionally try to delete the failed file?
                     try { await genAI.files.delete({ name: apiFileName }); console.log(`[File API] Deleted failed/inactive file: ${apiFileName}`); } catch (delErr) { console.warn(`[File API] Failed to delete failed/inactive file ${apiFileName}:`, delErr); }
                     throw new Error(`File processing for ${file.name} resulted in state: ${fileResponse.file.state}.`);
                 }
 
                 console.log(`[File API] File ${file.name} (API: ${apiFileName}) processed successfully. URI: ${fileResponse.file.uri}`);
-                return fileResponse.file; // Return the processed file object
+                return fileResponse.file;
 
             } catch (uploadError) {
                  console.error(`[File API] Error during upload/processing for ${file.name}:`, uploadError);
-                 // Attempt to delete the file if upload started but failed processing? Maybe not necessary, they expire.
-                 // Consider the case where uploadResult might not exist if the initial upload call failed.
                  if (uploadResult?.file?.name) {
                       try { await genAI.files.delete({ name: uploadResult.file.name }); console.log(`[File API] Cleaned up file ${uploadResult.file.name} after error.`); }
                       catch (delErr) { console.warn(`[File API] Failed to cleanup file ${uploadResult.file.name} after error:`, delErr); }
                  }
-                 throw uploadError; // Re-throw the error to be caught by handleSendMessage
-            } finally {
-                // setLoadingState(false); // Avoid turning off loading state prematurely here
+                 throw uploadError;
             }
         }
 
-        // --- Message Sending (Gemini API & Firestore Save) (remains the same) ---
-        // handleSendMessage
+        // --- Message Sending (Gemini API & Firestore Save) ---
+        // ***** TAMIL *****
+        // இதுதான் user message-ஐயும், media-வையும் வாங்கி, Gemini API-க்கு அனுப்பி, பதிலை வாங்கி காட்டுகின்ற முக்கிய function.
+        // இங்கதான் model selection, long context history, context caching logic add செய்துள்ளோம்.
         async function handleSendMessage() {
             const userMessageTextRaw = userInput.value.trim();
             const mediaItemsToSend = [...selectedMediaItems]; // Copy selected items
 
-            console.log("handleSendMessage: Text:", userMessageTextRaw ? userMessageTextRaw.substring(0, 50) + '...' : '(empty)', "Media items:", mediaItemsToSend.length);
+            console.log("handleSendMessage: Text:", userMessageTextRaw ? userMessageTextRaw.substring(0, 50) + '...' : '(empty)', "Media items:", mediaItemsToSend.length, "Model:", selectedModelId);
 
             // --- Initial Checks ---
             if (!currentUser) { displayError("Please log in to send messages."); return; }
             if (!activeChatId) { displayError("Please select or create a chat first."); return; }
-            if (!API_KEY || !genAI) { displayError("API Key or AI SDK not ready. Cannot send message."); return; }
-             // Check specifically for File API if PDFs are included
-             if (mediaItemsToSend.some(item => item.type === 'pdf') && (!genAI.files)) {
+            if (!API_KEY || !genAI || !isAISdkReady || !HarmCategory || !HarmBlockThreshold) { displayError("API Key or AI SDK not ready/fully initialized. Cannot send message."); return; }
+             const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
+             if (!currentModelInfo) { displayError("Selected AI model is invalid. Please choose another model."); return; } // Should not happen if populated correctly
+
+             const hasPdfs = mediaItemsToSend.some(item => item.type === 'pdf');
+             if (hasPdfs && (!genAI.files || !genAI.files.upload)) { // Check if file API seems available
                  displayError("File API is unavailable. Cannot send PDF files."); return;
              }
             if (!userMessageTextRaw && mediaItemsToSend.length === 0) { console.log("Empty message and no media. Nothing to send."); return; }
             if (sendButton.disabled || isRecording) { console.log("Send disabled (loading/recording)."); return; }
 
-            setLoadingState(true, "Preparing message..."); // Initial busy state
+            setLoadingState(true, "Preparing message...");
 
             // --- Clear Input & Preview ---
             userInput.value = ''; autoGrowTextarea();
             const isMCQRequest = mcqModeCheckbox.checked;
             if (isMCQRequest) mcqModeCheckbox.checked = false;
-            removeAllSelectedMedia(); // Clear UI previews and state
+            removeAllSelectedMedia(); // Clears UI previews and state, including cache state
 
             // --- Firestore References & Timestamps ---
             const timestamp = firebase.firestore.FieldValue.serverTimestamp();
@@ -1410,64 +1582,22 @@
             const singleAudioItem = mediaItemsToSend.find(item => item.type === 'audio');
             const imageItems = mediaItemsToSend.filter(item => item.type === 'image');
             const pdfItems = mediaItemsToSend.filter(item => item.type === 'pdf');
-            let potentialTestTitle = null; // For MCQs
+            let potentialTestTitle = null;
 
-             // Add media info to Firestore message for display purposes
-             if (singleAudioItem) {
-                 userMsgData.mediaType = 'audio';
-                 userMsgData.mediaData = singleAudioItem.base64; // Store base64 for display
-                 userMsgData.mediaMimeType = singleAudioItem.mimeType;
-                 userMsgData.mediaName = singleAudioItem.name;
-             } else if (imageItems.length === 1) {
-                 userMsgData.mediaType = 'image';
-                 userMsgData.mediaName = imageItems[0].name;
-                 userMsgData.mediaMimeType = imageItems[0].mimeType;
-                 // Ensure base64 is present for Firestore display
-                 if (!imageItems[0].base64) {
-                     try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); }
-                     catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; }
-                 }
-                 userMsgData.mediaData = imageItems[0].base64; // Store single image base64
-             } else if (imageItems.length > 1) {
-                 userMsgData.mediaType = 'multi-image';
-                 userMsgData.mediaCount = imageItems.length;
-                 userMsgData.mediaNames = imageItems.map(img => img.name || 'image');
-             } else if (pdfItems.length > 0) {
-                 userMsgData.mediaType = 'multi-pdf';
-                 userMsgData.mediaCount = pdfItems.length;
-                 userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf');
-                 // We don't store PDF content in Firestore, just the reference
-             }
-
-            const youtubeMatch = userMessageTextRaw.match(youtubeRegex);
-            if (youtubeMatch) userMsgData.youtubeVideoId = youtubeMatch[1];
+             // Add media info to Firestore message for display purposes (remains same)
+             if (singleAudioItem) { userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; }
+             else if (imageItems.length === 1) { userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; }
+             else if (imageItems.length > 1) { userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); }
+             else if (pdfItems.length > 0) { userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); }
+             const youtubeMatch = userMessageTextRaw.match(youtubeRegex); if (youtubeMatch) userMsgData.youtubeVideoId = youtubeMatch[1];
 
             // --- Save User Message to Firestore ---
              try {
-                 const chatSnap = await chatDocRef.get();
-                 let isFirstUserMessageInNewChat = false;
-                 if (chatSnap.exists && chatSnap.data().title === NEW_CHAT_TITLE) { const messagesSnap = await messagesColRef.limit(1).get(); if (messagesSnap.empty) { isFirstUserMessageInNewChat = true; } }
-                 await messagesColRef.add(userMsgData);
-                 await chatDocRef.update({ lastUpdated: timestamp });
-                 console.log("User message saved to Firestore.");
-                 // Add user message to local history immediately *after* successful save
-                 const userPartsForHistory = [];
-                 if (userMsgData.text) userPartsForHistory.push({ text: userMsgData.text });
-                 // Don't add media to history for now to keep it simple
-                 if (userPartsForHistory.length > 0) {
-                      currentChatHistory.push({ role: 'user', parts: userPartsForHistory });
-                 }
-
-                 if (isFirstUserMessageInNewChat) { // Auto-generate title for new chats
-                    let titleSource = userMessageTextRaw;
-                    if (!titleSource) {
-                        if (singleAudioItem) titleSource = "Audio Message";
-                        else if (imageItems.length > 0) titleSource = imageItems.length > 1 ? "Multiple Images" : "Image Upload";
-                        else if (pdfItems.length > 0) titleSource = pdfItems.length > 1 ? "Multiple PDFs" : "PDF Document";
-                        else titleSource = NEW_CHAT_TITLE;
-                    }
-                    const generatedTitle = generateChatTitle(titleSource); if (generatedTitle && generatedTitle !== NEW_CHAT_TITLE) { await updateActiveChatTitle(generatedTitle); }
-                 }
+                 const chatSnap = await chatDocRef.get(); let isFirstUserMessageInNewChat = false; if (chatSnap.exists && chatSnap.data().title === NEW_CHAT_TITLE) { const messagesSnap = await messagesColRef.limit(1).get(); if (messagesSnap.empty) { isFirstUserMessageInNewChat = true; } }
+                 await messagesColRef.add(userMsgData); await chatDocRef.update({ lastUpdated: timestamp }); console.log("User message saved to Firestore.");
+                 const userPartsForHistory = []; if (userMsgData.text) userPartsForHistory.push({ text: userMsgData.text });
+                 if (userPartsForHistory.length > 0) { currentChatHistory.push({ role: 'user', parts: userPartsForHistory }); }
+                 if (isFirstUserMessageInNewChat) { let titleSource = userMessageTextRaw || (mediaItemsToSend[0]?.name) || NEW_CHAT_TITLE; const generatedTitle = generateChatTitle(titleSource); if (generatedTitle && generatedTitle !== NEW_CHAT_TITLE) { await updateActiveChatTitle(generatedTitle); } }
              } catch(error) { console.error("Error saving user message:", error); displayError("Failed to save your message."); setLoadingState(false); return; }
 
             // --- Show Thinking Indicator ---
@@ -1477,11 +1607,16 @@
             // --- Prepare Parts for API Call ---
             const partsForApi = [];
             let userTextForPrompt = userMessageTextRaw;
+            let fileDataPartsForApi = []; // Separate array for potential caching
+            let useCache = false;
+            let cacheToUse = null;
 
             // Modify prompt for MCQ generation if checked
             if (isMCQRequest) {
                  let baseTitle = userMessageTextRaw || (mediaItemsToSend[0]?.name) || "Generated Test";
                  potentialTestTitle = generateChatTitle(baseTitle) + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                 // ***** TAMIL *****
+                 // MCQ கேட்டால், JSON format-ல் பதில் தருமாறு model-க்கு instruction கொடுக்கிறோம்.
                  const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided text and/or media (image(s)/PDF(s)/audio). Provide the response *only* as a valid JSON array string, enclosed within \`\`\`json ... \`\`\`. Each object in the array must have "question" (object with "en" and "ta" strings), "options" (array of 4 objects with "en" and "ta" strings), "answer" (string 'A', 'B', 'C', or 'D'), and "explanation" (object with "en" and "ta" strings). Provide accurate English content only. Do not include any text outside the JSON structure.`;
                  userTextForPrompt = userTextForPrompt ? userTextForPrompt + mcqInstructions : mcqInstructions;
                  console.log("MCQ mode: Modified prompt for API.");
@@ -1489,97 +1624,132 @@
             if (userTextForPrompt) partsForApi.push({ text: userTextForPrompt });
 
             // --- Process and Add Media Parts ---
-            let generatedResponse = null; // Define outside try block
-            let aiResponseSaved = false; // Flag to track if AI response was saved
+            let generatedResponse = null;
+            let aiResponseSaved = false;
+            let uploadedFileUris = []; // Store URIs of successfully uploaded files
 
             try {
-                if (singleAudioItem) { // Use inlineData for audio
+                // ***** TAMIL *****
+                // இங்க audio, image, pdf files-ஐ API request-க்கு ஏற்ற format-க்கு மாற்றுகிறோம்.
+                // PDF-க்கு File API upload-ஐ பயன்படுத்துகிறோம்.
+                if (singleAudioItem) { // Inline Audio
                     if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); }
                     const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1);
                     partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } });
                     console.log(`Added audio inlineData part.`);
-                } else if (imageItems.length > 0) { // Use inlineData for images
+                } else if (imageItems.length > 0) { // Inline Images
                     const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file));
                     const imageBase64Results = await Promise.all(imageBase64Promises);
                     let addedImageCount = 0;
                     imageBase64Results.forEach((b64, index) => {
                         if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; }
-                        const mime = imageItems[index].mimeType;
-                        const data = b64.substring(b64.indexOf(',') + 1);
-                        if(data && mime) {
-                             partsForApi.push({ inlineData: { mimeType: mime, data: data } });
-                             addedImageCount++;
-                        } else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); }
+                        const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1);
+                        if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; }
+                        else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); }
                     });
                     console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`);
                     if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); }
-
-                } else if (pdfItems.length > 0) { // *** Use File API for PDFs ***
+                } else if (pdfItems.length > 0) { // File API for PDFs
                     console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`);
-                    // Call uploadAndProcessFile for each PDF file
-                    const uploadPromises = pdfItems.map((item, index) =>
-                        uploadAndProcessFile(item.file, index, pdfItems.length)
-                    );
-                    const uploadedFileResults = await Promise.all(uploadPromises); // Wait for all uploads/processing
+                    const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length));
+                    const uploadedFileResults = await Promise.all(uploadPromises);
+                    uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri); // Store successful URIs
 
-                    let addedPdfCount = 0;
-                    uploadedFileResults.forEach(processedFile => {
-                        // Check if the result has the expected structure and is ACTIVE
-                        if (processedFile?.uri && processedFile?.mimeType && processedFile?.state === 'ACTIVE') {
-                            partsForApi.push({
-                                fileData: {
-                                    mimeType: processedFile.mimeType,
-                                    fileUri: processedFile.uri
-                                }
-                            });
-                            addedPdfCount++;
-                        } else {
-                            console.error("Upload result invalid or file not active:", processedFile);
-                            // Don't throw error here, just log and skip this file
-                        }
+                    if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); }
+
+                    fileDataPartsForApi = uploadedFileUris.map(uri => {
+                        const originalFile = uploadedFileResults.find(f => f.uri === uri);
+                        return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } };
                     });
-                     console.log(`Added ${addedPdfCount}/${pdfItems.length} PDFs as fileData parts.`);
-                     if (addedPdfCount === 0 && pdfItems.length > 0) {
-                         throw new Error("Failed to upload or process any selected PDF files.");
-                     }
-                }
+                    console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API.`);
 
-                if (partsForApi.length === 0) { // Check if only text was added initially but no media parts succeeded
+                     // --- Context Caching Logic ---
+                     // ***** TAMIL *****
+                     // இங்க context caching வேலை செய்யுமா என்று check செய்கிறோம்.
+                     // ஒரே PDF files-ஐ திரும்ப திரும்ப அனுப்பினால், cache-ஐ பயன்படுத்த முயற்சி செய்கிறோம்.
+                    if (currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0) {
+                        const sortedUris = [...uploadedFileUris].sort();
+                        // Check if the current URIs match the previously cached URIs
+                        if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) {
+                            console.log(`Attempting to use existing cache: ${currentMediaCacheName}`);
+                            // Check if cache actually exists (optional, API might handle it)
+                            // try { await genAI.caching.getCachedContent(currentMediaCacheName); useCache = true; cacheToUse = currentMediaCacheName; } catch(e) { console.warn("Cache check failed or cache expired:", e); currentMediaCacheName = null; cachedMediaUris = []; }
+                             // Let's assume it exists for now and let the API call handle expiry/not found
+                             useCache = true;
+                             cacheToUse = currentMediaCacheName;
+
+                        } else {
+                            console.log("No matching cache found or URIs differ. Will create a new cache if possible.");
+                            // Clear old cache state
+                            currentMediaCacheName = null;
+                            cachedMediaUris = [];
+                            // Attempt to create a new cache *after* the message is sent
+                        }
+                    } else if (!currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0) {
+                         console.log("Caching skipped: Selected model does not support caching.");
+                    }
+                } // End of PDF processing
+
+                 // Combine text parts and potentially file data parts (if not using cache)
+                 const finalPartsForApi = useCache ? partsForApi : [...partsForApi, ...fileDataPartsForApi];
+
+                 if (finalPartsForApi.length === 0 && !useCache) { // Check if anything is actually being sent
                     throw new Error("No valid content (text or media) to send after processing media.");
                 }
 
                 // --- Call Gemini API using SDK ---
                 console.log("Calling Gemini API via SDK...");
                 setLoadingState(true, "Generating response...");
+
+                // ***** TAMIL *****
+                // இங்க தேர்ந்தெடுக்கப்பட்ட model-ஐயும், பாதுகாப்பு settings-ஐயும் பயன்படுத்தி API call செய்ய prepare செய்கிறோம்.
                 const model = genAI.getGenerativeModel({
-                    model: MODEL_NAME,
-                    safetySettings: [ { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, ]
+                    model: selectedModelId, // Use selected model ID
+                    safetySettings: [
+                         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                         { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                         { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+                    ],
+                    // Long context is handled by sending the full history below
                 });
 
-                // Filter history to ensure only text parts are included for context
+                // ***** TAMIL *****
+                // இங்க chat history-ஐ API request-ல் சேர்க்கிறோம். இதுதான் long context.
+                 // Filter history to ensure only text parts are included for context (as per current logic)
                 const historyForSDK = currentChatHistory
                     .map(msg => ({
                         role: msg.role,
-                        parts: msg.parts.filter(part => typeof part.text === 'string') // Only include text parts in history
+                        parts: msg.parts.filter(part => typeof part.text === 'string')
                     }))
-                    .filter(msg => msg.parts.length > 0); // Ensure message has text parts
+                    .filter(msg => msg.parts.length > 0);
 
-                const contentsRequest = [ ...historyForSDK, { role: "user", parts: partsForApi } ];
+                // Construct the request payload
+                 const contentsRequest = [ ...historyForSDK, { role: "user", parts: finalPartsForApi } ];
+                 const generateContentRequest = {
+                     contents: contentsRequest,
+                     ...(useCache && cacheToUse && { cache: { name: cacheToUse } }) // Conditionally add cache parameter
+                 };
 
-                console.log("SDK Request Payload:", JSON.stringify(contentsRequest, (k, v) => {
+
+                console.log("SDK Request Payload:", JSON.stringify(generateContentRequest, (k, v) => {
                      if (k === 'data' && typeof v === 'string' && v.length > 100) return v.substring(0, 50) + '...[truncated]';
-                     if (k === 'fileUri' && typeof v === 'string') return v.split('/').pop() + '...[uri]'; // Show only file name part of URI
+                     if (k === 'fileUri' && typeof v === 'string') return v.split('/').pop() + '...[uri]';
                      return v;
                  }, 2));
 
-                const result = await model.generateContent({ contents: contentsRequest });
-                generatedResponse = result.response; // Assign to the outer variable
+                // ***** TAMIL *****
+                // API call செய்கிறோம்.
+                const result = await model.generateContent(generateContentRequest);
+                generatedResponse = result.response;
 
                 // --- Process API Response ---
-                removeMessageElement(thinking); // Remove thinking only *after* getting response
+                removeMessageElement(thinking);
                 let aiMsgData = { role: "model", text: "Error: No valid response from API.", timestamp: firebase.firestore.FieldValue.serverTimestamp(), mcqData: null, mcqTitle: null };
                 let displayAsError = true; let rawAiText = ""; let blocked = false;
 
+                // ***** TAMIL *****
+                // API response-ஐ process செய்கிறோம். பிழை உள்ளதா, block செய்யப்பட்டுள்ளதா என்று பார்க்கிறோம்.
                 if (generatedResponse.promptFeedback?.blockReason) {
                     aiMsgData.text = `Blocked (Prompt): ${generatedResponse.promptFeedback.blockReason}`; blocked = true; displayAsError = true; console.warn("Prompt blocked:", generatedResponse.promptFeedback);
                 } else if (generatedResponse.candidates && generatedResponse.candidates.length > 0) {
@@ -1588,10 +1758,12 @@
                     else if (candidate.finishReason === 'RECITATION') { aiMsgData.text = `Blocked (Response Recitation)`; blocked = true; displayAsError = true; console.warn("Response blocked (Recitation)"); }
                     else if (candidate.content?.parts?.length > 0) {
                         try {
-                             rawAiText = generatedResponse.text(); // SDK helper to combine text parts
+                             rawAiText = generatedResponse.text();
                              aiMsgData.text = rawAiText; displayAsError = false;
-                             if (isMCQRequest && !blocked) { // Parse MCQs if requested
+                             if (isMCQRequest && !blocked) { // Parse MCQs
                                 try {
+                                     // ***** TAMIL *****
+                                     // MCQ கேட்டிருந்தால், response-ல் உள்ள JSON-ஐ parse செய்ய முயற்சிக்கிறோம்.
                                      const jsonMatch = rawAiText.match(/```json\s*([\s\S]*?)\s*```/); const jsonString = jsonMatch ? jsonMatch[1].trim() : rawAiText.trim();
                                      if (jsonString.startsWith('[') && jsonString.endsWith(']')) {
                                          const mcqs = JSON.parse(jsonString);
@@ -1604,187 +1776,289 @@
                                  } catch (parseError) { console.warn("Failed to parse MCQ JSON:", parseError.message); aiMsgData.text = "MCQ format error.\n\n" + rawAiText; displayAsError = true; aiMsgData.mcqData = null; aiMsgData.mcqTitle = null; }
                              }
                         } catch (textError) { console.error("Error extracting text from SDK response:", textError); aiMsgData.text = "Error extracting text from response."; displayAsError = true; }
-                    } else if (candidate.finishReason === 'MAX_TOKENS') { console.warn("Response stopped: MAX_TOKENS."); aiMsgData.text = (generatedResponse.text ? generatedResponse.text() : "") + "\n\n(Response may be truncated due to token limit)"; displayAsError = false; } // Get partial text if possible
-                    else if (candidate.finishReason === 'STOP' && (!candidate.content || candidate.content?.parts?.length === 0)){ aiMsgData.text = "(Model returned no content)"; displayAsError = false;} // Handle empty STOP
-                    else { console.warn("API response finish reason:", candidate.finishReason); aiMsgData.text = `Response finished: ${candidate.finishReason || 'Unknown'}. ` + (generatedResponse.text ? generatedResponse.text() : ""); displayAsError = false; } // Treat other reasons like STOP as normal
+                    } else if (candidate.finishReason === 'MAX_TOKENS') { console.warn("Response stopped: MAX_TOKENS."); aiMsgData.text = (generatedResponse.text ? generatedResponse.text() : "") + "\n\n(Response may be truncated due to token limit)"; displayAsError = false; }
+                    else if (candidate.finishReason === 'STOP' && (!candidate.content || candidate.content?.parts?.length === 0)){ aiMsgData.text = "(Model returned no content)"; displayAsError = false;}
+                    else { console.warn("API response finish reason:", candidate.finishReason); aiMsgData.text = `Response finished: ${candidate.finishReason || 'Unknown'}. ` + (generatedResponse.text ? generatedResponse.text() : ""); displayAsError = false; }
                 } else { console.error("API Error: No candidates in response."); aiMsgData.text = "Error: No response data from API."; displayAsError = true; }
 
                 // --- Save AI Response to Firestore ---
+                 // ***** TAMIL *****
+                 // AI response-ஐ Firestore-ல் save செய்கிறோம்.
                 try {
                       await messagesColRef.add(aiMsgData);
                       await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() });
-                      aiResponseSaved = true; // Mark as saved
+                      aiResponseSaved = true;
                       console.log("AI response/error saved to Firestore.");
-                      // Add AI response text to local history *only if* it was successful and not empty
                       if (!displayAsError && aiMsgData.text) {
                            currentChatHistory.push({ role: 'model', parts: [{ text: aiMsgData.text }] });
                       }
-                } catch (saveError) { console.error("Error saving AI response:", saveError); displayError(`Failed to save AI response.`); /* Don't turn off loading state here */ }
+                } catch (saveError) { console.error("Error saving AI response:", saveError); displayError(`Failed to save AI response.`); }
 
-            } catch (error) { // Catch errors from media processing or API call
+                 // --- Attempt to Create Cache (if applicable and not used) ---
+                 // ***** TAMIL *****
+                 // இப்பதான் PDF files அனுப்பினோம் என்றால், அடுத்த முறை பயன்படுத்த cache உருவாக்க முயற்சிக்கிறோம்.
+                 if (!useCache && currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0) {
+                      const newCacheName = `cache-${activeChatId}-media-${Date.now()}`; // Unique cache name
+                      console.log(`Attempting to create cache: ${newCacheName} for ${fileDataPartsForApi.length} file(s).`);
+                       try {
+                           // Check if caching API is available
+                           if (genAI && genAI.caching && genAI.caching.createCachedContent) {
+                                const cacheRequest = {
+                                    model: selectedModelId, // Model that will use the cache
+                                    contents: [{ role: 'user', parts: fileDataPartsForApi }], // Content to cache
+                                    ttlSeconds: CACHE_TTL_SECONDS, // Time-to-live
+                                    name: newCacheName // Assign the name
+                                };
+                                // Create cache asynchronously (don't wait for it)
+                                genAI.caching.createCachedContent(cacheRequest).then(createdCache => {
+                                    if (createdCache?.name) {
+                                        currentMediaCacheName = createdCache.name; // Store the created cache name
+                                        cachedMediaUris = [...uploadedFileUris].sort(); // Store the URIs associated with this cache
+                                        console.log(`Cache ${currentMediaCacheName} created successfully for URIs:`, cachedMediaUris);
+                                     } else {
+                                         console.warn("Cache creation call succeeded but did not return a valid cache object.");
+                                     }
+                                }).catch(cacheError => {
+                                    console.error(`Error creating cache ${newCacheName}:`, cacheError);
+                                    // Don't set cache state if creation fails
+                                });
+                           } else {
+                                console.warn("Cache creation skipped: SDK caching API not available.");
+                           }
+                       } catch (e) {
+                            // Catch synchronous errors from the setup, unlikely here
+                            console.error("Unexpected error setting up cache creation:", e);
+                       }
+                 } else if (useCache) {
+                      console.log(`Used existing cache: ${cacheToUse}`);
+                 } else if (fileDataPartsForApi.length > 0) {
+                      console.log("Cache creation skipped: Model doesn't support it or no files to cache.");
+                 }
+
+            } catch (error) { // Catch errors from media processing, API call, or cache logic
                  console.error("Error during send process:", error);
-                 removeMessageElement(thinking); // Remove thinking indicator
+                 removeMessageElement(thinking);
                  const errorText = `Error: ${error.message || "An unexpected error occurred during sending."}`;
                  displayError(errorText);
-                 // Save the error message to Firestore if AI response wasn't already saved
                  if (!aiResponseSaved) {
-                     try {
-                          await messagesColRef.add({ role: "model", text: errorText, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-                          await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() });
-                          console.log("Error message saved to Firestore.");
-                     }
+                     try { await messagesColRef.add({ role: "model", text: errorText, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }); console.log("Error message saved to Firestore."); }
                      catch (saveError) { console.error("Failed to save error message:", saveError); }
                  }
             } finally {
                  console.log("handleSendMessage finally block reached. Turning off loading state.");
-                 setLoadingState(false); // Ensure loading state is turned off HERE
+                 setLoadingState(false);
                  if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); }
             }
         } // End of handleSendMessage
 
 
-        // --- Chat Title Generation/Update (remains the same) ---
-        function generateChatTitle(sourceText) { /* ... (no changes needed) ... */ if (!sourceText || typeof sourceText !== 'string') return NEW_CHAT_TITLE; const text = sourceText.trim(); if (!text) return NEW_CHAT_TITLE; const title = text.split(/\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]+$/, ''); return title.length > 35 ? title.substring(0, 32) + '...' : title; }
-        async function updateActiveChatTitle(newTitle) { /* ... (no changes needed) ... */ if (!currentUser || !activeChatId || !newTitle || typeof newTitle !== 'string' || !newTitle.trim() || newTitle.trim() === NEW_CHAT_TITLE) return; const finalTitle = newTitle.trim(); const chatDocRef = db.collection('chats').doc(activeChatId); try { await chatDocRef.update({ title: finalTitle }); console.log(`Chat ${activeChatId} title updated: "${finalTitle}"`); } catch (error) { console.error("Error updating chat title:", error); } }
+        // --- Chat Title Generation/Update ---
+        // generateChatTitle, updateActiveChatTitle remain the same
+        function generateChatTitle(sourceText) { if (!sourceText || typeof sourceText !== 'string') return NEW_CHAT_TITLE; const text = sourceText.trim(); if (!text) return NEW_CHAT_TITLE; const title = text.split(/\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]+$/, ''); return title.length > 35 ? title.substring(0, 32) + '...' : title; }
+        async function updateActiveChatTitle(newTitle) { if (!currentUser || !activeChatId || !newTitle || typeof newTitle !== 'string' || !newTitle.trim() || newTitle.trim() === NEW_CHAT_TITLE) return; const finalTitle = newTitle.trim(); const chatDocRef = db.collection('chats').doc(activeChatId); try { await chatDocRef.update({ title: finalTitle }); console.log(`Chat ${activeChatId} title updated: "${finalTitle}"`); } catch (error) { console.error("Error updating chat title:", error); } }
 
-        // --- File Reader Helper (remains the same) ---
-        function readFileAsBase64(file) { /* ... (no changes needed) ... */ return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = (error) => reject(error); reader.readAsDataURL(file); }); }
+        // --- File Reader Helper ---
+        // readFileAsBase64 remains the same
+        function readFileAsBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = (error) => reject(error); reader.readAsDataURL(file); }); }
 
-        // --- UI & Message Display Helpers (remains the same) ---
-        function autoGrowTextarea() { /* ... (no changes needed) ... */ userInput.style.height='auto'; userInput.style.height=(userInput.scrollHeight)+'px'; }
-        function handleInputKeydown(event) { /* ... (no changes needed) ... */ if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();if(!sendButton.disabled) handleSendMessage();} } // Added !sendButton.disabled check
-        function handleSuggestionClick(event) { /* ... (no changes needed) ... */ if(event.target.classList.contains('suggestion-chip')){userInput.value=event.target.dataset.prompt||'';autoGrowTextarea();userInput.focus();} }
-        function displayError(text) { /* ... (no changes needed) ... */ console.error("Displaying Error:", text); displayMessage(`${text}`, 'ai', ['error-message']); scrollToBottom(); }
-        function scrollToBottom(immediate = false) { /* ... (no changes needed) ... */ chatArea.scrollTo({top:chatArea.scrollHeight,behavior:immediate?'auto':'smooth'}); }
-        function removeMessageElement(element) { /* ... (no changes needed) ... */ if(element && element.parentNode === chatArea) { try { chatArea.removeChild(element); } catch(e) { /* ignore if already removed */ } } }
+        // --- UI & Message Display Helpers ---
+        // autoGrowTextarea, handleInputKeydown, handleSuggestionClick remain the same
+        function autoGrowTextarea() { userInput.style.height='auto'; userInput.style.height=(userInput.scrollHeight)+'px'; }
+        function handleInputKeydown(event) { if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();if(!sendButton.disabled) handleSendMessage();} }
+        function handleSuggestionClick(event) { if(event.target.classList.contains('suggestion-chip')){userInput.value=event.target.dataset.prompt||'';autoGrowTextarea();userInput.focus();} }
+        // displayError remains the same
+        function displayError(text) { console.error("Displaying Error:", text); displayMessage(`${text}`, 'ai', ['error-message']); scrollToBottom(); }
+        // scrollToBottom remains the same
+        function scrollToBottom(immediate = false) { chatArea.scrollTo({top:chatArea.scrollHeight,behavior:immediate?'auto':'smooth'}); }
+        // removeMessageElement remains the same
+        function removeMessageElement(element) { if(element && element.parentNode === chatArea) { try { chatArea.removeChild(element); } catch(e) { /* ignore */ } } }
 
-        // UPDATED updateButtonStates
+        // updateButtonStates: Checks model selector state
          function updateButtonStates(isLoading = false) {
             const isLoggedIn = !!currentUser;
-            // Basic SDK is ready if API key is present and genAI instance exists
-            const isBasicSDKReady = !!(API_KEY && genAI);
-            // File API is ready *only if* basic SDK is ready AND genAI.files exists
-            const canUseFileAPI = isBasicSDKReady && !!genAI.files;
+            const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold; // More robust check
+            const canUseFileAPI = isSdkFullyReady && !!genAI.files?.upload; // Check specific method needed
             const isChatSelected = !!activeChatId;
+            const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
+            const canUseCaching = isSdkFullyReady && currentModelInfo?.supportsCaching && !!genAI.caching?.createCachedContent; // Check if model AND SDK support caching
 
-            // Core app readiness for basic chat
-            const isAppReady = isLoggedIn && isBasicSDKReady;
-            // Readiness for sending messages (might depend on file type)
+            const isAppReady = isSdkFullyReady;
             const canSendMessage = isAppReady && isChatSelected && !isLoading && !isRecording;
-            // Readiness for sidebar controls
             const canUseSidebarControls = isLoggedIn && !isLoading && !isRecording;
 
-            // Log states influencing decisions more explicitly
-            // console.log(`updateButtonStates - isLoading: ${isLoading}, isLoggedIn: ${isLoggedIn}, isBasicSDKReady: ${isBasicSDKReady}, genAI.files exists: ${!!(genAI && genAI.files)}, canUseFileAPI: ${canUseFileAPI}, isChatSelected: ${isChatSelected}, isRecording: ${isRecording}`);
-
-            // --- Input Area Buttons ---
+            // Input Area Buttons
             userInput.disabled = !isAppReady || !isChatSelected || isLoading || isRecording;
             sendButton.disabled = !canSendMessage;
             mcqModeCheckbox.disabled = !canSendMessage;
 
             // Media buttons
             imageUploadButton.disabled = !canSendMessage;
-            pdfUploadButton.disabled = !canSendMessage || !canUseFileAPI; // Explicitly disable PDF if File API is not ready
+            pdfUploadButton.disabled = !canSendMessage || !canUseFileAPI;
             audioUploadButton.disabled = !canSendMessage;
+            pdfUploadButton.title = canUseFileAPI ? "Upload PDF file(s)" : "PDF Upload disabled (File API unavailable/SDK issue)";
 
-            // Tooltip for disabled PDF button
-            pdfUploadButton.title = canUseFileAPI ? "Upload PDF file(s)" : "PDF Upload disabled (File API unavailable)";
-
-
-            // Special case for Record Button: Allow stopping even if other conditions fail
             let recordButtonDisabled = !isAppReady || !isChatSelected || isLoading;
-            if (isRecording) {
-                recordButtonDisabled = false; // Always allow stopping
-            }
+            if (isRecording) recordButtonDisabled = false;
             recordAudioButton.disabled = recordButtonDisabled;
 
-            // --- Sidebar Buttons ---
+            // Sidebar Buttons
             startChatButton.disabled = !isLoggedIn || isLoading || isRecording;
             testSearchInput.disabled = !isLoggedIn || isLoading || isRecording;
 
-            // --- Settings Buttons ---
+            // Settings Buttons
             decreaseTextBtn.disabled = isLoading || isRecording || currentTextSizeMultiplier <= MIN_TEXT_SIZE_MULTIPLIER;
             increaseTextBtn.disabled = isLoading || isRecording || currentTextSizeMultiplier >= MAX_TEXT_SIZE_MULTIPLIER;
             themeToggleButton.disabled = isLoading || isRecording;
+            modelSelector.disabled = isLoading || isRecording || !isLoggedIn; // Disable if loading/recording or logged out
 
-            // --- Auth Buttons ---
+            // Auth Buttons
             loginBtn.disabled = isLoading;
             logoutBtn.disabled = isLoading;
 
-            // Debug log for PDF button state
-            // console.log(`PDF Button State: disabled=${pdfUploadButton.disabled} (Reason: canSendMessage=${canSendMessage}, canUseFileAPI=${canUseFileAPI})`);
+             // Log caching possibility
+             // console.log(`Caching Possible: ${canUseCaching} (SDK: ${!!genAI.caching?.createCachedContent}, Model: ${currentModelInfo?.supportsCaching})`);
          }
 
-
-        // UPDATED setLoadingState
+        // setLoadingState remains mostly the same
         function setLoadingState(isLoading, message = "Generating...") {
-            // console.log(`setLoadingState called: ${isLoading}, Message: ${message}`); // Keep this log
-            updateButtonStates(isLoading); // Update buttons first based on loading state
+            updateButtonStates(isLoading);
 
-            // --- Update placeholder text ---
             let placeholderText = "";
             const isLoggedIn = !!currentUser;
-            const isBasicSDKReady = !!(API_KEY && genAI);
-            const canUseFileAPI = isBasicSDKReady && !!genAI.files; // Re-evaluate here
+             const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold;
 
             if (isRecording) { placeholderText = "Recording audio..."; }
             else if (isLoading) { placeholderText = message; }
             else if (!isLoggedIn) { placeholderText = "Please log in"; }
-            else if (!isBasicSDKReady) { // Basic SDK failed or no API key
-                 placeholderText = "API Key/SDK Error. Check settings.";
-             }
-             else if (!canUseFileAPI) { // Basic SDK ok, but File API missing
-                 placeholderText = "File API Error. PDF Upload disabled.";
-             }
+            else if (!isSdkFullyReady) { placeholderText = "API Key/SDK Error. Check settings/reload."; }
             else if (!activeChatId) { placeholderText = "Select or create a chat"; }
             else { placeholderText = "Enter prompt, attach media, or paste URL"; }
 
-            // Ensure placeholder updates even if the element was disabled
-             if (userInput.placeholder !== placeholderText) {
-                userInput.placeholder = placeholderText;
-             }
-            // console.log(`Placeholder set to: "${placeholderText}"`);
+            if (userInput.placeholder !== placeholderText) { userInput.placeholder = placeholderText; }
         }
 
         // switchView remains the same
-        function switchView(viewName, cameFromTests = false) { /* ... (no changes needed) ... */ console.log("Switching view to:", viewName); chatView.classList.remove('active'); reviewView.classList.remove('active'); testView.classList.remove('active'); appContainer.classList.remove('hidden'); isTestMode = false; isReviewMode = false; cameFromAllTestsList = cameFromTests; saveReviewBtn.style.display = 'none'; exitReviewBtn.style.display = 'none'; if(viewName === 'test'){ appContainer.classList.add('hidden'); testView.classList.add('active'); isTestMode = true; } else if(viewName === 'review'){ reviewView.classList.add('active'); isReviewMode = true; exitReviewBtn.style.display = 'inline-block'; exitReviewBtn.textContent = cameFromAllTestsList ? "Back to All Tests" : "Back to Chat"; } else { chatView.classList.add('active'); if (currentUser && activeChatId && API_KEY && genAI && !isRecording) { setTimeout(() => userInput.focus(), 100); } } if (viewName !== 'test' && testTimerInterval) { clearInterval(testTimerInterval); testTimerInterval = null; } }
-        // displayMessage remains the same
-        function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null) { /* ... (no changes needed) ... */ const messageElement = document.createElement('div'); messageElement.classList.add('message', `${sender}-message`); if (cssClasses?.length > 0) messageElement.classList.add(...cssClasses); let hasContent = false; if (messageData?.mediaType === 'image' && messageData.mediaData && messageData.mediaData !== '#error') { try { const img = document.createElement('img'); img.src = messageData.mediaData; img.alt = messageData.mediaName || "Uploaded Image"; img.classList.add('uploaded-image'); img.loading = "lazy"; img.onerror = () => { img.alt = "Image load error"; img.src = ""; }; messageElement.appendChild(img); hasContent = true; } catch (e) { console.error("Error creating image element:", e); } } else if (messageData?.mediaType === 'multi-image' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} image${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-image indicator:", e); } } else if (messageData?.mediaType === 'multi-pdf' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} PDF${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-PDF indicator:", e); } } else if (messageData?.mediaType === 'audio' && messageData.mediaData) { try { const audioContainer = document.createElement('div'); audioContainer.classList.add('chat-audio-player'); const audioPlayer = document.createElement('audio'); audioPlayer.src = messageData.mediaData; audioPlayer.controls = true; audioPlayer.preload = "metadata"; if(messageData.mediaName) audioPlayer.title = messageData.mediaName; audioPlayer.onerror = () => { console.warn("Error loading audio player"); audioContainer.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(Audio load error)</span>`; }; audioContainer.appendChild(audioPlayer); messageElement.appendChild(audioContainer); hasContent = true; } catch (e) { console.error("Error creating audio element:", e); } } if (text) { const messageContentContainer = document.createElement('div'); try { const tempDiv = document.createElement('div'); tempDiv.innerText = text; let formattedText = tempDiv.innerHTML; if (messageData?.mediaType !== 'image') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); } formattedText = formattedText.replace(/```([\s\S]*?)```/g, (match, code) => `<pre><code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`).replace(/`([^`]+)`/g, (match, code) => `<code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>'); messageContentContainer.innerHTML = formattedText; messageElement.appendChild(messageContentContainer); hasContent = true; if (text.includes('$') || text.includes('\\') || text.includes('^') || text.includes('_')) { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { setTimeout(() => { MathJax.typesetPromise([messageContentContainer]).catch(err => console.error('MathJax typesetting error:', err)); }, 50); } } } catch (e) { console.error("Error formatting text content:", e); } } if (messageData?.youtubeVideoId) { try { const youtubeEmbedDiv = document.createElement('div'); youtubeEmbedDiv.classList.add('youtube-embed-container'); const iframe = document.createElement('iframe'); iframe.classList.add('chat-video'); iframe.src = `https://www.youtube.com/embed/${messageData.youtubeVideoId}`; iframe.title = "YouTube video player"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen = true; iframe.loading = "lazy"; iframe.onerror = () => { youtubeEmbedDiv.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(YouTube embed error)</span>`; }; youtubeEmbedDiv.appendChild(iframe); messageElement.appendChild(youtubeEmbedDiv); hasContent = true; } catch (e) { console.error("Error creating YouTube embed:", e); } } if (messageData?.role === 'model' && messageData?.mcqData?.length > 0) { try { displayMCQOffer(messageData.mcqData, messageData.mcqTitle, messageElement); hasContent = true; } catch (e) { console.error("Error displaying MCQ offer:", e); } } else if (appendHtml) { try { const appendDiv = document.createElement('div'); appendDiv.innerHTML = appendHtml; while (appendDiv.firstChild) { messageElement.appendChild(appendDiv.firstChild); } hasContent = true; } catch (e) { console.error("Error appending raw HTML:", e); } } if (hasContent || cssClasses.includes('thinking') || cssClasses.includes('error-message')) { // Added error-message check
-           if (!chatArea.contains(messageElement)) { // Prevent adding duplicates if already added?
-                chatArea.appendChild(messageElement);
-            }
-         } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); } return messageElement; }
+        function switchView(viewName, cameFromTests = false) { console.log("Switching view to:", viewName); chatView.classList.remove('active'); reviewView.classList.remove('active'); testView.classList.remove('active'); appContainer.classList.remove('hidden'); isTestMode = false; isReviewMode = false; cameFromAllTestsList = cameFromTests; saveReviewBtn.style.display = 'none'; exitReviewBtn.style.display = 'none'; if(viewName === 'test'){ appContainer.classList.add('hidden'); testView.classList.add('active'); isTestMode = true; } else if(viewName === 'review'){ reviewView.classList.add('active'); isReviewMode = true; exitReviewBtn.style.display = 'inline-block'; exitReviewBtn.textContent = cameFromAllTestsList ? "Back to All Tests" : "Back to Chat"; } else { chatView.classList.add('active'); if (currentUser && activeChatId && API_KEY && genAI && !isRecording) { setTimeout(() => userInput.focus(), 100); } } if (viewName !== 'test' && testTimerInterval) { clearInterval(testTimerInterval); testTimerInterval = null; } }
 
-        // --- MCQ/Test/Review/All Tests Functions (remain the same) ---
+        // displayMessage: Includes code block handling with PrismJS
+        // ***** TAMIL *****
+        // இந்த function message-களை chat area-வில் காட்டுகிறது. Code block-களையும் format செய்கிறது.
+        function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            if (cssClasses?.length > 0) messageElement.classList.add(...cssClasses);
+            let hasContent = false; let containsCode = false;
+
+            // --- Media Rendering (Existing Logic) ---
+            if (messageData?.mediaType === 'image' && messageData.mediaData && messageData.mediaData !== '#error') { try { const img = document.createElement('img'); img.src = messageData.mediaData; img.alt = messageData.mediaName || "Uploaded Image"; img.classList.add('uploaded-image'); img.loading = "lazy"; img.onerror = () => { img.alt = "Image load error"; img.src = ""; }; messageElement.appendChild(img); hasContent = true; } catch (e) { console.error("Error creating image element:", e); } }
+            else if (messageData?.mediaType === 'multi-image' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} image${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-image indicator:", e); } }
+            else if (messageData?.mediaType === 'multi-pdf' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} PDF${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-PDF indicator:", e); } }
+            else if (messageData?.mediaType === 'audio' && messageData.mediaData) { try { const audioContainer = document.createElement('div'); audioContainer.classList.add('chat-audio-player'); const audioPlayer = document.createElement('audio'); audioPlayer.src = messageData.mediaData; audioPlayer.controls = true; audioPlayer.preload = "metadata"; if(messageData.mediaName) audioPlayer.title = messageData.mediaName; audioPlayer.onerror = () => { console.warn("Error loading audio player"); audioContainer.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(Audio load error)</span>`; }; audioContainer.appendChild(audioPlayer); messageElement.appendChild(audioContainer); hasContent = true; } catch (e) { console.error("Error creating audio element:", e); } }
+
+            // --- Text Content Rendering (with Code Block Handling) ---
+            if (text) {
+                const messageContentContainer = document.createElement('div');
+                try {
+                    // Sanitize basic HTML tags (example, very basic)
+                     const tempDiv = document.createElement('div');
+                     tempDiv.innerText = text; // Let browser handle basic text escaping
+                     let formattedText = tempDiv.innerHTML;
+
+                    // Handle Images in Text (remains same)
+                    if (messageData?.mediaType !== 'image') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); }
+
+                    // ***** TAMIL *****
+                    // இங்கதான் code block-களுக்கான (``` ... ```) HTML-ஐ உருவாக்குகிறோம்.
+                    // PrismJS syntax highlighting வேலை செய்ய class="language-..." சேர்க்கிறோம்.
+                    formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+                        containsCode = true; // Mark that code exists for highlighting
+                        const languageClass = lang ? `language-${lang.trim()}` : 'language-plain';
+                        // Escape HTML within the code block before wrapping
+                        const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`;
+                    });
+
+                    // Handle Inline Code (`) (remains same)
+                    formattedText = formattedText.replace(/`([^`]+)`/g, (match, code) => `<code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`);
+                    // Handle Bold/Italics/Newlines (remains same)
+                    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>');
+
+                    messageContentContainer.innerHTML = formattedText;
+                    messageElement.appendChild(messageContentContainer);
+                    hasContent = true;
+
+                    // MathJax typesetting (remains same)
+                    if (text.includes('$') || text.includes('\\') || text.includes('^') || text.includes('_')) { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { setTimeout(() => { MathJax.typesetPromise([messageContentContainer]).catch(err => console.error('MathJax typesetting error:', err)); }, 50); } }
+
+                } catch (e) { console.error("Error formatting text content:", e); }
+            }
+
+            // --- YouTube Embed (Existing Logic) ---
+            if (messageData?.youtubeVideoId) { try { const youtubeEmbedDiv = document.createElement('div'); youtubeEmbedDiv.classList.add('youtube-embed-container'); const iframe = document.createElement('iframe'); iframe.classList.add('chat-video'); iframe.src = `https://www.youtube.com/embed/${messageData.youtubeVideoId}`; iframe.title = "YouTube video player"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen = true; iframe.loading = "lazy"; iframe.onerror = () => { youtubeEmbedDiv.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(YouTube embed error)</span>`; }; youtubeEmbedDiv.appendChild(iframe); messageElement.appendChild(youtubeEmbedDiv); hasContent = true; } catch (e) { console.error("Error creating YouTube embed:", e); } }
+
+             // --- MCQ Offer (Existing Logic) ---
+            if (messageData?.role === 'model' && messageData?.mcqData?.length > 0) { try { displayMCQOffer(messageData.mcqData, messageData.mcqTitle, messageElement); hasContent = true; } catch (e) { console.error("Error displaying MCQ offer:", e); } }
+            // --- Append Raw HTML (Existing Logic) ---
+            else if (appendHtml) { try { const appendDiv = document.createElement('div'); appendDiv.innerHTML = appendHtml; while (appendDiv.firstChild) { messageElement.appendChild(appendDiv.firstChild); } hasContent = true; } catch (e) { console.error("Error appending raw HTML:", e); } }
+
+            // --- Append Message to Chat Area ---
+            if (hasContent || cssClasses.includes('thinking') || cssClasses.includes('error-message')) {
+                if (!chatArea.contains(messageElement)) {
+                    chatArea.appendChild(messageElement);
+                    // ***** TAMIL *****
+                    // message-ல் code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlight செய்கிறோம்.
+                    if (containsCode && typeof Prism !== 'undefined') {
+                         // Delay highlighting slightly to ensure element is fully in DOM
+                         setTimeout(() => {
+                             try {
+                                 messageElement.querySelectorAll('pre code').forEach(block => {
+                                     Prism.highlightElement(block);
+                                 });
+                                 // console.log("Prism highlighting applied.");
+                             } catch (highlightError) {
+                                 console.error("Prism highlighting error:", highlightError);
+                             }
+                         }, 50);
+                     }
+                }
+            } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); }
+            return messageElement;
+        }
+
+
+        // --- MCQ/Test/Review/All Tests Functions ---
+        // ***** TAMIL *****
+        // இந்த functions எல்லாம் mock test, review, saved tests தொடர்பானவை. இவற்றில் மாற்றம் இல்லை.
         // handleChatAreaClick, displayMCQOffer, startMockTest, displayTestQuestion,
         // handleOptionSelect, handleTestNavigation, startTestTimer, submitTest,
         // calculateResults, displayReview, handleReviewFilterClick, filterReviewItems,
         // exitReview, saveTestReviewToCloud, loadAndListenForTests, renderAllTestsList,
         // filterTestsInSidebar, handleAllTestsListClick, enterTestTitleEditMode,
         // exitTestTitleEditMode, saveTestTitle, deleteSavedTest, startReattempt
-        function handleChatAreaClick(event) { /* ... (no changes needed) ... */ const startButton = event.target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; } const clickedImage = event.target.closest('img.chat-image, img.uploaded-image'); if (clickedImage?.src && !clickedImage.src.startsWith('#') && clickedImage.src.trim() !== '') { try { if (!clickedImage.src.startsWith('data:image') || clickedImage.src.length < 2 * 1024 * 1024) { window.open(clickedImage.src, '_blank'); } else { console.log("Clicked large base64 image in chat."); } } catch (e) { console.error("Error opening image source:", e); } } }
-        function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { /* ... (no changes needed) ... */ if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
-        function startMockTest(mcqs, title = null) { /* ... (no changes needed) ... */ if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
-        function displayTestQuestion(index) { /* ... (no changes needed) ... */ if (index < 0 || index >= currentTestMCQs.length) return; currentQuestionIndex = index; const questionData = currentTestMCQs[index]; const questionText = questionData.question?.en || "(Question missing)"; testQuestionNumber.textContent = `Question ${index + 1}`; testQuestion.innerHTML = questionText; testOptionsContainer.innerHTML = ''; const options = questionData.options || []; const optionLetters = ['A', 'B', 'C', 'D']; options.forEach((optionObj, optionIndex) => { if (optionIndex >= optionLetters.length) return; const optionText = optionObj?.en || '(Option missing)'; const label = document.createElement('label'); const input = document.createElement('input'); input.type = 'radio'; input.name = `q_${index}`; input.value = optionIndex; input.checked = (userAnswers[index] === optionIndex); input.onchange = () => handleOptionSelect(optionIndex); label.appendChild(input); label.appendChild(document.createTextNode(` ${optionLetters[optionIndex]}. ${optionText}`)); testOptionsContainer.appendChild(label); }); try { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { MathJax.typesetPromise([testQuestion, testOptionsContainer]).catch(err=>console.error('MathJax Test Q Error:', err)); } } catch(e){ console.error("MathJax call failed in test:", e); } prevQuestionBtn.disabled = (index === 0); nextQuestionBtn.disabled = (index === currentTestMCQs.length - 1); questionCounter.textContent = `Q: ${index + 1} / ${currentTestMCQs.length}`; }
-        function handleOptionSelect(optionIndex) { /* ... (no changes needed) ... */ if (currentQuestionIndex >= 0 && currentQuestionIndex < userAnswers.length) { userAnswers[currentQuestionIndex] = optionIndex; console.log(`Answered Q${currentQuestionIndex + 1}: Option ${optionIndex}`); } }
-        function handleTestNavigation(direction) { /* ... (no changes needed) ... */ let newIndex = currentQuestionIndex; if (direction === 'prev' && currentQuestionIndex > 0) { newIndex--; } else if (direction === 'next' && currentQuestionIndex < currentTestMCQs.length - 1) { newIndex++; } if (newIndex !== currentQuestionIndex) { displayTestQuestion(newIndex); } }
-        function startTestTimer() { /* ... (no changes needed) ... */ if (testTimerInterval) clearInterval(testTimerInterval); testStartTime = Date.now(); testTimer.textContent = `Time: 00:00`; testTimerInterval = setInterval(() => { const elapsedSeconds = Math.floor((Date.now() - testStartTime) / 1000); const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0'); const seconds = (elapsedSeconds % 60).toString().padStart(2, '0'); testTimer.textContent = `Time: ${minutes}:${seconds}`; }, 1000); }
-        function submitTest() { /* ... (no changes needed) ... */ if (!confirm("Submit test?")) return; if (testTimerInterval) clearInterval(testTimerInterval); const endTime = Date.now(); const timeTakenMs = testStartTime ? endTime - testStartTime : 0; const results = calculateResults(currentTestMCQs, userAnswers, timeTakenMs); reviewResultsCache = results; switchView('review', false); displayReview(results); }
-        function calculateResults(mcqs, answers, timeMs) { /* ... (no changes needed) ... */ let correctCount = 0, incorrectCount = 0, skippedCount = 0; const reviewQuestions = []; mcqs.forEach((q, idx) => { const uAIdx = answers[idx]; const opts = q.options || []; const cALtr = q.answer?.trim().toUpperCase(); const cAIdx = cALtr ? cALtr.charCodeAt(0) - 'A'.charCodeAt(0) : -1; const cATxtE = (cAIdx >= 0 && cAIdx < opts.length) ? (opts[cAIdx]?.en || '?') : "N/A"; let uATxtE = "Skipped"; let st = "skipped"; if (uAIdx !== null && uAIdx >= 0 && uAIdx < opts.length) { uATxtE = opts[uAIdx]?.en || '?'; if (uAIdx === cAIdx) { st = "correct"; correctCount++; } else { st = "incorrect"; incorrectCount++; } } else if (uAIdx !== null) { uATxtE = "Invalid"; st = "incorrect"; incorrectCount++; } else { skippedCount++; } reviewQuestions.push({ question: q.question?.en || '?', correctAnswer: cATxtE, userAnswer: uATxtE, status: st, explanation: q.explanation?.en || "N/A" }); }); const total = mcqs.length; const score = `${correctCount}/${total}`; const timeS = Math.round(timeMs / 1000); const mins = Math.floor(timeS / 60); const secs = timeS % 60; const timeStr = `${mins}m ${secs}s`; return { questions: reviewQuestions, summary: { score, correct: correctCount, incorrect: incorrectCount, skipped: skippedCount, timeString: timeStr }, testDate: new Date().toISOString(), timeTakenMs: timeMs, sourceChatId: activeChatId, testTitle: testTitle.textContent, originalMCQs: mcqs }; }
-        function displayReview(reviewData) { /* ... (no changes needed) ... */ reviewContent.innerHTML = ''; reviewSummary.innerHTML = ''; reviewFilters.style.display = 'none'; if (!reviewData?.questions?.length || !reviewData.summary || !reviewData.originalMCQs) { reviewSummary.innerHTML = "<span>No review data available.</span>"; saveReviewBtn.style.display = 'none'; return; } const { score, correct, incorrect, skipped, timeString } = reviewData.summary; reviewSummary.innerHTML = `<span>Score: ${score}</span> <span class="score-correct">Correct: ${correct}</span> <span class="score-incorrect">Incorrect: ${incorrect}</span> <span class="score-skipped">Skipped: ${skipped}</span> <span>Time: ${timeString}</span>`; reviewTitle.textContent = reviewData.testTitle || "Test Review"; reviewData.questions.forEach((qSum, idx) => { const origQ = reviewData.originalMCQs[idx]; if (!origQ) return; const qTxt = origQ.question?.en || '?'; const opts = origQ.options || []; const cALtr = origQ.answer?.trim().toUpperCase(); const cAIdx = cALtr ? cALtr.charCodeAt(0) - 'A'.charCodeAt(0) : -1; const cATxt = (cAIdx >= 0 && cAIdx < opts.length) ? (opts[cAIdx]?.en) : "N/A"; let uATxt = qSum.userAnswer; const st = qSum.status; if (st === 'skipped') uATxt = "Skipped"; else if (st === 'invalid') uATxt = "Invalid"; const explTxt = origQ.explanation?.en || "N/A."; let iStCls = `status-${st}`; let aDtCls = `user-answer-${st}`; const rItem = document.createElement('div'); rItem.classList.add('review-item', iStCls); rItem.dataset.status = st; let dHtml = `<span class="${aDtCls}">Your Answer: ${uATxt}</span>`; if (st !== 'correct') { dHtml += `<br><span class="correct-answer">Correct Answer: ${cATxt}</span>`; } dHtml += `<div class="review-item-explanation">Explanation: ${explTxt}</div>`; rItem.innerHTML = `<div class="review-item-qnum">Q ${idx + 1}</div> <div class="review-item-question">${qTxt}</div> <div class="review-item-details">${dHtml}</div>`; reviewContent.appendChild(rItem); }); if (incorrect > 0 || skipped > 0) reviewFilters.style.display = 'block'; else reviewFilters.style.display = 'none'; if (reviewData.savedAt) { saveReviewBtn.textContent = "Saved"; saveReviewBtn.disabled = true; saveReviewBtn.style.display = 'inline-block'; } else if (reviewResultsCache && !cameFromAllTestsList) { saveReviewBtn.textContent = "Save Review"; saveReviewBtn.disabled = !currentUser; saveReviewBtn.style.display = 'inline-block'; } else { saveReviewBtn.style.display = 'none'; } filterReviewItems('all'); reviewFilters.querySelectorAll('button').forEach(btn => { btn.classList.toggle('active-filter', btn.dataset.filter === 'all'); }); try { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { MathJax.typesetPromise([reviewContent]).catch(err=>console.error('MathJax Review Error:', err)); } } catch (e) { console.error("MathJax call failed in review:", e); } }
-        function handleReviewFilterClick(event) { /* ... (no changes needed) ... */ const button = event.target.closest('button[data-filter]'); if (button) { filterReviewItems(button.dataset.filter); } }
-        function filterReviewItems(filter) { /* ... (no changes needed) ... */ reviewFilters.querySelectorAll('button').forEach(btn => { btn.classList.toggle('active-filter', btn.dataset.filter === filter); }); reviewContent.querySelectorAll('.review-item').forEach(item => { const show = (filter === 'all') || item.dataset.status === filter; item.classList.toggle('hidden-by-filter', !show); }); }
-        function exitReview() { /* ... (no changes needed) ... */ reviewResultsCache = null; switchView('chat'); reviewSummary.innerHTML = ''; reviewContent.innerHTML = ''; reviewTitle.textContent = 'Review'; }
-        async function saveTestReviewToCloud() { /* ... (no changes needed) ... */ if (!currentUser) { alert("Please log in to save the review."); return; } if (!reviewResultsCache || reviewResultsCache.savedAt) { alert("No new review data to save or already saved."); return; } if (!reviewResultsCache.originalMCQs?.length || !reviewResultsCache.summary) { if (!confirm("Warning: Review data seems incomplete. Save anyway?")) { return; } } const dataToSave = { ...reviewResultsCache, userId: currentUser.uid, savedAt: firebase.firestore.FieldValue.serverTimestamp(), }; saveReviewBtn.disabled = true; saveReviewBtn.textContent = "Saving..."; try { const newRef = await db.collection('testReviews').add(dataToSave); console.log("Review saved:", newRef.id); alert("Review saved!"); saveReviewBtn.textContent = "Saved"; if (reviewResultsCache) reviewResultsCache.savedAt = new Date(); } catch (error) { console.error("Error saving review:", error); alert("Failed to save review."); saveReviewBtn.disabled = false; saveReviewBtn.textContent = "Save Review"; } }
-        function loadAndListenForTests(userId) { /* ... (no changes needed) ... */ if (testListListener) { testListListener(); testListListener = null; } const testsRef = db.collection('testReviews').where('userId', '==', userId).orderBy('savedAt', 'desc'); console.log(`Listening for saved tests for user ${userId}`); testListListener = testsRef.onSnapshot(snapshot => { allSavedTestsData = []; snapshot.forEach(doc => { allSavedTestsData.push({ id: doc.id, ...doc.data() }); }); console.log("Received saved tests snapshot:", allSavedTestsData.length, "tests"); renderAllTestsList(allSavedTestsData); filterTestsInSidebar(); }, error => { console.error("Error listening for saved tests:", error); allTestsListContainer.innerHTML = `<div style="padding:10px; color:var(--error-text);">Error loading saved tests.</div>`; allSavedTestsData = []; }); }
-        function renderAllTestsList(tests) { /* ... (no changes needed) ... */ allTestsListContainer.innerHTML = ''; if (!currentUser) { allTestsListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">Login to see tests.</div>'; return; } if (tests.length === 0) { allTestsListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">No saved tests found.</div>'; } else { tests.forEach(testData => { const item = document.createElement('div'); item.classList.add('test-list-item'); item.dataset.reviewId = testData.id; const title = testData.testTitle || '(Untitled Test)'; const date = testData.savedAt?.toDate ? testData.savedAt.toDate().toLocaleString() : 'Unknown date'; const score = testData.summary?.score || 'N/A'; const hasReattemptData = testData.originalMCQs?.length > 0 && testData.originalMCQs.every(q => q?.question && q.options && q.answer && q.explanation); const infoDiv = document.createElement('div'); infoDiv.classList.add('test-item-info'); const titleSpan = document.createElement('span'); titleSpan.classList.add('test-item-title'); titleSpan.textContent = title; titleSpan.title = title; const detailSpan = document.createElement('span'); detailSpan.classList.add('test-item-details'); detailSpan.textContent = `Saved: ${date} | Score: ${score}`; const controlsDiv = document.createElement('div'); controlsDiv.classList.add('test-item-controls'); const editButton = document.createElement('button'); editButton.innerHTML = EDIT_TEST_ICON; editButton.title = "Edit title"; editButton.dataset.action = "edit-title"; controlsDiv.appendChild(editButton); const deleteButton = document.createElement('button'); deleteButton.innerHTML = DELETE_TEST_ICON; deleteButton.title = "Delete test"; deleteButton.dataset.action = "delete-test"; controlsDiv.appendChild(deleteButton); infoDiv.appendChild(titleSpan); infoDiv.appendChild(detailSpan); infoDiv.appendChild(controlsDiv); const actionsDiv = document.createElement('div'); actionsDiv.classList.add('test-item-actions'); const viewButton = document.createElement('button'); viewButton.textContent = "Details"; viewButton.dataset.action = "view"; actionsDiv.appendChild(viewButton); const reattemptSelect = document.createElement('select'); reattemptSelect.dataset.action = "reattempt"; reattemptSelect.disabled = !hasReattemptData; reattemptSelect.title = hasReattemptData ? "Reattempt test" : "Reattempt data not available"; reattemptSelect.innerHTML = `<option value="" selected>${hasReattemptData ? 'Reattempt...' : 'N/A'}</option> <option value="mistaked" ${!hasReattemptData?'disabled':''}>Mistaked Only</option> <option value="skipped" ${!hasReattemptData?'disabled':''}>Skipped Only</option> <option value="both" ${!hasReattemptData?'disabled':''}>Mistaked/Skipped</option> <option value="full" ${!hasReattemptData?'disabled':''}>Full Test</option>`; reattemptSelect.addEventListener('change', (e) => { const selectedMode = e.target.value; if (selectedMode) { const reviewId = e.target.closest('.test-list-item')?.dataset.reviewId; if (reviewId) { startReattempt(reviewId, selectedMode); } e.target.value = ""; } }); actionsDiv.appendChild(reattemptSelect); item.appendChild(infoDiv); item.appendChild(actionsDiv); allTestsListContainer.appendChild(item); }); } }
-        function filterTestsInSidebar() { /* ... (no changes needed) ... */ const searchTerm = testSearchInput.value.toLowerCase().trim(); const items = allTestsListContainer.querySelectorAll('.test-list-item'); let visibleCount = 0; const noResultsMsg = allTestsListContainer.querySelector('.no-search-results'); if (noResultsMsg) { noResultsMsg.remove(); } items.forEach(item => { const title = item.querySelector('.test-item-title')?.textContent.toLowerCase() || ''; const details = item.querySelector('.test-item-details')?.textContent.toLowerCase() || ''; const isMatch = title.includes(searchTerm) || details.includes(searchTerm); item.classList.toggle('hidden-by-search', !isMatch); if (isMatch) visibleCount++; }); if (visibleCount === 0 && searchTerm !== '' && items.length > 0) { const msgDiv = document.createElement('div'); msgDiv.textContent = "No saved tests match your search."; msgDiv.classList.add('no-search-results'); allTestsListContainer.appendChild(msgDiv); } }
-        async function handleAllTestsListClick(event) { /* ... (no changes needed) ... */ const button = event.target.closest('button[data-action]'); if (!button) return; const action = button.dataset.action; const listItem = button.closest('.test-list-item'); const reviewId = listItem?.dataset.reviewId; if (!reviewId) { console.error("Could not find review ID for action:", action); return; } switch (action) { case "view": const reviewData = allSavedTestsData.find(t => t.id === reviewId); if (reviewData) { reviewResultsCache = reviewData; switchView('review', true); displayReview(reviewData); } else { alert("Error: Could not find review data to display."); } break; case "edit-title": enterTestTitleEditMode(listItem, reviewId); break; case "delete-test": const testTitle = listItem.querySelector('.test-item-title')?.textContent || 'this test'; if (confirm(`Are you sure you want to delete the test "${testTitle}"?`)) { deleteSavedTest(reviewId, listItem); } break; } }
-        function enterTestTitleEditMode(listItem, reviewId) { /* ... (no changes needed) ... */ const infoDiv = listItem.querySelector('.test-item-info'); const titleSpan = infoDiv.querySelector('.test-item-title'); const detailSpan = infoDiv.querySelector('.test-item-details'); const controlsDiv = infoDiv.querySelector('.test-item-controls'); const currentTitle = titleSpan.textContent; titleSpan.style.display = 'none'; detailSpan.style.display = 'none'; if(controlsDiv) controlsDiv.style.display = 'none'; if (infoDiv.querySelector('.test-item-edit-mode')) return; const editContainer = document.createElement('div'); editContainer.classList.add('test-item-edit-mode'); const input = document.createElement('input'); input.type = 'text'; input.value = currentTitle; input.maxLength = 100; input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { saveTestTitle(listItem, reviewId, input.value); } else if (e.key === 'Escape') { exitTestTitleEditMode(listItem, currentTitle); } }); const saveButton = document.createElement('button'); saveButton.textContent = 'Save'; saveButton.onclick = () => saveTestTitle(listItem, reviewId, input.value); const cancelButton = document.createElement('button'); cancelButton.textContent = 'Cancel'; cancelButton.onclick = () => exitTestTitleEditMode(listItem, currentTitle); editContainer.appendChild(input); editContainer.appendChild(saveButton); editContainer.appendChild(cancelButton); infoDiv.appendChild(editContainer); input.focus(); input.select(); }
-        function exitTestTitleEditMode(listItem, originalTitle = null) { /* ... (no changes needed) ... */ const infoDiv = listItem.querySelector('.test-item-info'); const titleSpan = infoDiv.querySelector('.test-item-title'); const detailSpan = infoDiv.querySelector('.test-item-details'); const controlsDiv = infoDiv.querySelector('.test-item-controls'); const editContainer = infoDiv.querySelector('.test-item-edit-mode'); if (editContainer) editContainer.remove(); if (originalTitle !== null && titleSpan) { titleSpan.textContent = originalTitle; titleSpan.title = originalTitle; } if(titleSpan) titleSpan.style.display = ''; if(detailSpan) detailSpan.style.display = ''; if(controlsDiv) controlsDiv.style.display = ''; }
-        async function saveTestTitle(listItem, reviewId, newTitle) { /* ... (no changes needed) ... */ const trimmedTitle = newTitle.trim(); if (!trimmedTitle) { alert("Test title cannot be empty."); return; } if (trimmedTitle.length > 100) { alert("Test title is too long (max 100 characters)."); return; } const docRef = db.collection('testReviews').doc(reviewId); try { await docRef.update({ testTitle: trimmedTitle }); console.log("Test title updated successfully:", reviewId); const titleSpan = listItem.querySelector('.test-item-title'); if (titleSpan) { titleSpan.textContent = trimmedTitle; titleSpan.title = trimmedTitle; } const testIndex = allSavedTestsData.findIndex(t => t.id === reviewId); if (testIndex > -1) allSavedTestsData[testIndex].testTitle = trimmedTitle; exitTestTitleEditMode(listItem); } catch (error) { console.error("Error updating test title:", error); alert("Failed to update test title."); } }
-        async function deleteSavedTest(reviewId, listItem) { /* ... (no changes needed) ... */ if (!currentUser || !reviewId) return; listItem.style.opacity = '0.5'; listItem.style.pointerEvents = 'none'; const docRef = db.collection('testReviews').doc(reviewId); try { await docRef.delete(); console.log("Saved test deleted successfully:", reviewId); allSavedTestsData = allSavedTestsData.filter(t => t.id !== reviewId); /* No need to re-render manually, listener will update */ alert("Saved test deleted."); } catch (error) { console.error("Error deleting saved test:", error); alert("Failed to delete saved test."); listItem.style.opacity = '1'; listItem.style.pointerEvents = 'auto'; } }
-        async function startReattempt(reviewId, mode) { /* ... (no changes needed) ... */ console.log(`Attempting reattempt for review ID: ${reviewId}, Mode: ${mode}`); const reviewData = allSavedTestsData.find(t => t.id === reviewId); if (!reviewData) { alert("Error: Could not find the saved review data for reattempt."); return; } const originalMCQs = reviewData.originalMCQs; const hasValidData = originalMCQs?.length > 0 && originalMCQs.every(q => q?.question && q.options && q.answer && q.explanation); if (!hasValidData) { alert("Error: Cannot reattempt. Original test data is missing or invalid."); return; } const summaryQuestions = reviewData.questions || []; let questionsForReattempt = []; switch (mode) { case 'mistaked': questionsForReattempt = originalMCQs.filter((mcq, index) => summaryQuestions[index]?.status === 'incorrect'); break; case 'skipped': questionsForReattempt = originalMCQs.filter((mcq, index) => summaryQuestions[index]?.status === 'skipped'); break; case 'both': questionsForReattempt = originalMCQs.filter((mcq, index) => summaryQuestions[index]?.status === 'incorrect' || summaryQuestions[index]?.status === 'skipped'); break; case 'full': default: questionsForReattempt = [...originalMCQs]; break; } if (questionsForReattempt.length === 0) { alert(`No questions found for the selected reattempt mode ('${mode}').`); return; } const originalTitle = reviewData.testTitle || 'Test'; const reattemptTitle = `${originalTitle} (Reattempt: ${mode})`; startMockTest(questionsForReattempt, reattemptTitle); }
+        // (These functions remain unchanged from v9.11)
+         function handleChatAreaClick(event) { const startButton = event.target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; } const clickedImage = event.target.closest('img.chat-image, img.uploaded-image'); if (clickedImage?.src && !clickedImage.src.startsWith('#') && clickedImage.src.trim() !== '') { try { if (!clickedImage.src.startsWith('data:image') || clickedImage.src.length < 2 * 1024 * 1024) { window.open(clickedImage.src, '_blank'); } else { console.log("Clicked large base64 image in chat."); } } catch (e) { console.error("Error opening image source:", e); } } }
+         function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
+         function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
+         function displayTestQuestion(index) { if (index < 0 || index >= currentTestMCQs.length) return; currentQuestionIndex = index; const questionData = currentTestMCQs[index]; const questionText = questionData.question?.en || "(Question missing)"; testQuestionNumber.textContent = `Question ${index + 1}`; testQuestion.innerHTML = questionText; testOptionsContainer.innerHTML = ''; const options = questionData.options || []; const optionLetters = ['A', 'B', 'C', 'D']; options.forEach((optionObj, optionIndex) => { if (optionIndex >= optionLetters.length) return; const optionText = optionObj?.en || '(Option missing)'; const label = document.createElement('label'); const input = document.createElement('input'); input.type = 'radio'; input.name = `q_${index}`; input.value = optionIndex; input.checked = (userAnswers[index] === optionIndex); input.onchange = () => handleOptionSelect(optionIndex); label.appendChild(input); label.appendChild(document.createTextNode(` ${optionLetters[optionIndex]}. ${optionText}`)); testOptionsContainer.appendChild(label); }); try { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { MathJax.typesetPromise([testQuestion, testOptionsContainer]).catch(err=>console.error('MathJax Test Q Error:', err)); } } catch(e){ console.error("MathJax call failed in test:", e); } prevQuestionBtn.disabled = (index === 0); nextQuestionBtn.disabled = (index === currentTestMCQs.length - 1); questionCounter.textContent = `Q: ${index + 1} / ${currentTestMCQs.length}`; }
+         function handleOptionSelect(optionIndex) { if (currentQuestionIndex >= 0 && currentQuestionIndex < userAnswers.length) { userAnswers[currentQuestionIndex] = optionIndex; console.log(`Answered Q${currentQuestionIndex + 1}: Option ${optionIndex}`); } }
+         function handleTestNavigation(direction) { let newIndex = currentQuestionIndex; if (direction === 'prev' && currentQuestionIndex > 0) { newIndex--; } else if (direction === 'next' && currentQuestionIndex < currentTestMCQs.length - 1) { newIndex++; } if (newIndex !== currentQuestionIndex) { displayTestQuestion(newIndex); } }
+         function startTestTimer() { if (testTimerInterval) clearInterval(testTimerInterval); testStartTime = Date.now(); testTimer.textContent = `Time: 00:00`; testTimerInterval = setInterval(() => { const elapsedSeconds = Math.floor((Date.now() - testStartTime) / 1000); const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0'); const seconds = (elapsedSeconds % 60).toString().padStart(2, '0'); testTimer.textContent = `Time: ${minutes}:${seconds}`; }, 1000); }
+         function submitTest() { if (!confirm("Submit test?")) return; if (testTimerInterval) clearInterval(testTimerInterval); const endTime = Date.now(); const timeTakenMs = testStartTime ? endTime - testStartTime : 0; const results = calculateResults(currentTestMCQs, userAnswers, timeTakenMs); reviewResultsCache = results; switchView('review', false); displayReview(results); }
+         function calculateResults(mcqs, answers, timeMs) { let correctCount = 0, incorrectCount = 0, skippedCount = 0; const reviewQuestions = []; mcqs.forEach((q, idx) => { const uAIdx = answers[idx]; const opts = q.options || []; const cALtr = q.answer?.trim().toUpperCase(); const cAIdx = cALtr ? cALtr.charCodeAt(0) - 'A'.charCodeAt(0) : -1; const cATxtE = (cAIdx >= 0 && cAIdx < opts.length) ? (opts[cAIdx]?.en || '?') : "N/A"; let uATxtE = "Skipped"; let st = "skipped"; if (uAIdx !== null && uAIdx >= 0 && uAIdx < opts.length) { uATxtE = opts[uAIdx]?.en || '?'; if (uAIdx === cAIdx) { st = "correct"; correctCount++; } else { st = "incorrect"; incorrectCount++; } } else if (uAIdx !== null) { uATxtE = "Invalid"; st = "incorrect"; incorrectCount++; } else { skippedCount++; } reviewQuestions.push({ question: q.question?.en || '?', correctAnswer: cATxtE, userAnswer: uATxtE, status: st, explanation: q.explanation?.en || "N/A" }); }); const total = mcqs.length; const score = `${correctCount}/${total}`; const timeS = Math.round(timeMs / 1000); const mins = Math.floor(timeS / 60); const secs = timeS % 60; const timeStr = `${mins}m ${secs}s`; return { questions: reviewQuestions, summary: { score, correct: correctCount, incorrect: incorrectCount, skipped: skippedCount, timeString: timeStr }, testDate: new Date().toISOString(), timeTakenMs: timeMs, sourceChatId: activeChatId, testTitle: testTitle.textContent, originalMCQs: mcqs }; }
+         function displayReview(reviewData) { reviewContent.innerHTML = ''; reviewSummary.innerHTML = ''; reviewFilters.style.display = 'none'; if (!reviewData?.questions?.length || !reviewData.summary || !reviewData.originalMCQs) { reviewSummary.innerHTML = "<span>No review data available.</span>"; saveReviewBtn.style.display = 'none'; return; } const { score, correct, incorrect, skipped, timeString } = reviewData.summary; reviewSummary.innerHTML = `<span>Score: ${score}</span> <span class="score-correct">Correct: ${correct}</span> <span class="score-incorrect">Incorrect: ${incorrect}</span> <span class="score-skipped">Skipped: ${skipped}</span> <span>Time: ${timeString}</span>`; reviewTitle.textContent = reviewData.testTitle || "Test Review"; reviewData.questions.forEach((qSum, idx) => { const origQ = reviewData.originalMCQs[idx]; if (!origQ) return; const qTxt = origQ.question?.en || '?'; const opts = origQ.options || []; const cALtr = origQ.answer?.trim().toUpperCase(); const cAIdx = cALtr ? cALtr.charCodeAt(0) - 'A'.charCodeAt(0) : -1; const cATxt = (cAIdx >= 0 && cAIdx < opts.length) ? (opts[cAIdx]?.en) : "N/A"; let uATxt = qSum.userAnswer; const st = qSum.status; if (st === 'skipped') uATxt = "Skipped"; else if (st === 'invalid') uATxt = "Invalid"; const explTxt = origQ.explanation?.en || "N/A."; let iStCls = `status-${st}`; let aDtCls = `user-answer-${st}`; const rItem = document.createElement('div'); rItem.classList.add('review-item', iStCls); rItem.dataset.status = st; let dHtml = `<span class="${aDtCls}">Your Answer: ${uATxt}</span>`; if (st !== 'correct') { dHtml += `<br><span class="correct-answer">Correct Answer: ${cATxt}</span>`; } dHtml += `<div class="review-item-explanation">Explanation: ${explTxt}</div>`; rItem.innerHTML = `<div class="review-item-qnum">Q ${idx + 1}</div> <div class="review-item-question">${qTxt}</div> <div class="review-item-details">${dHtml}</div>`; reviewContent.appendChild(rItem); }); if (incorrect > 0 || skipped > 0) reviewFilters.style.display = 'block'; else reviewFilters.style.display = 'none'; if (reviewData.savedAt) { saveReviewBtn.textContent = "Saved"; saveReviewBtn.disabled = true; saveReviewBtn.style.display = 'inline-block'; } else if (reviewResultsCache && !cameFromAllTestsList) { saveReviewBtn.textContent = "Save Review"; saveReviewBtn.disabled = !currentUser; saveReviewBtn.style.display = 'inline-block'; } else { saveReviewBtn.style.display = 'none'; } filterReviewItems('all'); reviewFilters.querySelectorAll('button').forEach(btn => { btn.classList.toggle('active-filter', btn.dataset.filter === 'all'); }); try { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { MathJax.typesetPromise([reviewContent]).catch(err=>console.error('MathJax Review Error:', err)); } } catch (e) { console.error("MathJax call failed in review:", e); } }
+         function handleReviewFilterClick(event) { const button = event.target.closest('button[data-filter]'); if (button) { filterReviewItems(button.dataset.filter); } }
+         function filterReviewItems(filter) { reviewFilters.querySelectorAll('button').forEach(btn => { btn.classList.toggle('active-filter', btn.dataset.filter === filter); }); reviewContent.querySelectorAll('.review-item').forEach(item => { const show = (filter === 'all') || item.dataset.status === filter; item.classList.toggle('hidden-by-filter', !show); }); }
+         function exitReview() { reviewResultsCache = null; switchView('chat'); reviewSummary.innerHTML = ''; reviewContent.innerHTML = ''; reviewTitle.textContent = 'Review'; }
+         async function saveTestReviewToCloud() { if (!currentUser) { alert("Please log in to save the review."); return; } if (!reviewResultsCache || reviewResultsCache.savedAt) { alert("No new review data to save or already saved."); return; } if (!reviewResultsCache.originalMCQs?.length || !reviewResultsCache.summary) { if (!confirm("Warning: Review data seems incomplete. Save anyway?")) { return; } } const dataToSave = { ...reviewResultsCache, userId: currentUser.uid, savedAt: firebase.firestore.FieldValue.serverTimestamp(), }; saveReviewBtn.disabled = true; saveReviewBtn.textContent = "Saving..."; try { const newRef = await db.collection('testReviews').add(dataToSave); console.log("Review saved:", newRef.id); alert("Review saved!"); saveReviewBtn.textContent = "Saved"; if (reviewResultsCache) reviewResultsCache.savedAt = new Date(); } catch (error) { console.error("Error saving review:", error); alert("Failed to save review."); saveReviewBtn.disabled = false; saveReviewBtn.textContent = "Save Review"; } }
+         function loadAndListenForTests(userId) { if (testListListener) { testListListener(); testListListener = null; } const testsRef = db.collection('testReviews').where('userId', '==', userId).orderBy('savedAt', 'desc'); console.log(`Listening for saved tests for user ${userId}`); testListListener = testsRef.onSnapshot(snapshot => { allSavedTestsData = []; snapshot.forEach(doc => { allSavedTestsData.push({ id: doc.id, ...doc.data() }); }); console.log("Received saved tests snapshot:", allSavedTestsData.length, "tests"); renderAllTestsList(allSavedTestsData); filterTestsInSidebar(); }, error => { console.error("Error listening for saved tests:", error); allTestsListContainer.innerHTML = `<div style="padding:10px; color:var(--error-text);">Error loading saved tests.</div>`; allSavedTestsData = []; }); }
+         function renderAllTestsList(tests) { allTestsListContainer.innerHTML = ''; if (!currentUser) { allTestsListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">Login to see tests.</div>'; return; } if (tests.length === 0) { allTestsListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">No saved tests found.</div>'; } else { tests.forEach(testData => { const item = document.createElement('div'); item.classList.add('test-list-item'); item.dataset.reviewId = testData.id; const title = testData.testTitle || '(Untitled Test)'; const date = testData.savedAt?.toDate ? testData.savedAt.toDate().toLocaleString() : 'Unknown date'; const score = testData.summary?.score || 'N/A'; const hasReattemptData = testData.originalMCQs?.length > 0 && testData.originalMCQs.every(q => q?.question && q.options && q.answer && q.explanation); const infoDiv = document.createElement('div'); infoDiv.classList.add('test-item-info'); const titleSpan = document.createElement('span'); titleSpan.classList.add('test-item-title'); titleSpan.textContent = title; titleSpan.title = title; const detailSpan = document.createElement('span'); detailSpan.classList.add('test-item-details'); detailSpan.textContent = `Saved: ${date} | Score: ${score}`; const controlsDiv = document.createElement('div'); controlsDiv.classList.add('test-item-controls'); const editButton = document.createElement('button'); editButton.innerHTML = EDIT_TEST_ICON; editButton.title = "Edit title"; editButton.dataset.action = "edit-title"; controlsDiv.appendChild(editButton); const deleteButton = document.createElement('button'); deleteButton.innerHTML = DELETE_TEST_ICON; deleteButton.title = "Delete test"; deleteButton.dataset.action = "delete-test"; controlsDiv.appendChild(deleteButton); infoDiv.appendChild(titleSpan); infoDiv.appendChild(detailSpan); infoDiv.appendChild(controlsDiv); const actionsDiv = document.createElement('div'); actionsDiv.classList.add('test-item-actions'); const viewButton = document.createElement('button'); viewButton.textContent = "Details"; viewButton.dataset.action = "view"; actionsDiv.appendChild(viewButton); const reattemptSelect = document.createElement('select'); reattemptSelect.dataset.action = "reattempt"; reattemptSelect.disabled = !hasReattemptData; reattemptSelect.title = hasReattemptData ? "Reattempt test" : "Reattempt data not available"; reattemptSelect.innerHTML = `<option value="" selected>${hasReattemptData ? 'Reattempt...' : 'N/A'}</option> <option value="mistaked" ${!hasReattemptData?'disabled':''}>Mistaked Only</option> <option value="skipped" ${!hasReattemptData?'disabled':''}>Skipped Only</option> <option value="both" ${!hasReattemptData?'disabled':''}>Mistaked/Skipped</option> <option value="full" ${!hasReattemptData?'disabled':''}>Full Test</option>`; reattemptSelect.addEventListener('change', (e) => { const selectedMode = e.target.value; if (selectedMode) { const reviewId = e.target.closest('.test-list-item')?.dataset.reviewId; if (reviewId) { startReattempt(reviewId, selectedMode); } e.target.value = ""; } }); actionsDiv.appendChild(reattemptSelect); item.appendChild(infoDiv); item.appendChild(actionsDiv); allTestsListContainer.appendChild(item); }); } }
+         function filterTestsInSidebar() { const searchTerm = testSearchInput.value.toLowerCase().trim(); const items = allTestsListContainer.querySelectorAll('.test-list-item'); let visibleCount = 0; const noResultsMsg = allTestsListContainer.querySelector('.no-search-results'); if (noResultsMsg) { noResultsMsg.remove(); } items.forEach(item => { const title = item.querySelector('.test-item-title')?.textContent.toLowerCase() || ''; const details = item.querySelector('.test-item-details')?.textContent.toLowerCase() || ''; const isMatch = title.includes(searchTerm) || details.includes(searchTerm); item.classList.toggle('hidden-by-search', !isMatch); if (isMatch) visibleCount++; }); if (visibleCount === 0 && searchTerm !== '' && items.length > 0) { const msgDiv = document.createElement('div'); msgDiv.textContent = "No saved tests match your search."; msgDiv.classList.add('no-search-results'); allTestsListContainer.appendChild(msgDiv); } }
+         async function handleAllTestsListClick(event) { const button = event.target.closest('button[data-action], select[data-action]'); if (!button || button.tagName === 'SELECT') return; const action = button.dataset.action; const listItem = button.closest('.test-list-item'); const reviewId = listItem?.dataset.reviewId; if (!reviewId) { console.error("Could not find review ID for action:", action); return; } switch (action) { case "view": const reviewData = allSavedTestsData.find(t => t.id === reviewId); if (reviewData) { reviewResultsCache = reviewData; switchView('review', true); displayReview(reviewData); } else { alert("Error: Could not find review data to display."); } break; case "edit-title": enterTestTitleEditMode(listItem, reviewId); break; case "delete-test": const testTitle = listItem.querySelector('.test-item-title')?.textContent || 'this test'; if (confirm(`Are you sure you want to delete the test "${testTitle}"?`)) { deleteSavedTest(reviewId, listItem); } break; } }
+         function enterTestTitleEditMode(listItem, reviewId) { const infoDiv = listItem.querySelector('.test-item-info'); const titleSpan = infoDiv.querySelector('.test-item-title'); const detailSpan = infoDiv.querySelector('.test-item-details'); const controlsDiv = infoDiv.querySelector('.test-item-controls'); const currentTitle = titleSpan.textContent; titleSpan.style.display = 'none'; detailSpan.style.display = 'none'; if(controlsDiv) controlsDiv.style.display = 'none'; if (infoDiv.querySelector('.test-item-edit-mode')) return; const editContainer = document.createElement('div'); editContainer.classList.add('test-item-edit-mode'); const input = document.createElement('input'); input.type = 'text'; input.value = currentTitle; input.maxLength = 100; input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { saveTestTitle(listItem, reviewId, input.value); } else if (e.key === 'Escape') { exitTestTitleEditMode(listItem, currentTitle); } }); const saveButton = document.createElement('button'); saveButton.textContent = 'Save'; saveButton.onclick = () => saveTestTitle(listItem, reviewId, input.value); const cancelButton = document.createElement('button'); cancelButton.textContent = 'Cancel'; cancelButton.onclick = () => exitTestTitleEditMode(listItem, currentTitle); editContainer.appendChild(input); editContainer.appendChild(saveButton); editContainer.appendChild(cancelButton); infoDiv.appendChild(editContainer); input.focus(); input.select(); }
+        function exitTestTitleEditMode(listItem, originalTitle = null) { const infoDiv = listItem.querySelector('.test-item-info'); const titleSpan = infoDiv.querySelector('.test-item-title'); const detailSpan = infoDiv.querySelector('.test-item-details'); const controlsDiv = infoDiv.querySelector('.test-item-controls'); const editContainer = infoDiv.querySelector('.test-item-edit-mode'); if (editContainer) editContainer.remove(); if (originalTitle !== null && titleSpan) { titleSpan.textContent = originalTitle; titleSpan.title = originalTitle; } if(titleSpan) titleSpan.style.display = ''; if(detailSpan) detailSpan.style.display = ''; if(controlsDiv) controlsDiv.style.display = ''; }
+        async function saveTestTitle(listItem, reviewId, newTitle) { const trimmedTitle = newTitle.trim(); if (!trimmedTitle) { alert("Test title cannot be empty."); return; } if (trimmedTitle.length > 100) { alert("Test title is too long (max 100 characters)."); return; } const docRef = db.collection('testReviews').doc(reviewId); try { await docRef.update({ testTitle: trimmedTitle }); console.log("Test title updated successfully:", reviewId); const titleSpan = listItem.querySelector('.test-item-title'); if (titleSpan) { titleSpan.textContent = trimmedTitle; titleSpan.title = trimmedTitle; } const testIndex = allSavedTestsData.findIndex(t => t.id === reviewId); if (testIndex > -1) allSavedTestsData[testIndex].testTitle = trimmedTitle; exitTestTitleEditMode(listItem); } catch (error) { console.error("Error updating test title:", error); alert("Failed to update test title."); } }
+        async function deleteSavedTest(reviewId, listItem) { if (!currentUser || !reviewId) return; listItem.style.opacity = '0.5'; listItem.style.pointerEvents = 'none'; const docRef = db.collection('testReviews').doc(reviewId); try { await docRef.delete(); console.log("Saved test deleted successfully:", reviewId); allSavedTestsData = allSavedTestsData.filter(t => t.id !== reviewId); alert("Saved test deleted."); } catch (error) { console.error("Error deleting saved test:", error); alert("Failed to delete saved test."); listItem.style.opacity = '1'; listItem.style.pointerEvents = 'auto'; } }
+        async function startReattempt(reviewId, mode) { console.log(`Attempting reattempt for review ID: ${reviewId}, Mode: ${mode}`); const reviewData = allSavedTestsData.find(t => t.id === reviewId); if (!reviewData) { alert("Error: Could not find the saved review data for reattempt."); return; } const originalMCQs = reviewData.originalMCQs; const hasValidData = originalMCQs?.length > 0 && originalMCQs.every(q => q?.question && q.options && q.answer && q.explanation); if (!hasValidData) { alert("Error: Cannot reattempt. Original test data is missing or invalid."); return; } const summaryQuestions = reviewData.questions || []; let questionsForReattempt = []; switch (mode) { case 'mistaked': questionsForReattempt = originalMCQs.filter((mcq, index) => summaryQuestions[index]?.status === 'incorrect'); break; case 'skipped': questionsForReattempt = originalMCQs.filter((mcq, index) => summaryQuestions[index]?.status === 'skipped'); break; case 'both': questionsForReattempt = originalMCQs.filter((mcq, index) => summaryQuestions[index]?.status === 'incorrect' || summaryQuestions[index]?.status === 'skipped'); break; case 'full': default: questionsForReattempt = [...originalMCQs]; break; } if (questionsForReattempt.length === 0) { alert(`No questions found for the selected reattempt mode ('${mode}').`); return; } const originalTitle = reviewData.testTitle || 'Test'; const reattemptTitle = `${originalTitle} (Reattempt: ${mode})`; startMockTest(questionsForReattempt, reattemptTitle); }
 
     </script>
 
