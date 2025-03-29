@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v10.1 - History Persistence & New Models)</title>
+    <title>Gemini Chat + Mock Test (v10.2 - YouTube URL Input)</title>
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -158,8 +158,8 @@
         .message mjx-container { color: inherit !important; font-size: inherit !important; }
         .message img.chat-image, .message img.uploaded-image { max-width: 100%; height: auto; border-radius: 8px; margin-top: 8px; cursor: pointer; display: block; }
         .message img.uploaded-image { border: 1px solid var(--border-color); margin-bottom: 5px; }
-        .message .youtube-embed-container { margin-top: 10px; }
-        .message iframe.chat-video { max-width: 100%; aspect-ratio: 16 / 9; border: none; border-radius: 8px; }
+        .message .youtube-embed-container { margin-top: 10px; position: relative; padding-bottom: 56.25%; /* 16:9 Aspect Ratio */ height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 8px; }
+        .message iframe.chat-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         .message .chat-audio-player { margin-top: 10px; width: 100%; max-width: 350px; }
         .message .chat-audio-player audio { width: 100%; height: 40px; border-radius: 20px; }
 
@@ -364,7 +364,7 @@
                           <button class="suggestion-chip" data-prompt="Summarize this document">Summarize this document</button>
                           <button class="suggestion-chip" data-prompt="Extract key points from this PDF">Extract key points from this PDF</button>
                           <button class="suggestion-chip" data-prompt="Describe this image">Describe this image</button>
-                          <button class="suggestion-chip" data-prompt="Transcribe this audio">Transcribe this audio</button>
+                          <button class="suggestion-chip" data-prompt="Summarize this video">Summarize this video</button> <!-- Added YT Suggestion -->
                      </div>
                     <div id="media-preview-container">
                         <div id="image-previews-list">
@@ -534,6 +534,8 @@
         const DELETE_ICON = '×';
         const EDIT_TEST_ICON = '✏️';
         const DELETE_TEST_ICON = '🗑️';
+        // ***** TAMIL *****
+        // YouTube URL-ஐ கண்டுபிடிக்க உதவும் Regex.
         const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?/i;
         const imageUrlRegex = /(?<!src=["'])(?<!href=["'])(https?:\/\/[^\s()<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp))/gi;
         const MAX_IMAGE_SIZE_MB = 4;
@@ -659,7 +661,7 @@
         // ***** TAMIL *****
         // இந்த function app-ஐ ஆரம்பிக்கும்போது முதலில் run ஆகும்.
         async function initializeApp() {
-            console.log("App Initializing (v10.1)...");
+            console.log("App Initializing (v10.2)...");
             setLoadingState(true, "Initializing...");
             chatArea.innerHTML = '';
             populateModelSelector(); // Populate dropdown first
@@ -1035,6 +1037,12 @@
                 alert("Cannot select images when PDF(s) or audio are already selected. Please remove other media first.");
                 imageUploadInput.value = ''; return;
             }
+            // ***** TAMIL *****
+            // YouTube URL paste செய்திருந்தால், image upload செய்ய முடியாது.
+             if (youtubeRegex.test(userInput.value.trim())) {
+                 alert("Cannot upload images when a YouTube URL is present in the input. Please remove the URL first.");
+                 imageUploadInput.value = ''; return;
+             }
             const files = event.target.files;
             if (!files || files.length === 0) { imageUploadInput.value = ''; return; }
             let currentImageCount = selectedMediaItems.filter(item => item.type === 'image').length;
@@ -1060,6 +1068,12 @@
                 alert("Cannot select PDF(s) when image(s) or audio are already selected. Please remove other media first.");
                 pdfUploadInput.value = ''; return;
             }
+            // ***** TAMIL *****
+            // YouTube URL paste செய்திருந்தால், PDF upload செய்ய முடியாது.
+             if (youtubeRegex.test(userInput.value.trim())) {
+                 alert("Cannot upload PDFs when a YouTube URL is present in the input. Please remove the URL first.");
+                 pdfUploadInput.value = ''; return;
+             }
              if (!genAI || !genAI.files) {
                  alert("PDF upload is currently disabled because the File API is unavailable.");
                  pdfUploadInput.value = ''; return;
@@ -1086,6 +1100,12 @@
                 alert("Cannot select audio when image(s) or PDF(s) are already selected. Please remove other media first.");
                 audioUploadInput.value = ''; return;
             }
+            // ***** TAMIL *****
+            // YouTube URL paste செய்திருந்தால், audio upload செய்ய முடியாது.
+             if (youtubeRegex.test(userInput.value.trim())) {
+                 alert("Cannot upload audio when a YouTube URL is present in the input. Please remove the URL first.");
+                 audioUploadInput.value = ''; return;
+             }
             removeAllSelectedMedia();
             const file = event.target.files[0];
             if (!file) { audioUploadInput.value = ''; return; }
@@ -1229,6 +1249,12 @@
             if (isRecording) { stopRecording(); }
             else {
                 if (selectedMediaItems.some(item => item.type === 'image' || item.type === 'pdf')) { alert("Cannot record audio when images or PDFs are selected. Remove them first."); return; }
+                // ***** TAMIL *****
+                // YouTube URL paste செய்திருந்தால், audio record செய்ய முடியாது.
+                 if (youtubeRegex.test(userInput.value.trim())) {
+                     alert("Cannot record audio when a YouTube URL is present in the input. Please remove the URL first.");
+                     return;
+                 }
                 if (sendButton.disabled && !isRecording) {
                      const appReady = currentUser && API_KEY && genAI && activeChatId;
                      if (!appReady || userInput.placeholder.includes("Generating") || userInput.placeholder.includes("Sending") || userInput.placeholder.includes("Uploading") || userInput.placeholder.includes("Recording")) {
@@ -1241,6 +1267,7 @@
         async function startRecording() {
             console.log("Attempting to start recording...");
             if (selectedMediaItems.length > 0) { alert("Cannot record audio when other media is selected. Please remove it first."); return; }
+            if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot record audio when a YouTube URL is present in the input. Please remove the URL first."); return; }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert("Audio recording is not supported by your browser."); console.error("getUserMedia not supported."); return; }
             try {
                 console.log("Requesting microphone access...");
@@ -1580,24 +1607,37 @@
 
         // --- Message Sending (Gemini API & Firestore Save) ---
         // ***** TAMIL *****
-        // இதுதான் user message-ஐயும், media-வையும் வாங்கி, Gemini API-க்கு அனுப்பி, பதிலை வாங்கி காட்டுகின்ற முக்கிய function.
-        // இங்கதான் model selection, long context history, context caching logic add செய்துள்ளோம்.
-        // Refresh செய்த பிறகும் history வேலை செய்ய, `currentChatHistory`ஐ loadAndListenForActiveChat function load செய்கிறது.
+        // இதுதான் user message-ஐயும், media-வையும் (image, audio, pdf, YouTube URL) வாங்கி, Gemini API-க்கு அனுப்பி, பதிலை வாங்கி காட்டுகின்ற முக்கிய function.
+        // இங்கதான் model selection, long context history, context caching logic பயன்படுத்தப்படுகிறது.
+        // YouTube URL-ஐ handle செய்ய தேவையான மாற்றங்கள் செய்யப்பட்டுள்ளன.
         async function handleSendMessage() {
             const userMessageTextRaw = userInput.value.trim();
             const mediaItemsToSend = [...selectedMediaItems]; // Copy selected items
+            const isMCQRequest = mcqModeCheckbox.checked;
 
-            console.log("handleSendMessage: Text:", userMessageTextRaw ? userMessageTextRaw.substring(0, 50) + '...' : '(empty)', "Media items:", mediaItemsToSend.length, "Model:", selectedModelId);
+            // ***** TAMIL *****
+            // Input text-ல் YouTube URL உள்ளதா என்று regex மூலம் check செய்கிறோம்.
+            const youtubeMatch = userMessageTextRaw.match(youtubeRegex);
+            const youtubeUrl = youtubeMatch ? youtubeMatch[0] : null; // முழு URL-ஐ எடுக்கிறோம்
+
+            console.log("handleSendMessage: Text:", userMessageTextRaw ? userMessageTextRaw.substring(0, 50) + '...' : '(empty)', "Media items:", mediaItemsToSend.length, "YT URL:", youtubeUrl, "Model:", selectedModelId);
 
             // --- Initial Checks ---
             if (!currentUser) { displayError("Please log in to send messages."); return; }
             if (!activeChatId) { displayError("Please select or create a chat first."); return; }
             if (!API_KEY || !genAI || !isAISdkReady || !HarmCategory || !HarmBlockThreshold) { displayError("API Key or AI SDK not ready/fully initialized. Cannot send message."); return; }
              const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
-             if (!currentModelInfo) { displayError("Selected AI model is invalid. Please choose another model."); return; } // Should not happen if populated correctly
+             if (!currentModelInfo) { displayError("Selected AI model is invalid. Please choose another model."); return; }
 
+             // ***** TAMIL *****
+             // YouTube URL-ம், வேறு media file-ம் ஒரே நேரத்தில் இருந்தால் பிழை காட்டுகிறோம்.
+             if (youtubeUrl && mediaItemsToSend.length > 0) {
+                 displayError("Cannot process a YouTube URL and uploaded media (images/PDFs/audio) in the same message. Please remove one or the other.");
+                 setLoadingState(false); // Reset loading state if returning early
+                 return;
+             }
              const hasPdfs = mediaItemsToSend.some(item => item.type === 'pdf');
-             if (hasPdfs && (!genAI.files || !genAI.files.upload)) { // Check if file API seems available
+             if (hasPdfs && (!genAI.files || !genAI.files.upload)) {
                  displayError("File API is unavailable. Cannot send PDF files."); return;
              }
             if (!userMessageTextRaw && mediaItemsToSend.length === 0) { console.log("Empty message and no media. Nothing to send."); return; }
@@ -1607,10 +1647,8 @@
 
             // --- Clear Input & Preview ---
             userInput.value = ''; autoGrowTextarea();
-            const isMCQRequest = mcqModeCheckbox.checked;
             if (isMCQRequest) mcqModeCheckbox.checked = false;
             // Don't remove media yet, need it for API call processing below
-            // removeAllSelectedMedia(); // This will be called *after* successful processing/API call
 
             // --- Firestore References & Timestamps ---
             const timestamp = firebase.firestore.FieldValue.serverTimestamp();
@@ -1624,19 +1662,25 @@
             const pdfItems = mediaItemsToSend.filter(item => item.type === 'pdf');
             let potentialTestTitle = null;
 
-             // Add media info to Firestore message for display purposes (remains same)
-             if (singleAudioItem) { userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; }
-             else if (imageItems.length === 1) { userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; }
-             else if (imageItems.length > 1) { userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); }
-             else if (pdfItems.length > 0) { userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); }
-             const youtubeMatch = userMessageTextRaw.match(youtubeRegex); if (youtubeMatch) userMsgData.youtubeVideoId = youtubeMatch[1];
+             // Add media info to Firestore message for display purposes
+             if (singleAudioItem) { /* ... audio info ... */ userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; }
+             else if (imageItems.length === 1) { /* ... image info ... */ userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; }
+             else if (imageItems.length > 1) { /* ... multi-image info ... */ userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); }
+             else if (pdfItems.length > 0) { /* ... multi-pdf info ... */ userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); }
+             // ***** TAMIL *****
+             // YouTube video ID-ஐ Firestore-ல் save செய்கிறோம், இது chat-ல் video-வை காட்ட உதவும்.
+             if (youtubeUrl) userMsgData.youtubeVideoId = youtubeMatch[1]; // Store the video ID (group 1 from regex)
 
             // --- Save User Message to Firestore ---
              try {
                  const chatSnap = await chatDocRef.get(); let isFirstUserMessageInNewChat = false; if (chatSnap.exists && chatSnap.data().title === NEW_CHAT_TITLE) { const messagesSnap = await messagesColRef.limit(1).get(); if (messagesSnap.empty) { isFirstUserMessageInNewChat = true; } }
-                 await messagesColRef.add(userMsgData); await chatDocRef.update({ lastUpdated: timestamp }); console.log("User message saved to Firestore.");
+                 const userMessageDocRef = await messagesColRef.add(userMsgData); // Store ref
+                 await chatDocRef.update({ lastUpdated: timestamp }); console.log("User message saved to Firestore:", userMessageDocRef.id);
                  // Update in-memory history immediately after successful save
                  const userPartsForHistory = []; if (userMsgData.text) userPartsForHistory.push({ text: userMsgData.text });
+                 // ***** TAMIL *****
+                 // User message history-ல் YouTube URL-ஐ text ஆக சேர்க்கிறோம் (API call-க்கு தனியாக fileData அனுப்பினாலும்).
+                 // இதனால் context history-ல் user என்ன கேட்டார் என்று தெரியும்.
                  if (userPartsForHistory.length > 0) { currentChatHistory.push({ role: 'user', parts: userPartsForHistory }); }
                  if (isFirstUserMessageInNewChat) { let titleSource = userMessageTextRaw || (mediaItemsToSend[0]?.name) || NEW_CHAT_TITLE; const generatedTitle = generateChatTitle(titleSource); if (generatedTitle && generatedTitle !== NEW_CHAT_TITLE) { await updateActiveChatTitle(generatedTitle); } }
              } catch(error) { console.error("Error saving user message:", error); displayError("Failed to save your message."); setLoadingState(false); return; }
@@ -1647,144 +1691,193 @@
 
             // --- Prepare Parts for API Call ---
             const partsForApi = [];
-            let userTextForPrompt = userMessageTextRaw;
-            let fileDataPartsForApi = []; // Separate array for potential caching
+            let fileDataPartsForApi = []; // Separate array for potential caching (PDFs)
             let useCache = false;
             let cacheToUse = null;
-
-            // Modify prompt for MCQ generation if checked
-            if (isMCQRequest) {
-                 let baseTitle = userMessageTextRaw || (mediaItemsToSend[0]?.name) || "Generated Test";
-                 potentialTestTitle = generateChatTitle(baseTitle) + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
-                 // ***** TAMIL *****
-                 // MCQ கேட்டால், JSON format-ல் பதில் தருமாறு model-க்கு instruction கொடுக்கிறோம்.
-                 const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided text and/or media (image(s)/PDF(s)/audio). Provide the response *only* as a valid JSON array string, enclosed within \`\`\`json ... \`\`\`. Each object in the array must have "question" (object with "en" and "ta" strings), "options" (array of 4 objects with "en" and "ta" strings), "answer" (string 'A', 'B', 'C', or 'D'), and "explanation" (object with "en" and "ta" strings). Provide accurate English content only. Do not include any text outside the JSON structure.`;
-                 userTextForPrompt = userTextForPrompt ? userTextForPrompt + mcqInstructions : mcqInstructions;
-                 console.log("MCQ mode: Modified prompt for API.");
-            }
-            if (userTextForPrompt) partsForApi.push({ text: userTextForPrompt });
-
-            // --- Process and Add Media Parts ---
+            let isYouTubeRequest = false; // Flag for YouTube request
             let generatedResponse = null;
             let aiResponseSaved = false;
-            let uploadedFileUris = []; // Store URIs of successfully uploaded files
+            let uploadedFileUris = []; // Store URIs of successfully uploaded PDFs
 
             try {
-                // ***** TAMIL *****
-                // இங்க audio, image, pdf files-ஐ API request-க்கு ஏற்ற format-க்கு மாற்றுகிறோம்.
-                // PDF-க்கு File API upload-ஐ பயன்படுத்துகிறோம்.
-                if (singleAudioItem) { // Inline Audio
-                    if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); }
-                    const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1);
-                    partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } });
-                    console.log(`Added audio inlineData part.`);
-                } else if (imageItems.length > 0) { // Inline Images
-                    const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file));
-                    const imageBase64Results = await Promise.all(imageBase64Promises);
-                    let addedImageCount = 0;
-                    imageBase64Results.forEach((b64, index) => {
-                        if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; }
-                        const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1);
-                        if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; }
-                        else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); }
-                    });
-                    console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`);
-                    if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); }
-                } else if (pdfItems.length > 0) { // File API for PDFs
-                    console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`);
-                    const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length));
-                    const uploadedFileResults = await Promise.all(uploadPromises);
-                    uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri); // Store successful URIs
+                 // ***** TAMIL *****
+                 // இங்கதான் API request-க்கான 'parts' array-வை தயார் செய்கிறோம்.
+                 // YouTube URL, மற்ற media, அல்லது text - எது உள்ளதோ, அதற்கு ஏற்றவாறு parts சேர்க்கப்படும்.
 
-                    if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); }
+                 let textPromptForApi = userMessageTextRaw; // Start with the raw text
 
-                    fileDataPartsForApi = uploadedFileUris.map(uri => {
-                        const originalFile = uploadedFileResults.find(f => f.uri === uri);
-                        return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } };
-                    });
-                    console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API.`);
-
-                     // --- Context Caching Logic ---
+                 // --- 1. Process YouTube URL (if present and no other media) ---
+                 if (youtubeUrl && mediaItemsToSend.length === 0) {
+                     isYouTubeRequest = true;
                      // ***** TAMIL *****
-                     // இங்க context caching வேலை செய்யுமா என்று check செய்கிறோம்.
-                     // ஒரே PDF files-ஐ திரும்ப திரும்ப அனுப்பினால், cache-ஐ பயன்படுத்த முயற்சி செய்கிறோம்.
-                     // Caching வேலை செய்ய, user sidebar-ல் "(Cache OK)" என்று உள்ள model-ஐ தேர்வு செய்திருக்க வேண்டும்.
-                    const canAttemptCaching = currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent; // Check if model AND SDK support caching
+                     // YouTube URL-ஐ Gemini API documentation-ல் உள்ள format-ல் fileData ஆக சேர்க்கிறோம்.
+                     const youtubePart = {
+                         fileData: {
+                             mimeType: "video/mp4", // Example mime type from docs
+                             fileUri: youtubeUrl     // முழு YouTube URL
+                         }
+                     };
+                     partsForApi.push(youtubePart);
+                     console.log("Added YouTube URL as fileData part for API:", youtubeUrl);
 
-                    if (canAttemptCaching) {
-                        const sortedUris = [...uploadedFileUris].sort();
-                        // Check if the current URIs match the previously cached URIs for this chat
-                        if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) {
-                            console.log(`Attempting to use existing cache: ${currentMediaCacheName}`);
-                            // Check if cache actually exists (API call will fail if not found/expired)
-                            // We assume it exists here and let the API call handle verification.
-                            useCache = true;
-                            cacheToUse = currentMediaCacheName;
-                        } else {
-                            console.log("No matching cache found or URIs differ. Will attempt to create a new cache after this call.");
-                            // Clear old cache state (in case URIs changed)
-                            currentMediaCacheName = null;
-                            cachedMediaUris = [];
-                            // Flag to attempt cache creation later
-                        }
-                    } else if (fileDataPartsForApi.length > 0) {
-                         console.log(`Caching skipped: Model ${selectedModelId} doesn't support it, or SDK caching API missing, or no files.`);
+                     // Extract text prompt excluding the URL
+                     textPromptForApi = userMessageTextRaw.replace(youtubeUrl, '').trim();
+
+                     // If MCQ requested, formulate the text prompt accordingly
+                     if (isMCQRequest) {
+                          potentialTestTitle = generateChatTitle(textPromptForApi || "YouTube Video Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                          const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided video. Provide the response *only* as a valid JSON array string, enclosed within \`\`\`json ... \`\`\`. Each object in the array must have "question" (object with "en" and "ta" strings), "options" (array of 4 objects with "en" and "ta" strings), "answer" (string 'A', 'B', 'C', or 'D'), and "explanation" (object with "en" and "ta" strings). Provide accurate English content only. Do not include any text outside the JSON structure.`;
+                          // Combine any existing text with instructions, or use a default + instructions
+                          textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : `Generate multiple choice questions based on the provided video.` + mcqInstructions;
+                          console.log("MCQ mode for YouTube: Using prompt:", textPromptForApi);
+                     }
+                     // If no text prompt was provided besides the URL (and not MCQ), add a default one.
+                     else if (!textPromptForApi) {
+                          textPromptForApi = "Summarize this video.";
+                          console.log("YouTube URL only: Using default 'Summarize' prompt.");
+                     }
+
+                     // Add the final text prompt part if it exists
+                     if (textPromptForApi) {
+                         partsForApi.push({ text: textPromptForApi });
+                         console.log("Added text prompt part for YouTube request:", textPromptForApi);
+                     }
+
+                 }
+                 // --- 2. Process Uploaded Media (if present and no YouTube URL) ---
+                 else if (mediaItemsToSend.length > 0) {
+                     // --- 2a. Audio ---
+                     if (singleAudioItem) {
+                         if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); }
+                         const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1);
+                         partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } });
+                         console.log(`Added audio inlineData part.`);
+                     }
+                     // --- 2b. Images ---
+                     else if (imageItems.length > 0) {
+                         const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file));
+                         const imageBase64Results = await Promise.all(imageBase64Promises);
+                         let addedImageCount = 0;
+                         imageBase64Results.forEach((b64, index) => {
+                             if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; }
+                             const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1);
+                             if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; }
+                             else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); }
+                         });
+                         console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`);
+                         if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); }
+                     }
+                     // --- 2c. PDFs (File API) ---
+                     else if (pdfItems.length > 0) {
+                         console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`);
+                         const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length));
+                         const uploadedFileResults = await Promise.all(uploadPromises);
+                         uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri);
+
+                         if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); }
+
+                         fileDataPartsForApi = uploadedFileUris.map(uri => {
+                             const originalFile = uploadedFileResults.find(f => f.uri === uri);
+                             return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } };
+                         });
+                         console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API (PDFs).`);
+
+                         // Context Caching Logic for PDFs (remains the same)
+                         const canAttemptCaching = currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent;
+                         if (canAttemptCaching) {
+                              const sortedUris = [...uploadedFileUris].sort();
+                              if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) {
+                                   console.log(`Attempting to use existing cache: ${currentMediaCacheName}`); useCache = true; cacheToUse = currentMediaCacheName;
+                              } else {
+                                   console.log("No matching PDF cache found or URIs differ. Will attempt to create a new cache after this call."); currentMediaCacheName = null; cachedMediaUris = [];
+                              }
+                         } else if (fileDataPartsForApi.length > 0) { console.log(`Caching skipped for PDFs: Model ${selectedModelId} doesn't support it, or SDK caching API missing.`); }
+                     } // End PDF processing
+
+                     // Add text prompt if available AFTER processing media parts
+                      textPromptForApi = userMessageTextRaw; // Use the original text
+                      if (isMCQRequest) { // Append MCQ instructions if needed
+                          potentialTestTitle = generateChatTitle(textPromptForApi || (mediaItemsToSend[0]?.name) || "Generated Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                          const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided text and/or media (image(s)/PDF(s)/audio). Provide the response *only* as a valid JSON array string... [rest of instructions]`;
+                          textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; // Append or use instructions only
+                          console.log("MCQ mode for uploaded media: Using prompt:", textPromptForApi);
+                      }
+                      if (textPromptForApi) {
+                          partsForApi.push({ text: textPromptForApi });
+                          console.log("Added text prompt part for uploaded media request:", textPromptForApi);
+                      }
+
+                 }
+                 // --- 3. Only Text ---
+                 else {
+                      textPromptForApi = userMessageTextRaw;
+                      if (isMCQRequest) { // Handle MCQ request for text-only input
+                           potentialTestTitle = generateChatTitle(textPromptForApi || "Text-Based Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                           const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided text. Provide the response *only* as a valid JSON array string... [rest of instructions]`;
+                           textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions;
+                           console.log("MCQ mode for text only: Using prompt:", textPromptForApi);
+                      }
+                     if (textPromptForApi) {
+                         partsForApi.push({ text: textPromptForApi });
+                         console.log("Added text-only prompt part:", textPromptForApi);
+                     }
+                 }
+
+
+                // --- Combine Parts for Final API Request ---
+                let finalPartsForApi = [];
+                if (isYouTubeRequest) {
+                    finalPartsForApi = partsForApi; // YouTube parts are already combined
+                } else if (fileDataPartsForApi.length > 0) { // PDFs
+                    if (useCache) {
+                        finalPartsForApi = partsForApi; // Text/inline parts + cache name handles files
+                    } else {
+                        finalPartsForApi = [...partsForApi, ...fileDataPartsForApi]; // Combine text/inline + fileData for PDFs
                     }
-                } // End of PDF processing
-
-                 // Combine text parts and potentially file data parts (if not using cache)
-                 const finalPartsForApi = useCache ? partsForApi : [...partsForApi, ...fileDataPartsForApi];
-
-                 if (finalPartsForApi.length === 0 && !useCache) { // Check if anything is actually being sent
-                    throw new Error("No valid content (text or media) to send after processing media.");
+                } else { // Text-only or inline media (audio/images)
+                    finalPartsForApi = partsForApi;
                 }
+
+                 if (finalPartsForApi.length === 0 && !useCache) {
+                    throw new Error("No valid content (text, media, or YouTube URL) to send after processing.");
+                 }
 
                 // --- Call Gemini API using SDK ---
                 console.log("Calling Gemini API via SDK...");
                 setLoadingState(true, "Generating response...");
 
-                // ***** TAMIL *****
-                // இங்க தேர்ந்தெடுக்கப்பட்ட model-ஐயும், பாதுகாப்பு settings-ஐயும் பயன்படுத்தி API call செய்ய prepare செய்கிறோம்.
                 const model = genAI.getGenerativeModel({
-                    model: selectedModelId, // Use selected model ID
+                    model: selectedModelId,
                     safetySettings: [
                          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
                          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
                          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
                          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
                     ],
-                    // Long context is handled by sending the full history below
                 });
 
                 // ***** TAMIL *****
                 // இங்க chat history-ஐ API request-ல் சேர்க்கிறோம் (`contents` array). இதுதான் long context.
-                // `currentChatHistory` variableல் Firestoreலிருந்து load செய்த history இருக்கும்.
-                 // Filter history to ensure only text parts are included for context (as per current design)
-                 // Note: If we wanted media to persist in context *without* re-uploading, we'd need to
-                 // store file URIs in Firestore messages and reconstruct `fileData` parts here for the history.
-                 // The current approach sends only text history + *newly* uploaded media URIs/inline data.
                 const historyForSDK = currentChatHistory
                     .map(msg => ({
                         role: msg.role,
-                        parts: msg.parts.filter(part => typeof part.text === 'string') // Only include text parts in history
+                        parts: msg.parts.filter(part => typeof part.text === 'string') // Only text parts in history
                     }))
-                    .filter(msg => msg.parts.length > 0); // Remove messages with no text parts
+                    .filter(msg => msg.parts.length > 0);
 
                 // Construct the request payload
-                 const contentsRequest = [ ...historyForSDK, { role: "user", parts: finalPartsForApi } ]; // Combine history + current message parts
+                 const contentsRequest = [ ...historyForSDK, { role: "user", parts: finalPartsForApi } ];
                  const generateContentRequest = {
                      contents: contentsRequest,
-                     // ***** TAMIL *****
-                     // Cache பயன்படுத்தினால், cache name-ஐ request-ல் சேர்க்கிறோம்.
-                     ...(useCache && cacheToUse && { cache: { name: cacheToUse } }) // Conditionally add cache parameter if using cache
+                     ...(useCache && cacheToUse && { cache: { name: cacheToUse } }) // Conditionally add cache parameter if using PDF cache
                  };
 
-
                 console.log("SDK Request Payload:", JSON.stringify(generateContentRequest, (k, v) => {
-                     // Truncate large base64 strings for logging
                      if (k === 'data' && typeof v === 'string' && v.length > 100) return v.substring(0, 50) + '...[truncated]';
-                     // Shorten file URIs for logging
-                     if (k === 'fileUri' && typeof v === 'string') return '...' + v.split('/').pop() + ' [uri]';
+                     if (k === 'fileUri' && typeof v === 'string') {
+                         if (v.includes('youtube.com') || v.includes('youtu.be')) return v; // Show full YT URL
+                         else return '...' + v.split('/').pop() + ' [uri]'; // Shorten other URIs
+                     }
                      return v;
                  }, 2));
 
@@ -1812,15 +1905,11 @@
                              aiMsgData.text = rawAiText; displayAsError = false;
                              if (isMCQRequest && !blocked) { // Parse MCQs if requested and not blocked
                                 try {
-                                     // ***** TAMIL *****
-                                     // MCQ கேட்டிருந்தால், response-ல் உள்ள JSON-ஐ parse செய்ய முயற்சிக்கிறோம்.
                                      const jsonMatch = rawAiText.match(/```json\s*([\s\S]*?)\s*```/); const jsonString = jsonMatch ? jsonMatch[1].trim() : rawAiText.trim();
                                      if (jsonString.startsWith('[') && jsonString.endsWith(']')) {
                                          const mcqs = JSON.parse(jsonString);
-                                         // Basic validation of MCQ structure
                                          const isValid = Array.isArray(mcqs) && mcqs.length > 0 && mcqs.every(q => q.question?.en && q.options?.length === 4 && q.options.every(opt=>opt.en) && q.answer && q.explanation?.en);
                                          if (isValid) {
-                                              // Fill missing 'ta' fields with 'en' content
                                               mcqs.forEach(q => { q.question.ta = q.question.ta || q.question.en; q.explanation.ta = q.explanation.ta || q.explanation.en; q.options.forEach(opt => { opt.ta = opt.ta || opt.en; }); });
                                               aiMsgData.text = `Generated ${mcqs.length} MCQs.`; aiMsgData.mcqData = mcqs; aiMsgData.mcqTitle = potentialTestTitle; console.log("MCQs parsed successfully."); displayAsError = false;
                                          } else { throw new Error("Invalid MCQ structure."); }
@@ -1834,70 +1923,48 @@
                 } else { console.error("API Error: No candidates in response."); aiMsgData.text = "Error: No response data from API."; displayAsError = true; }
 
                 // --- Save AI Response to Firestore ---
-                 // ***** TAMIL *****
-                 // AI response-ஐ Firestore-ல் save செய்கிறோம்.
-                try {
+                 try {
                       await messagesColRef.add(aiMsgData);
                       await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() });
                       aiResponseSaved = true;
                       console.log("AI response/error saved to Firestore.");
-                      // Update in-memory history *only* if it was a successful, non-error response
                       if (!displayAsError && !blocked && aiMsgData.text) {
                            currentChatHistory.push({ role: 'model', parts: [{ text: aiMsgData.text }] });
                       }
                 } catch (saveError) { console.error("Error saving AI response:", saveError); displayError(`Failed to save AI response.`); }
 
-                 // --- Attempt to Create Cache (if applicable and not used) ---
-                 // ***** TAMIL *****
-                 // இப்பதான் PDF files அனுப்பினோம் என்றால், அடுத்த முறை பயன்படுத்த cache உருவாக்க முயற்சிக்கிறோம்.
-                 // Cache உருவாக்க, user caching support செய்யும் model-ஐ தேர்வு செய்திருக்க வேண்டும்.
-                 if (!useCache && currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent) {
-                      const newCacheName = `cache-${activeChatId}-media-${Date.now()}`; // Unique cache name per chat/media upload instance
-                      console.log(`Attempting to create cache: ${newCacheName} for ${fileDataPartsForApi.length} file(s). TTL: ${CACHE_TTL_SECONDS}s`);
+                 // --- Attempt to Create Cache (PDFs only, if applicable and not used) ---
+                 if (!isYouTubeRequest && !useCache && currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent) {
+                      const newCacheName = `cache-${activeChatId}-media-${Date.now()}`;
+                      console.log(`Attempting to create PDF cache: ${newCacheName} for ${fileDataPartsForApi.length} file(s). TTL: ${CACHE_TTL_SECONDS}s`);
                        try {
                             const cacheRequest = {
-                                model: `models/${selectedModelId}`, // Model that will use the cache (needs 'models/' prefix for caching API)
-                                contents: [{ role: 'user', parts: fileDataPartsForApi }], // Content to cache (only the fileData parts)
-                                ttlSeconds: CACHE_TTL_SECONDS, // Time-to-live
-                                name: newCacheName // Assign the name
+                                model: `models/${selectedModelId}`, contents: [{ role: 'user', parts: fileDataPartsForApi }], ttlSeconds: CACHE_TTL_SECONDS, name: newCacheName
                             };
-                            console.log("Cache Creation Request:", JSON.stringify(cacheRequest, (k, v) => (k === 'fileUri' ? '...' + v.split('/').pop() + ' [uri]' : v), 2));
-                            // Create cache asynchronously (don't wait for it, let it happen in background)
+                            console.log("PDF Cache Creation Request:", JSON.stringify(cacheRequest, (k, v) => (k === 'fileUri' ? '...' + v.split('/').pop() + ' [uri]' : v), 2));
+                            // Create cache asynchronously
                             genAI.caching.createCachedContent(cacheRequest).then(createdCache => {
                                 if (createdCache?.name) {
-                                    currentMediaCacheName = createdCache.name; // Store the created cache name for potential future use in *this session*
-                                    cachedMediaUris = [...uploadedFileUris].sort(); // Store the URIs associated with this cache
-                                    console.log(`Cache ${currentMediaCacheName} creation initiated successfully for URIs:`, cachedMediaUris);
-                                 } else {
-                                     console.warn("Cache creation call may have succeeded but did not return a valid cache object.");
-                                 }
-                            }).catch(cacheError => {
-                                console.error(`Error initiating cache creation for ${newCacheName}:`, cacheError);
-                                // Don't set cache state if creation fails
-                            });
-                       } catch (e) {
-                            // Catch synchronous errors from the setup (e.g., invalid cacheRequest format)
-                            console.error("Unexpected error setting up cache creation:", e);
-                       }
-                 } else if (useCache) {
-                      console.log(`Used existing cache: ${cacheToUse}`);
-                 } else if (fileDataPartsForApi.length > 0) {
-                      console.log("Cache creation skipped: Model doesn't support it, SDK caching API missing, or no files to cache.");
-                 }
+                                    currentMediaCacheName = createdCache.name; cachedMediaUris = [...uploadedFileUris].sort();
+                                    console.log(`PDF Cache ${currentMediaCacheName} creation initiated successfully for URIs:`, cachedMediaUris);
+                                 } else { console.warn("PDF Cache creation call may have succeeded but did not return a valid cache object."); }
+                            }).catch(cacheError => { console.error(`Error initiating PDF cache creation for ${newCacheName}:`, cacheError); });
+                       } catch (e) { console.error("Unexpected error setting up PDF cache creation:", e); }
+                 } else if (useCache) { console.log(`Used existing PDF cache: ${cacheToUse}`); }
+                  else if (!isYouTubeRequest && fileDataPartsForApi.length > 0) { console.log("PDF Cache creation skipped: Model/SDK doesn't support it, or no PDF files to cache."); }
 
-            } catch (error) { // Catch errors from media processing, API call, or cache logic
+            } catch (error) { // Catch errors from media processing, API call, or response processing
                  console.error("Error during send process:", error);
                  removeMessageElement(thinking); // Ensure thinking message is removed on error
                  const errorText = `Error: ${error.message || "An unexpected error occurred during sending."}`;
                  displayError(errorText); // Display error in chat
-                 // Save the error message to Firestore for context
                  if (!aiResponseSaved) { // Avoid saving duplicate errors
                      try { await messagesColRef.add({ role: "model", text: errorText, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }); console.log("Error message saved to Firestore."); }
                      catch (saveError) { console.error("Failed to save error message:", saveError); }
                  }
             } finally {
                  console.log("handleSendMessage finally block reached.");
-                 // Now clear the media selection UI after everything is processed (success or failure)
+                 // Clear media selection UI (for uploaded files) after everything is processed
                  removeAllSelectedMedia();
                  setLoadingState(false); // Turn off loading state
                  if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); } // Refocus input
@@ -1919,7 +1986,7 @@
         // autoGrowTextarea, handleInputKeydown, handleSuggestionClick remain the same
         function autoGrowTextarea() { userInput.style.height='auto'; userInput.style.height=(userInput.scrollHeight)+'px'; }
         function handleInputKeydown(event) { if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();if(!sendButton.disabled) handleSendMessage();} }
-        function handleSuggestionClick(event) { if(event.target.classList.contains('suggestion-chip')){userInput.value=event.target.dataset.prompt||'';autoGrowTextarea();userInput.focus();} }
+        function handleSuggestionClick(event) { if(event.target.classList.contains('suggestion-chip')){ const prompt = event.target.dataset.prompt || ''; userInput.value = prompt; if (prompt.toLowerCase().includes("video") || prompt.toLowerCase().includes("youtube")) { userInput.value += " "; userInput.placeholder = "Paste YouTube URL after the prompt..."; } autoGrowTextarea();userInput.focus();} }
         // displayError remains the same
         function displayError(text) { console.error("Displaying Error:", text); displayMessage(`${text}`, 'ai', ['error-message']); scrollToBottom(); }
         // scrollToBottom remains the same
@@ -1938,27 +2005,36 @@
             const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId);
             const canUseCachingAPI = isSdkFullyReady && !!genAI.caching?.createCachedContent; // Check if SDK has caching methods
             const canAttemptCaching = canUseCachingAPI && currentModelInfo?.supportsCaching; // Check if SDK AND selected model support caching
+            const hasYouTubeUrlInInput = youtubeRegex.test(userInput.value.trim());
+            const hasSelectedMedia = selectedMediaItems.length > 0;
 
             const isChatSelected = !!activeChatId;
             const isAppReady = isSdkFullyReady; // Basic app readiness depends on SDK init
             const canSendMessage = isAppReady && isChatSelected && !isLoading && !isRecording;
-            const canUseSidebarControls = isLoggedIn && !isLoading && !isRecording;
 
             // Input Area Buttons
             userInput.disabled = !isAppReady || !isChatSelected || isLoading || isRecording;
             sendButton.disabled = !canSendMessage;
             mcqModeCheckbox.disabled = !canSendMessage;
 
-            // Media buttons
-            imageUploadButton.disabled = !canSendMessage;
-            pdfUploadButton.disabled = !canSendMessage || !canUseFileAPI; // Needs File API
-            audioUploadButton.disabled = !canSendMessage;
-            pdfUploadButton.title = canUseFileAPI ? "Upload PDF file(s)" : "PDF Upload disabled (File API unavailable/SDK issue)";
+            // Media buttons (disable if YouTube URL is present)
+            imageUploadButton.disabled = !canSendMessage || hasYouTubeUrlInInput;
+            pdfUploadButton.disabled = !canSendMessage || !canUseFileAPI || hasYouTubeUrlInInput; // Needs File API & no YT URL
+            audioUploadButton.disabled = !canSendMessage || hasYouTubeUrlInInput;
+            recordAudioButton.disabled = !canSendMessage || hasYouTubeUrlInInput; // Disable recording if YT URL present
 
-            // Record Button (handle recording state separately)
-            let recordButtonDisabled = !isAppReady || !isChatSelected || isLoading;
-            if (isRecording) recordButtonDisabled = false; // Allow stopping even if loading
-            recordAudioButton.disabled = recordButtonDisabled;
+            pdfUploadButton.title = (!canUseFileAPI) ? "PDF Upload disabled (File API unavailable/SDK issue)" : (hasYouTubeUrlInInput ? "PDF Upload disabled (YouTube URL present)" : "Upload PDF file(s)");
+            imageUploadButton.title = hasYouTubeUrlInInput ? "Image Upload disabled (YouTube URL present)" : "Upload image(s)";
+            audioUploadButton.title = hasYouTubeUrlInInput ? "Audio Upload disabled (YouTube URL present)" : "Upload audio file";
+            recordAudioButton.title = hasYouTubeUrlInInput ? "Audio Recording disabled (YouTube URL present)" : "Record audio";
+
+
+            // Re-enable record button specifically if recording is active (to allow stopping)
+            if (isRecording) {
+                recordAudioButton.disabled = false; // Allow stopping even if other conditions met
+                recordAudioButton.title = "Stop recording";
+            }
+
 
             // Sidebar Buttons
             startChatButton.disabled = !isLoggedIn || isLoading || isRecording;
@@ -1973,9 +2049,6 @@
             // Auth Buttons
             loginBtn.disabled = isLoading;
             logoutBtn.disabled = isLoading;
-
-            // Log caching possibility for debugging
-            // console.log(`Caching Possible: ${canAttemptCaching} (SDK API: ${canUseCachingAPI}, Model Supports: ${currentModelInfo?.supportsCaching})`);
          }
 
         // setLoadingState remains mostly the same
@@ -1999,16 +2072,16 @@
         // switchView remains the same
         function switchView(viewName, cameFromTests = false) { console.log("Switching view to:", viewName); chatView.classList.remove('active'); reviewView.classList.remove('active'); testView.classList.remove('active'); appContainer.classList.remove('hidden'); isTestMode = false; isReviewMode = false; cameFromAllTestsList = cameFromTests; saveReviewBtn.style.display = 'none'; exitReviewBtn.style.display = 'none'; if(viewName === 'test'){ appContainer.classList.add('hidden'); testView.classList.add('active'); isTestMode = true; } else if(viewName === 'review'){ reviewView.classList.add('active'); isReviewMode = true; exitReviewBtn.style.display = 'inline-block'; exitReviewBtn.textContent = cameFromAllTestsList ? "Back to All Tests" : "Back to Chat"; } else { chatView.classList.add('active'); if (currentUser && activeChatId && API_KEY && genAI && !isRecording) { setTimeout(() => userInput.focus(), 100); } } if (viewName !== 'test' && testTimerInterval) { clearInterval(testTimerInterval); testTimerInterval = null; } }
 
-        // displayMessage: Includes code block handling with PrismJS
+        // displayMessage: Includes code block handling with PrismJS and YouTube Embed
         // ***** TAMIL *****
-        // இந்த function message-களை chat area-வில் காட்டுகிறது. Code block-களையும் format செய்கிறது.
+        // இந்த function message-களை chat area-வில் காட்டுகிறது. Code block-களையும், YouTube video-வையும் format செய்கிறது.
         function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
             if (cssClasses?.length > 0) messageElement.classList.add(...cssClasses);
             let hasContent = false; let containsCode = false;
 
-            // --- Media Rendering (Existing Logic) ---
+            // --- Media Rendering (Uploaded Files) ---
             if (messageData?.mediaType === 'image' && messageData.mediaData && messageData.mediaData !== '#error') { try { const img = document.createElement('img'); img.src = messageData.mediaData; img.alt = messageData.mediaName || "Uploaded Image"; img.classList.add('uploaded-image'); img.loading = "lazy"; img.onerror = () => { img.alt = "Image load error"; img.src = ""; }; messageElement.appendChild(img); hasContent = true; } catch (e) { console.error("Error creating image element:", e); } }
             else if (messageData?.mediaType === 'multi-image' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} image${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-image indicator:", e); } }
             else if (messageData?.mediaType === 'multi-pdf' && messageData.mediaCount > 0) { try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} PDF${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-PDF indicator:", e); } }
@@ -2026,57 +2099,70 @@
                     // Handle Images in Text (remains same)
                     if (messageData?.mediaType !== 'image') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); }
 
-                    // ***** TAMIL *****
-                    // இங்கதான் code block-களுக்கான (``` ... ```) HTML-ஐ உருவாக்குகிறோம்.
-                    // PrismJS syntax highlighting வேலை செய்ய class="language-..." சேர்க்கிறோம்.
+                    // Handle Code Blocks (``` ... ```)
                     formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
-                        containsCode = true; // Mark that code exists for highlighting
-                        const languageClass = lang ? `language-${lang.trim().toLowerCase()}` : 'language-plain'; // Use lowercase lang
-                        // Escape HTML within the code block before wrapping
+                        containsCode = true;
+                        const languageClass = lang ? `language-${lang.trim().toLowerCase()}` : 'language-plain';
                         const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`;
                     });
 
-                    // Handle Inline Code (`) (remains same)
+                    // Handle Inline Code (`)
                     formattedText = formattedText.replace(/`([^`]+)`/g, (match, code) => `<code>${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`);
-                    // Handle Bold/Italics/Newlines (remains same)
+                    // Handle Bold/Italics/Newlines
                     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>');
 
                     messageContentContainer.innerHTML = formattedText;
                     messageElement.appendChild(messageContentContainer);
                     hasContent = true;
 
-                    // MathJax typesetting (remains same)
+                    // MathJax typesetting
                     if (text.includes('$') || text.includes('\\') || text.includes('^') || text.includes('_')) { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { setTimeout(() => { MathJax.typesetPromise([messageContentContainer]).catch(err => console.error('MathJax typesetting error:', err)); }, 50); } }
 
                 } catch (e) { console.error("Error formatting text content:", e); }
             }
 
-            // --- YouTube Embed (Existing Logic) ---
-            if (messageData?.youtubeVideoId) { try { const youtubeEmbedDiv = document.createElement('div'); youtubeEmbedDiv.classList.add('youtube-embed-container'); const iframe = document.createElement('iframe'); iframe.classList.add('chat-video'); iframe.src = `https://www.youtube.com/embed/${messageData.youtubeVideoId}`; iframe.title = "YouTube video player"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen = true; iframe.loading = "lazy"; iframe.onerror = () => { youtubeEmbedDiv.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(YouTube embed error)</span>`; }; youtubeEmbedDiv.appendChild(iframe); messageElement.appendChild(youtubeEmbedDiv); hasContent = true; } catch (e) { console.error("Error creating YouTube embed:", e); } }
+            // --- YouTube Embed (Render based on Firestore data) ---
+            // ***** TAMIL *****
+            // இங்க messageData-ல் youtubeVideoId இருந்தால், YouTube video embed செய்து காட்டுகிறோம்.
+            if (messageData?.youtubeVideoId) {
+                try {
+                    const youtubeEmbedDiv = document.createElement('div');
+                    youtubeEmbedDiv.classList.add('youtube-embed-container');
+                    const iframe = document.createElement('iframe');
+                    iframe.classList.add('chat-video');
+                    iframe.src = `https://www.youtube.com/embed/${messageData.youtubeVideoId}`;
+                    iframe.title = "YouTube video player";
+                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                    iframe.allowFullscreen = true;
+                    iframe.loading = "lazy";
+                    iframe.onerror = () => {
+                        youtubeEmbedDiv.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(YouTube embed error: ID ${messageData.youtubeVideoId})</span>`;
+                    };
+                    youtubeEmbedDiv.appendChild(iframe);
+                    messageElement.appendChild(youtubeEmbedDiv);
+                    hasContent = true;
+                    console.log(`Displaying YouTube embed for ID: ${messageData.youtubeVideoId}`);
+                } catch (e) {
+                    console.error("Error creating YouTube embed:", e);
+                }
+            }
 
-             // --- MCQ Offer (Existing Logic) ---
+             // --- MCQ Offer ---
             if (messageData?.role === 'model' && messageData?.mcqData?.length > 0) { try { displayMCQOffer(messageData.mcqData, messageData.mcqTitle, messageElement); hasContent = true; } catch (e) { console.error("Error displaying MCQ offer:", e); } }
-            // --- Append Raw HTML (Existing Logic) ---
+            // --- Append Raw HTML ---
             else if (appendHtml) { try { const appendDiv = document.createElement('div'); appendDiv.innerHTML = appendHtml; while (appendDiv.firstChild) { messageElement.appendChild(appendDiv.firstChild); } hasContent = true; } catch (e) { console.error("Error appending raw HTML:", e); } }
 
             // --- Append Message to Chat Area ---
             if (hasContent || cssClasses.includes('thinking') || cssClasses.includes('error-message')) {
                 if (!chatArea.contains(messageElement)) {
                     chatArea.appendChild(messageElement);
-                    // ***** TAMIL *****
-                    // message-ல் code block இருந்தால், PrismJS-ஐ பயன்படுத்தி syntax highlight செய்கிறோம்.
+                    // Apply PrismJS highlighting if code blocks were found
                     if (containsCode && typeof Prism !== 'undefined') {
-                         // Delay highlighting slightly to ensure element is fully in DOM
                          setTimeout(() => {
-                             try {
-                                 // Use highlightAllUnder to handle potentially nested code blocks or languages
-                                 Prism.highlightAllUnder(messageElement);
-                                 // console.log("Prism highlighting applied under message element.");
-                             } catch (highlightError) {
-                                 console.error("Prism highlighting error:", highlightError);
-                             }
-                         }, 50); // Increased delay slightly
+                             try { Prism.highlightAllUnder(messageElement); }
+                              catch (highlightError) { console.error("Prism highlighting error:", highlightError); }
+                         }, 50);
                      }
                 }
             } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); }
@@ -2093,7 +2179,7 @@
         // exitReview, saveTestReviewToCloud, loadAndListenForTests, renderAllTestsList,
         // filterTestsInSidebar, handleAllTestsListClick, enterTestTitleEditMode,
         // exitTestTitleEditMode, saveTestTitle, deleteSavedTest, startReattempt
-        // (These functions remain unchanged from v10.0)
+        // (These functions remain unchanged from v10.1)
          function handleChatAreaClick(event) { const startButton = event.target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; } const clickedImage = event.target.closest('img.chat-image, img.uploaded-image'); if (clickedImage?.src && !clickedImage.src.startsWith('#') && clickedImage.src.trim() !== '') { try { if (!clickedImage.src.startsWith('data:image') || clickedImage.src.length < 2 * 1024 * 1024) { window.open(clickedImage.src, '_blank'); } else { console.log("Clicked large base64 image in chat."); } } catch (e) { console.error("Error opening image source:", e); } } }
          function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
          function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
