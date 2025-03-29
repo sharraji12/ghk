@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v10.4 - Unified Upload, Media Modal, Msg Actions)</title> <!-- Version Updated -->
+    <title>Gemini Chat + Mock Test (v10.5 - Audio Playback, Upload Status)</title> <!-- Version Updated -->
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -56,22 +56,22 @@
 
 
     <style>
-        /* --- Styles (v10.4 - Added Image Modal, Message Actions) --- */
+        /* --- Styles (v10.5 - Added Audio Player styling) --- */
         /* ***** TAMIL *****
            இங்க CSS styles உள்ளன.
-           புதுசா image modal-க்கும், message copy/delete icon-களுக்கும் style சேர்த்திருக்கேன்.
+           புதுசா image modal-க்கும், message copy/delete icon-களுக்கும், chat-ல audio player-க்கும் style சேர்த்திருக்கேன்.
         */
         :root { /* ... Theme Variables ... */
              --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; --sidebar-width: 260px; --message-font-size-base: 1rem;
             /* LIGHT */ --sidebar-bg: #f7f7f7; --main-bg: #ffffff; --input-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #2c2c2c; --text-secondary: #5f5f5f; --text-placeholder: #999999; --accent-color: #d97a7a; --user-message-bg: #cce0ff; --user-message-text: #1c1c1c; --ai-message-bg: #f0f0f0; --ai-message-text: #2c2c2c; --button-bg: #f0f0f0; --button-hover-bg: #e0e0e0; --active-item-bg: #e0e0e0; --code-bg: #e8e8e8; --scrollbar-thumb: #ccc; --scrollbar-thumb-hover: #bbb; --app-outer-bg: #e8e8e8; --send-button-bg: var(--accent-color); --send-button-hover-bg: #c76b6b; --send-button-text: #ffffff; --error-bg: #ffebee; --error-text: #c62828; --error-border: #ef9a9a; --message-font-size: var(--message-font-size-base); --delete-button-color: #aaa; --delete-button-hover-color: #dc3545; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text); --message-action-color: #888; --message-action-hover-color: #333; --modal-bg: rgba(0, 0, 0, 0.7); --modal-content-bg: #ffffff; --modal-close-color: #aaa; --modal-close-hover-color: #fff;
             /* Audio Specific */
-            --record-button-bg: #ff6b6b; --record-button-text: #ffffff; --stop-button-bg: #4a4a4a; --stop-button-text: #ffffff;
+            --record-button-bg: #ff6b6b; --record-button-text: #ffffff; --stop-button-bg: #4a4a4a; --stop-button-text: #ffffff; --audio-player-bg: var(--ai-message-bg); --audio-player-controls: var(--text-secondary); --audio-player-progress: var(--accent-color); --audio-player-thumb: var(--text-primary);
             /* Model Selector Specific */
              --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
         body.dark-theme { /* DARK */ --sidebar-bg: #2a2a2e; --main-bg: #1e1e1e; --input-bg: #2a2a2e; --border-color: #404040; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --text-placeholder: #777777; --accent-color: #e58b8b; --user-message-bg: #3a4a6b; --user-message-text: #e8e8e8; --ai-message-bg: #333333; --ai-message-text: #e0e0e0; --button-bg: #404040; --button-hover-bg: #505050; --active-item-bg: #454545; --code-bg: #2c2c2e; --scrollbar-thumb: #555; --scrollbar-thumb-hover: #666; --app-outer-bg: #121212; --send-button-bg: var(--accent-color); --send-button-hover-bg: #f09f9f; --send-button-text: #1e1e1e; --error-bg: #5c2b2b; --error-text: #ffcdd2; --error-border: #8c4343; --delete-button-color: #666; --delete-button-hover-color: #f09f9f; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text); --message-action-color: #999; --message-action-hover-color: #eee; --modal-bg: rgba(0, 0, 0, 0.8); --modal-content-bg: #2a2a2e; --modal-close-color: #aaa; --modal-close-hover-color: #fff;
             /* Audio Specific */
-             --record-button-bg: #ff8787; --record-button-text: #1e1e1e; --stop-button-bg: #777777; --stop-button-text: #e0e0e0;
+             --record-button-bg: #ff8787; --record-button-text: #1e1e1e; --stop-button-bg: #777777; --stop-button-text: #e0e0e0; --audio-player-bg: var(--ai-message-bg); --audio-player-controls: var(--text-secondary); --audio-player-progress: var(--accent-color); --audio-player-thumb: var(--text-primary);
             /* Model Selector Specific */
              --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
@@ -153,6 +153,7 @@
             align-items: flex-start; /* Align actions vertically with start of message */
             gap: 8px; /* Space between message and actions */
             margin-bottom: 15px;
+            position: relative; /* Needed for absolute positioning of copy feedback */
         }
         .message-wrapper.user-wrapper { flex-direction: row-reverse; /* User messages on right */ }
         .message-wrapper.ai-wrapper { flex-direction: row; /* AI messages on left */ }
@@ -186,16 +187,17 @@
         .message-action-button.delete:hover { color: var(--delete-button-hover-color); } /* Use existing delete hover color */
         .copied-feedback {
             position: absolute;
-            top: -20px;
+            top: -25px; /* Adjusted position slightly */
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0,0,0,0.7);
             color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
+            padding: 3px 8px;
+            border-radius: 4px;
             font-size: 0.8em;
             z-index: 10;
             pointer-events: none; /* Don't interfere with hover */
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         /* --- Code Block Styling (No changes needed) --- */
@@ -231,7 +233,33 @@
         .message img.chat-image:hover, .message img.uploaded-image:hover {
              transform: scale(1.03);
         }
-        .message .pdf-indicator, .message .audio-indicator {
+        /* ***** TAMIL ***** Audio Player Styling in Chat */
+        .message .chat-audio-player {
+            margin-top: 10px;
+        }
+        .message .chat-audio-player audio {
+            width: 100%; /* Take full width of container */
+            max-width: 350px; /* Limit max width */
+            height: 40px; /* Standard height */
+            display: block;
+            background-color: var(--audio-player-bg); /* Use theme color */
+            border-radius: 5px;
+            filter: invert(0); /* Default for light theme */
+        }
+        body.dark-theme .message .chat-audio-player audio {
+             filter: invert(1) hue-rotate(180deg); /* Invert colors for dark theme */
+        }
+        /* Basic styling for controls (browser dependent) */
+        .message .chat-audio-player audio::-webkit-media-controls-panel {
+            background-color: var(--audio-player-bg);
+            color: var(--audio-player-controls);
+        }
+        .message .chat-audio-player audio::-webkit-media-controls-play-button,
+        .message .chat-audio-player audio::-webkit-media-controls-mute-button,
+        .message .chat-audio-player audio::-webkit-media-controls-volume-slider {
+             color: var(--audio-player-controls); /* Example */
+        }
+         .message .pdf-indicator, .message .audio-indicator {
              display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: var(--text-secondary); margin-top: 8px; padding: 3px 6px; background-color: var(--button-bg); border: 1px solid var(--border-color); border-radius: 4px;
         }
 
@@ -265,7 +293,7 @@
         #send-button:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.6; }
         #send-button svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* Media Previews (No change needed) */
+        /* Media Previews (No changes needed) */
         #media-preview-container { margin-bottom: 10px; padding: 8px; background-color: var(--preview-bg); border: 1px solid var(--preview-border); border-radius: 8px; display: none; flex-direction: column; gap: 8px; }
         #image-previews-list { display: flex; gap: 8px; flex-wrap: wrap; max-height: 120px; overflow-y: auto; }
         .pdf-preview-item { background-color: var(--main-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 6px; max-width: 100%; box-sizing: border-box; }
@@ -339,7 +367,7 @@
         #save-review-btn:hover:not(:disabled) { background-color: var(--button-hover-bg); }
         #save-review-btn:disabled { opacity: 0.6; cursor: not-allowed; background-color: #cccccc; border-color: #aaaaaa; }
 
-        /* Image Modal Styles */
+        /* Image Modal Styles (No changes needed) */
         .image-modal-overlay {
             display: none; /* Hidden by default */
             position: fixed;
@@ -395,6 +423,8 @@
             .input-container { padding-top: 10px; padding-bottom: 10px; }
             .message { max-width: calc(100% - 45px); font-size: calc(var(--message-font-size) * 0.95); } /* Adjust max-width for smaller screens */
             .message img.chat-image, .message img.uploaded-image { max-width: 200px; max-height: 120px; } /* Smaller previews on mobile */
+            /* ***** TAMIL ***** Mobile Audio Player */
+            .message .chat-audio-player audio { max-width: 280px; height: 35px; }
             #unified-upload-button, #record-audio-button { font-size: 1.4em; padding: 0 3px; }
             #media-preview-container { padding: 6px; gap: 6px; }
             #image-previews-list { gap: 5px; max-height: 100px; }
@@ -484,7 +514,7 @@
     <!-- Mock Test View (No Changes Needed) -->
     <div class="mock-test-view" id="mock-test-view"> <div class="test-header"> <h2 id="test-title">Mock Test</h2> <div class="test-info"> <span id="question-counter">Q: 1 / N</span> <span id="test-timer">Time: 00:00</span> </div> </div> <div class="test-content"> <div class="test-question-container"> <div class="test-question-number" id="test-question-number"></div> <div class="test-question" id="test-question"></div> <div class="test-options" id="test-options"></div> </div> </div> <div class="test-navigation"> <button id="prev-question-btn" disabled>Previous</button> <button id="next-question-btn">Next</button> <button id="submit-test-btn">Submit Test</button> </div> </div>
 
-    <!-- Image Modal Structure -->
+    <!-- Image Modal Structure (No changes needed) -->
     <div class="image-modal-overlay" id="image-modal">
         <div class="image-modal-content">
             <button class="image-modal-close" id="image-modal-close" title="Close image">&times;</button>
@@ -495,14 +525,15 @@
 
     <script>
         // --- Firebase Config ---
+        // ***** TAMIL ***** User கொடுத்த Firebase config-ஐ இங்க use பண்றோம்.
         const firebaseConfig = {
-          apiKey: "AIzaSyDgw604fe5jnNu4kTOv1cQ-3n7PL8gcN58", // <- REPLACE IF NEEDED
-          authDomain: "krish-c5db8.firebaseapp.com", // <- REPLACE IF NEEDED
-          projectId: "krish-c5db8", // <- REPLACE IF NEEDED
-          storageBucket: "krish-c5db8.appspot.com", // <- REPLACE IF NEEDED
-          messagingSenderId: "217175257890", // <- REPLACE IF NEEDED
-          appId: "1:217175257890:web:209f0f290eabab6b1fab7b", // <- REPLACE IF NEEDED
-          measurementId: "G-97SHYGL2J4" // <- REPLACE IF NEEDED
+          apiKey: "AIzaSyDgw604fe5jnNu4kTOv1cQ-3n7PL8gcN58",
+          authDomain: "krish-c5db8.firebaseapp.com",
+          projectId: "krish-c5db8",
+          storageBucket: "krish-c5db8.appspot.com",
+          messagingSenderId: "217175257890",
+          appId: "1:217175257890:web:209f0f290eabab6b1fab7b",
+          measurementId: "G-97SHYGL2J4"
         };
 
         // --- Initialize Firebase ---
@@ -512,7 +543,7 @@
 
         // --- DOM Elements ---
         // ***** TAMIL *****
-        // HTML elements-ஐ இங்க variables-ல store பண்றோம். புதுசா unified-upload-button, image-modal elements சேர்த்திருக்கேன்.
+        // HTML elements-ஐ இங்க variables-ல store பண்றோம். பெரும்பாலும் பழைய code தான்.
         const appContainer = document.getElementById('app-container');
         const chatArea = document.getElementById('chat-area');
         const userInput = document.getElementById('user-input');
@@ -555,26 +586,20 @@
         const reviewFilters = document.getElementById('review-filters');
         const saveReviewBtn = document.getElementById('save-review-btn');
         // Media Elements (New/Updated)
-        // ***** TAMIL ***** Unified Upload elements
         const unifiedUploadButton = document.getElementById('unified-upload-button');
         const unifiedUploadInput = document.getElementById('unified-upload-input');
-        // Existing hidden inputs (still used indirectly or for clarity)
         const imageUploadInput = document.getElementById('image-upload-input');
         const pdfUploadInput = document.getElementById('pdf-upload-input');
         const audioUploadInput = document.getElementById('audio-upload-input');
-        // Record Button
         const recordAudioButton = document.getElementById('record-audio-button');
-        // Media Preview Elements (No changes needed)
         const mediaPreviewContainer = document.getElementById('media-preview-container');
         const imagePreviewsList = document.getElementById('image-previews-list');
         const previewAudioContainer = document.getElementById('preview-audio-container');
         const previewAudio = document.getElementById('preview-audio');
         const mediaPreviewInfo = document.getElementById('media-preview-info');
         const removeMediaButton = document.getElementById('remove-media-button');
-        // Recording Status (No changes needed)
         const recordingStatus = document.getElementById('recording-status');
         const recordingTimerSpan = recordingStatus.querySelector('span');
-        // ***** TAMIL ***** Image Modal Elements
         const imageModal = document.getElementById('image-modal');
         const modalImageContent = document.getElementById('modal-image-content');
         const imageModalClose = document.getElementById('image-modal-close');
@@ -612,15 +637,15 @@
         const MAX_IMAGE_SIZE_MB = 4;
         const MAX_TOTAL_IMAGE_SIZE_MB = 16;
         const MAX_IMAGE_COUNT = 10;
-        const MAX_PDF_SIZE_MB = 50;
+        const MAX_PDF_SIZE_MB = 50; // Note: File API limit is 2GB, but this is for easy display/preview handling
         const MAX_PDF_COUNT = 5;
         const MAX_AUDIO_SIZE_MB = 15;
         const SUPPORTED_AUDIO_MIMES = ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/aiff', 'audio/aac', 'audio/ogg', 'audio/flac'];
         const SUPPORTED_IMAGE_MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'];
-        const RECORDING_TIME_LIMIT_SECONDS = 300;
-        const FILE_API_POLLING_INTERVAL_MS = 5000;
-        const FILE_API_PROCESSING_TIMEOUT_MS = 180000;
-        const CACHE_TTL_SECONDS = 3600;
+        const RECORDING_TIME_LIMIT_SECONDS = 300; // 5 minutes
+        const FILE_API_POLLING_INTERVAL_MS = 5000; // 5 seconds
+        const FILE_API_PROCESSING_TIMEOUT_MS = 180000; // 3 minutes
+        const CACHE_TTL_SECONDS = 3600; // 1 hour
 
         // --- State Variables ---
         let API_KEY = '';
@@ -629,7 +654,6 @@
         let HarmBlockThreshold = null;
         let currentUser = null;
         let activeChatId = null;
-        // ***** TAMIL ***** History array-ல் இப்போ Firestore Document ID-யும் save செய்வோம் (delete-க்கு தேவை)
         let currentChatHistory = []; // Stores { role, parts, firestoreId }
         let selectedModelId = DEFAULT_MODEL_ID;
         let currentTextSizeMultiplier = 1.0;
@@ -683,22 +707,17 @@
         nextQuestionBtn.addEventListener('click', () => handleTestNavigation('next'));
         submitTestBtn.addEventListener('click', submitTest);
         exitReviewBtn.addEventListener('click', exitReview);
-        // ***** TAMIL ***** Chat area click listener (image modal + message actions + MCQ)
         chatArea.addEventListener('click', handleChatAreaClick);
         reviewFilters.addEventListener('click', handleReviewFilterClick);
         saveReviewBtn.addEventListener('click', saveTestReviewToCloud);
         loginBtn.addEventListener('click', signInWithGoogle);
         logoutBtn.addEventListener('click', signOut);
-        // ***** TAMIL ***** Unified Upload Listener
         unifiedUploadButton.addEventListener('click', () => {
             if (!unifiedUploadButton.disabled) unifiedUploadInput.click();
         });
         unifiedUploadInput.addEventListener('change', handleUnifiedFileSelect);
-        // Record Listener
         recordAudioButton.addEventListener('click', () => { if (!recordAudioButton.disabled || isRecording) { toggleRecording(); } });
-        // Media Preview Listener
         removeMediaButton.addEventListener('click', removeAllSelectedMedia);
-        // ***** TAMIL ***** Image Modal Listeners
         imageModalClose.addEventListener('click', hideImageModal);
         imageModal.addEventListener('click', (e) => { if (e.target === imageModal) { hideImageModal(); } }); // Close on overlay click
 
@@ -717,7 +736,7 @@
 
         // --- Initialization Functions ---
         // (initializeApp, populateModelSelector, loadGeminiApiKey, initializeGenAIInstance remain the same)
-        async function initializeApp() { console.log("App Initializing (v10.4)..."); setLoadingState(true, "Initializing..."); chatArea.innerHTML = ''; populateModelSelector(); loadUserSettingsFromLocalStorage(); await loadGeminiApiKey(); fbAuth.onAuthStateChanged(handleAuthStateChange); switchView('chat'); userInput.focus(); console.log("App Initialization Complete."); }
+        async function initializeApp() { console.log("App Initializing (v10.5)..."); setLoadingState(true, "Initializing..."); chatArea.innerHTML = ''; populateModelSelector(); loadUserSettingsFromLocalStorage(); await loadGeminiApiKey(); fbAuth.onAuthStateChanged(handleAuthStateChange); switchView('chat'); userInput.focus(); console.log("App Initialization Complete."); }
         function populateModelSelector() { modelSelector.innerHTML = ''; AVAILABLE_MODELS.forEach(model => { const option = document.createElement('option'); option.value = model.id; option.textContent = model.name; if (model.id === selectedModelId) { option.selected = true; } modelSelector.appendChild(option); }); console.log("Model selector populated."); }
         async function loadGeminiApiKey() { console.log("Attempting to load Gemini API Key..."); API_KEY = localStorage.getItem(STORAGE_KEY_API_KEY); if(!API_KEY){ console.warn("!!! SECURITY WARNING !!! Using insecure API key storage. Use Cloud Functions in production."); if(API_KEY){ localStorage.setItem(STORAGE_KEY_API_KEY, API_KEY); console.log("Using potentially hardcoded insecure API Key."); } else { console.error("Gemini API Key is required. Please configure it in the script or localStorage."); displayMessage("Error: Gemini API Key is not configured. AI features are disabled.", 'ai', ['error-message']); API_KEY = ''; genAI = null; isAISdkReady = false; updateButtonStates(); return false; } } else { console.log("Loaded insecure API Key from localStorage."); } if (API_KEY && isAISdkReady && !genAI) { return initializeGenAIInstance(); } else if (API_KEY && !isAISdkReady) { console.log("API Key loaded, but AI SDK not ready yet. Waiting for 'google-ai-sdk-loaded' event."); return true; } else { return !!API_KEY; } }
         function initializeGenAIInstance() { if (!API_KEY || !isAISdkReady) { console.warn("Skipping genAI initialization. Conditions not met:", { API_KEY: !!API_KEY, isAISdkReady }); return false; } if (!HarmCategory || !HarmBlockThreshold) { console.error("HarmCategory or HarmBlockThreshold enums not loaded from SDK. Cannot initialize safety settings correctly."); displayError("Error: Failed to load required safety components from AI SDK."); genAI = null; isAISdkReady = false; updateButtonStates(); return false; } if (genAI) { genAI = null; console.log("Re-initializing genAI instance."); } console.log("Initializing GoogleGenerativeAI SDK instance..."); try { if (window.GoogleGenerativeAI) { genAI = new window.GoogleGenerativeAI(API_KEY); console.log("genAI object created:", genAI != null); const supportsFiles = !!genAI?.files?.upload; const supportsCaching = !!genAI?.caching?.createCachedContent; console.log(`SDK Capabilities Check: File API: ${supportsFiles}, Caching API: ${supportsCaching}`); if (supportsFiles) { console.log("SUCCESS: GoogleGenerativeAI SDK instance created successfully with File API support (`genAI.files` FOUND)."); } else { console.warn("WARNING: GoogleGenerativeAI SDK instance created, but `genAI.files` is MISSING. File uploads might fail or use older methods."); } if (!supportsCaching) { console.warn("WARNING: GoogleGenerativeAI SDK instance created, but `genAI.caching` is MISSING. Context Caching feature will be disabled."); } return true; } else { console.error("ERROR: GoogleGenerativeAI SDK constructor not found on window object."); displayError("Error: AI SDK loaded but failed to initialize."); genAI = null; isAISdkReady = false; return false; } } catch (e) { console.error("CRITICAL ERROR initializing GoogleGenerativeAI:", e); displayError(`Critical Error initializing AI SDK: ${e.message}. Check API Key & Console.`); API_KEY = ''; localStorage.removeItem(STORAGE_KEY_API_KEY); genAI = null; isAISdkReady = false; return false; } finally { console.log("Updating button states finally after genAI initialization attempt."); updateButtonStates(); } }
@@ -755,148 +774,24 @@
 
         // --- Media Handling Functions ---
 
-        // ***** TAMIL ***** Unified File Selection Handler
-        // இங்க '+' button click செய்ததும் user select செய்த files-ஐ handle செய்கிறோம்.
-        // Image, PDF, Audio எது select செய்தாலும் அதற்கேற்றவாறு செயல்படும்.
-        // இப்போதைக்கு, ஒரே நேரத்துல ஒரு வகை file தான் upload பண்ண முடியும்.
+        // (handleUnifiedFileSelect, handleImageFileSelect, handlePdfFileSelect, handleAudioFileSelect remain the same)
         function handleUnifiedFileSelect(event) {
             const files = event.target.files;
-            if (!files || files.length === 0) {
-                unifiedUploadInput.value = ''; // Reset input
-                return;
-            }
+            if (!files || files.length === 0) { unifiedUploadInput.value = ''; return; }
             console.log(`handleUnifiedFileSelect: ${files.length} file(s) selected.`);
-
-            const firstFile = files[0];
-            const fileType = firstFile.type;
-
-            // Check for existing incompatible media
-            if (selectedMediaItems.length > 0) {
-                 const existingType = selectedMediaItems[0].type; // Assuming single type for now
-                 if (
-                     (SUPPORTED_IMAGE_MIMES.includes(fileType) && existingType !== 'image') ||
-                     (fileType === 'application/pdf' && existingType !== 'pdf') ||
-                     (SUPPORTED_AUDIO_MIMES.includes(fileType) && existingType !== 'audio')
-                 ) {
-                      alert(`Cannot add ${fileType.split('/')[0]} when ${existingType}(s) are already selected. Please remove existing media first.`);
-                      unifiedUploadInput.value = '';
-                      return;
-                 }
-            }
-
-            // Route based on the type of the *first* selected file
-            if (SUPPORTED_IMAGE_MIMES.includes(fileType)) {
-                console.log("Detected image files.");
-                handleImageFileSelect(event);
-            } else if (fileType === 'application/pdf') {
-                 console.log("Detected PDF files.");
-                 handlePdfFileSelect(event);
-            } else if (SUPPORTED_AUDIO_MIMES.includes(fileType)) {
-                 console.log("Detected audio file.");
-                 if (files.length > 1) {
-                     alert("Please select only one audio file at a time.");
-                     unifiedUploadInput.value = '';
-                     return;
-                 }
-                 handleAudioFileSelect(event);
-            } else {
-                alert(`Unsupported file type: ${fileType}. Please select an image, PDF, or audio file.`);
-                unifiedUploadInput.value = '';
-            }
+            const firstFile = files[0]; const fileType = firstFile.type;
+            if (selectedMediaItems.length > 0) { const existingType = selectedMediaItems[0].type; if ( (SUPPORTED_IMAGE_MIMES.includes(fileType) && existingType !== 'image') || (fileType === 'application/pdf' && existingType !== 'pdf') || (SUPPORTED_AUDIO_MIMES.includes(fileType) && existingType !== 'audio') ) { alert(`Cannot add ${fileType.split('/')[0]} when ${existingType}(s) are already selected. Please remove existing media first.`); unifiedUploadInput.value = ''; return; } }
+            if (SUPPORTED_IMAGE_MIMES.includes(fileType)) { console.log("Detected image files."); handleImageFileSelect(event); } else if (fileType === 'application/pdf') { console.log("Detected PDF files."); handlePdfFileSelect(event); } else if (SUPPORTED_AUDIO_MIMES.includes(fileType)) { console.log("Detected audio file."); if (files.length > 1) { alert("Please select only one audio file at a time."); unifiedUploadInput.value = ''; return; } handleAudioFileSelect(event); } else { alert(`Unsupported file type: ${fileType}. Please select an image, PDF, or audio file.`); unifiedUploadInput.value = ''; }
         }
-
-
-        // (handleImageFileSelect, handlePdfFileSelect, handleAudioFileSelect are now called by handleUnifiedFileSelect or integrated)
-        // These functions now just process the files passed from the unified handler
         function handleImageFileSelect(event) {
-            console.log("Processing image selection...");
-            // Prevent adding images if PDF/audio already selected
-            if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'image')) {
-                alert("Cannot select images when PDF or audio is already selected.");
-                unifiedUploadInput.value = ''; return;
-            }
-            if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload images when a YouTube URL is present."); unifiedUploadInput.value = ''; return; }
-
-            const files = event.target.files; // Get files from the event that triggered this
-            if (!files) { unifiedUploadInput.value = ''; return; } // Check if files exist
-
-            let currentImageCount = selectedMediaItems.filter(item => item.type === 'image').length;
-            let addedCount = 0;
-            let totalSizeMB = selectedMediaItems.reduce((sum, item) => sum + (item.file?.size || 0), 0) / 1024 / 1024;
-            const allowedTypes = SUPPORTED_IMAGE_MIMES;
-
-            for (const file of files) {
-                if (!allowedTypes.includes(file.type)) continue; // Skip non-images if mixed selection occurred
-                if (currentImageCount >= MAX_IMAGE_COUNT) { alert(`Maximum ${MAX_IMAGE_COUNT} images allowed.`); break; }
-                const fileSizeMB = file.size / 1024 / 1024;
-                if (fileSizeMB > MAX_IMAGE_SIZE_MB) { alert(`Image "${file.name}" (${fileSizeMB.toFixed(1)}MB) exceeds ${MAX_IMAGE_SIZE_MB}MB limit.`); continue; }
-                if (totalSizeMB + fileSizeMB > MAX_TOTAL_IMAGE_SIZE_MB) { alert(`Adding "${file.name}" would exceed total image size limit of ${MAX_TOTAL_IMAGE_SIZE_MB}MB.`); continue; }
-                const mediaId = nextMediaId++;
-                selectedMediaItems.push({ id: mediaId, type: 'image', file: file, base64: null, mimeType: file.type, name: file.name });
-                currentImageCount++; totalSizeMB += fileSizeMB; addedCount++;
-            }
-             if (addedCount > 0) { console.log(`Added ${addedCount} images. Total images: ${currentImageCount}`); displayMediaPreview(); }
-             unifiedUploadInput.value = ''; // Reset the unified input
+            console.log("Processing image selection..."); if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'image')) { alert("Cannot select images when PDF or audio is already selected."); unifiedUploadInput.value = ''; return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload images when a YouTube URL is present."); unifiedUploadInput.value = ''; return; } const files = event.target.files; if (!files) { unifiedUploadInput.value = ''; return; } let currentImageCount = selectedMediaItems.filter(item => item.type === 'image').length; let addedCount = 0; let totalSizeMB = selectedMediaItems.reduce((sum, item) => sum + (item.file?.size || 0), 0) / 1024 / 1024; const allowedTypes = SUPPORTED_IMAGE_MIMES; for (const file of files) { if (!allowedTypes.includes(file.type)) continue; if (currentImageCount >= MAX_IMAGE_COUNT) { alert(`Maximum ${MAX_IMAGE_COUNT} images allowed.`); break; } const fileSizeMB = file.size / 1024 / 1024; if (fileSizeMB > MAX_IMAGE_SIZE_MB) { alert(`Image "${file.name}" (${fileSizeMB.toFixed(1)}MB) exceeds ${MAX_IMAGE_SIZE_MB}MB limit.`); continue; } if (totalSizeMB + fileSizeMB > MAX_TOTAL_IMAGE_SIZE_MB) { alert(`Adding "${file.name}" would exceed total image size limit of ${MAX_TOTAL_IMAGE_SIZE_MB}MB.`); continue; } const mediaId = nextMediaId++; selectedMediaItems.push({ id: mediaId, type: 'image', file: file, base64: null, mimeType: file.type, name: file.name }); currentImageCount++; totalSizeMB += fileSizeMB; addedCount++; } if (addedCount > 0) { console.log(`Added ${addedCount} images. Total images: ${currentImageCount}`); displayMediaPreview(); } unifiedUploadInput.value = '';
         }
         function handlePdfFileSelect(event) {
-            console.log("Processing PDF selection...");
-            // Prevent adding PDFs if image/audio already selected
-            if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'pdf')) {
-                alert("Cannot select PDF(s) when images or audio are already selected.");
-                unifiedUploadInput.value = ''; return;
-            }
-             if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload PDFs when a YouTube URL is present."); unifiedUploadInput.value = ''; return; }
-             if (!genAI || !genAI.files) { alert("PDF upload is currently disabled (File API unavailable)."); unifiedUploadInput.value = ''; return; }
-
-            const files = event.target.files;
-            if (!files) { unifiedUploadInput.value = ''; return; }
-
-            let currentPdfCount = selectedMediaItems.filter(item => item.type === 'pdf').length;
-            let addedCount = 0;
-            for (const file of files) {
-                 if (file.type !== 'application/pdf') continue; // Skip non-PDFs
-                 if (currentPdfCount >= MAX_PDF_COUNT) { alert(`Maximum ${MAX_PDF_COUNT} PDF files allowed.`); break; }
-                const fileSizeMB = file.size / 1024 / 1024;
-                if (fileSizeMB > MAX_PDF_SIZE_MB) { alert(`PDF "${file.name}" (${fileSizeMB.toFixed(1)}MB) exceeds ${MAX_PDF_SIZE_MB}MB limit (for preview).`); console.warn(`Large PDF selected: ${fileSizeMB.toFixed(1)}MB`); }
-                 const mediaId = nextMediaId++;
-                 selectedMediaItems.push({ id: mediaId, type: 'pdf', file: file, name: file.name, mimeType: file.type });
-                 currentPdfCount++; addedCount++;
-            }
-             if (addedCount > 0) { console.log(`Added ${addedCount} PDFs. Total PDFs: ${currentPdfCount}`); displayMediaPreview(); }
-             unifiedUploadInput.value = ''; // Reset the unified input
+            console.log("Processing PDF selection..."); if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'pdf')) { alert("Cannot select PDF(s) when images or audio are already selected."); unifiedUploadInput.value = ''; return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload PDFs when a YouTube URL is present."); unifiedUploadInput.value = ''; return; } if (!genAI || !genAI.files) { alert("PDF upload is currently disabled (File API unavailable)."); unifiedUploadInput.value = ''; return; } const files = event.target.files; if (!files) { unifiedUploadInput.value = ''; return; } let currentPdfCount = selectedMediaItems.filter(item => item.type === 'pdf').length; let addedCount = 0; for (const file of files) { if (file.type !== 'application/pdf') continue; if (currentPdfCount >= MAX_PDF_COUNT) { alert(`Maximum ${MAX_PDF_COUNT} PDF files allowed.`); break; } const fileSizeMB = file.size / 1024 / 1024; if (fileSizeMB > MAX_PDF_SIZE_MB) { console.warn(`Large PDF selected: ${fileSizeMB.toFixed(1)}MB (Preview limit: ${MAX_PDF_SIZE_MB}MB)`); } const mediaId = nextMediaId++; selectedMediaItems.push({ id: mediaId, type: 'pdf', file: file, name: file.name, mimeType: file.type }); currentPdfCount++; addedCount++; } if (addedCount > 0) { console.log(`Added ${addedCount} PDFs. Total PDFs: ${currentPdfCount}`); displayMediaPreview(); } unifiedUploadInput.value = '';
         }
         function handleAudioFileSelect(event) {
-             console.log("Processing audio selection...");
-             // Prevent adding audio if image/PDF already selected
-             if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'audio')) {
-                 alert("Cannot select audio when images or PDF(s) are already selected.");
-                 unifiedUploadInput.value = ''; return;
-             }
-             if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload audio when a YouTube URL is present."); unifiedUploadInput.value = ''; return; }
-
-             const file = event.target.files[0]; // Should only be one file passed here
-             if (!file) { unifiedUploadInput.value = ''; return; }
-
-             removeAllSelectedMedia(); // Allow only one audio file
-
-             if (!SUPPORTED_AUDIO_MIMES.includes(file.type)) { alert(`Unsupported audio file type: ${file.type}.`); unifiedUploadInput.value = ''; return; }
-             const fileSizeMB = file.size / 1024 / 1024;
-             if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Audio file too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); unifiedUploadInput.value = ''; return; }
-
-             const reader = new FileReader();
-             setLoadingState(true, "Reading audio...");
-             reader.onload = (e) => {
-                 const mediaId = nextMediaId++;
-                selectedMediaItems = [{ id: mediaId, type: 'audio', file: file, base64: e.target.result, mimeType: file.type, name: file.name }];
-                console.log("Audio selected and read:", file.name);
-                displayMediaPreview();
-                setLoadingState(false);
-             }
-             reader.onerror = (error) => { console.error("Error reading audio file:", error); alert("Error reading audio file."); removeAllSelectedMedia(); setLoadingState(false); };
-             unifiedUploadInput.value = ''; // Reset the unified input
-             reader.readAsDataURL(file);
+             console.log("Processing audio selection..."); if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'audio')) { alert("Cannot select audio when images or PDF(s) are already selected."); unifiedUploadInput.value = ''; return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload audio when a YouTube URL is present."); unifiedUploadInput.value = ''; return; } const file = event.target.files[0]; if (!file) { unifiedUploadInput.value = ''; return; } removeAllSelectedMedia(); if (!SUPPORTED_AUDIO_MIMES.includes(file.type)) { alert(`Unsupported audio file type: ${file.type}.`); unifiedUploadInput.value = ''; return; } const fileSizeMB = file.size / 1024 / 1024; if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Audio file too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); unifiedUploadInput.value = ''; return; } const reader = new FileReader(); setLoadingState(true, "Reading audio..."); reader.onload = (e) => { const mediaId = nextMediaId++; selectedMediaItems = [{ id: mediaId, type: 'audio', file: file, base64: e.target.result, mimeType: file.type, name: file.name }]; console.log("Audio selected and read:", file.name); displayMediaPreview(); setLoadingState(false); } reader.onerror = (error) => { console.error("Error reading audio file:", error); alert("Error reading audio file."); removeAllSelectedMedia(); setLoadingState(false); }; unifiedUploadInput.value = ''; reader.readAsDataURL(file);
         }
-
 
         // (displayMediaPreview, renderImagePreviewItem, renderPdfPreviewItem remain the same)
         function displayMediaPreview() { console.log("displayMediaPreview. Items:", selectedMediaItems.length); imagePreviewsList.innerHTML = ''; previewAudioContainer.style.display = 'none'; previewAudio.removeAttribute('src'); mediaPreviewInfo.textContent = ''; imagePreviewsList.style.display = 'none'; imagePreviewsList.style.flexDirection = ''; imagePreviewsList.style.alignItems = ''; if (selectedMediaItems.length === 0) { mediaPreviewContainer.style.display = 'none'; updateButtonStates(); return; } const audioItem = selectedMediaItems.find(item => item.type === 'audio'); const imageItems = selectedMediaItems.filter(item => item.type === 'image'); const pdfItems = selectedMediaItems.filter(item => item.type === 'pdf'); let infoText = ""; if (audioItem) { imagePreviewsList.style.display = 'none'; try { previewAudio.src = audioItem.base64; previewAudio.load(); previewAudioContainer.style.display = 'flex'; infoText = `1 audio file: ${audioItem.name || 'Audio'}`; } catch (e) { console.error("Error setting audio src:", e); infoText = 'Error loading audio preview'; } } else if (imageItems.length > 0) { previewAudioContainer.style.display = 'none'; imagePreviewsList.style.display = 'flex'; imagePreviewsList.style.flexDirection = 'row'; imagePreviewsList.style.alignItems = 'flex-start'; imageItems.forEach(item => { if (!item.base64) { const reader = new FileReader(); reader.onload = (e) => { item.base64 = e.target.result; renderImagePreviewItem(item); }; reader.onerror = () => { item.base64 = '#error'; renderImagePreviewItem(item); }; reader.readAsDataURL(item.file); } else { renderImagePreviewItem(item); } }); infoText = `${imageItems.length} image(s) selected`; } else if (pdfItems.length > 0) { previewAudioContainer.style.display = 'none'; imagePreviewsList.style.display = 'flex'; imagePreviewsList.style.flexDirection = 'column'; imagePreviewsList.style.alignItems = 'stretch'; pdfItems.forEach(item => renderPdfPreviewItem(item)); infoText = `${pdfItems.length} PDF file(s) selected`; } mediaPreviewInfo.textContent = infoText; mediaPreviewContainer.style.display = 'flex'; updateButtonStates(); }
@@ -926,7 +821,7 @@
 
 
         // --- Message Loading (Firestore) ---
-        // ***** TAMIL ***** Firestore-லிருந்து messages load செய்யும்போது, document ID-யையும் சேர்த்து history-ல் save செய்கிறோம்.
+        // (loadAndListenForActiveChat remains the same)
         function loadAndListenForActiveChat(chatId) {
             if (!currentUser || !chatId) { chatArea.innerHTML = ''; if (activeChatListener) { activeChatListener(); activeChatListener = null; } renderGreetingOrLoginPrompt(); updateButtonStates(); setLoadingState(false); return; }
             if (activeChatListener) { activeChatListener(); activeChatListener = null; }
@@ -939,63 +834,59 @@
 
             activeChatListener = messagesRef.onSnapshot(snapshot => {
                 console.log(`Received messages snapshot for chat ${chatId}:`, snapshot.size, "messages. isDeletingMessage:", isDeletingMessage);
-                 // If a message deletion is in progress, skip this update to avoid flicker
-                if (isDeletingMessage) {
-                     console.log("Skipping message snapshot processing due to active deletion.");
-                     return;
-                }
-                removeMessageElement(loadingMsg);
-                chatArea.innerHTML = '';
-                currentChatHistory = []; // Reset history before populating
-
-                if (snapshot.empty && activeChatId === chatId) {
-                    const chatListItem = chatListContainer.querySelector(`.chat-list-item[data-id="${chatId}"]`);
-                    const chatTitle = chatListItem?.textContent?.replace(DELETE_ICON, '').trim() || '';
-                    if (chatTitle && chatTitle !== NEW_CHAT_TITLE) { displayMessage("Chat is empty. Send a message to start!", 'ai'); }
-                    else { renderGreetingOrLoginPrompt(); }
-                } else {
-                    snapshot.forEach(doc => {
-                        const msgData = doc.data();
-                        const role = msgData.role === 'user' ? 'user' : 'model';
-                        const parts = [];
-                        const firestoreId = doc.id; // <<< TAMIL: Get Firestore document ID
-
-                        let historyText = msgData.text || "";
-                        if (msgData.youtubeVideoId) { const ytUrlInText = `https://www.youtube.com/watch?v=${msgData.youtubeVideoId}`; if (!historyText.includes(ytUrlInText)) { historyText = (historyText ? historyText + "\n" : "") + ytUrlInText; } }
-                        if (historyText) { parts.push({ text: historyText }); }
-
-                        // Add to in-memory history *with* firestoreId
-                        if (parts.length > 0) {
-                             currentChatHistory.push({ role: role, parts: parts, firestoreId: firestoreId }); // <<< TAMIL: Save ID here
-                        }
-
-                        // Display message in UI, passing firestoreId
-                        displayMessage(msgData.text || '', msgData.role, [], null, msgData, firestoreId); // Pass ID to displayMessage
-                    });
-                }
-                scrollToBottom(true);
-                console.log(`Finished loading/displaying ${currentChatHistory.length} history items for chat ${chatId}. Updating button states.`);
-                updateButtonStates();
-                setLoadingState(false);
-                if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); }
-
-            }, error => {
-                console.error(`Error listening messages chat ${chatId}:`, error);
-                displayError("Could not load messages for this chat.");
+                if (isDeletingMessage) { console.log("Skipping message snapshot processing due to active deletion."); return; }
                 removeMessageElement(loadingMsg); chatArea.innerHTML = ''; currentChatHistory = [];
-                 console.error("Error loading messages. Updating button states.");
-                updateButtonStates(); setLoadingState(false);
+                if (snapshot.empty && activeChatId === chatId) { const chatListItem = chatListContainer.querySelector(`.chat-list-item[data-id="${chatId}"]`); const chatTitle = chatListItem?.textContent?.replace(DELETE_ICON, '').trim() || ''; if (chatTitle && chatTitle !== NEW_CHAT_TITLE) { displayMessage("Chat is empty. Send a message to start!", 'ai'); } else { renderGreetingOrLoginPrompt(); } } else { snapshot.forEach(doc => { const msgData = doc.data(); const role = msgData.role === 'user' ? 'user' : 'model'; const parts = []; const firestoreId = doc.id; let historyText = msgData.text || ""; if (msgData.youtubeVideoId) { const ytUrlInText = `https://www.youtube.com/watch?v=${msgData.youtubeVideoId}`; if (!historyText.includes(ytUrlInText)) { historyText = (historyText ? historyText + "\n" : "") + ytUrlInText; } } if (historyText) { parts.push({ text: historyText }); } if (parts.length > 0) { currentChatHistory.push({ role: role, parts: parts, firestoreId: firestoreId }); } displayMessage(msgData.text || '', msgData.role, [], null, msgData, firestoreId); }); }
+                scrollToBottom(true); console.log(`Finished loading/displaying ${currentChatHistory.length} history items for chat ${chatId}. Updating button states.`); updateButtonStates(); setLoadingState(false); if (!isTestMode && !isReviewMode && activeChatId) { setTimeout(() => userInput.focus(), 100); }
+            }, error => {
+                console.error(`Error listening messages chat ${chatId}:`, error); displayError("Could not load messages for this chat."); removeMessageElement(loadingMsg); chatArea.innerHTML = ''; currentChatHistory = []; console.error("Error loading messages. Updating button states."); updateButtonStates(); setLoadingState(false);
             });
         }
 
 
         // --- File Upload Helper (Gemini File API) ---
-        // (uploadAndProcessFile remains the same)
-        async function uploadAndProcessFile(file, index, totalFiles) { if (!genAI?.files?.upload || !genAI?.files?.get || !genAI?.files?.delete) { console.error("[File API] Error: genAI.files service or required methods (upload, get, delete) are not available."); throw new Error("AI SDK File Service not initialized or missing methods."); } const progressMsg = `Uploading file ${index + 1}/${totalFiles}: ${file.name}...`; console.log(`[File API] ${progressMsg}`); setLoadingState(true, progressMsg); let uploadResult = null; try { uploadResult = await genAI.files.upload({ file: file, mimeType: file.type, displayName: file.name, }); console.log(`[File API] Upload initiated for ${file.name}. API File Name: ${uploadResult?.file?.name}, State: ${uploadResult?.file?.state}`); if (!uploadResult?.file?.name) { throw new Error(`File upload for ${file.name} did not return a valid file name.`); } const apiFileName = uploadResult.file.name; let fileResponse = await genAI.files.get({ name: apiFileName }); const startTime = Date.now(); while (fileResponse?.file?.state === 'PROCESSING') { if (Date.now() - startTime > FILE_API_PROCESSING_TIMEOUT_MS) { throw new Error(`File processing timed out for ${file.name} after ${FILE_API_PROCESSING_TIMEOUT_MS / 1000}s.`); } const processMsg = `Processing file ${index + 1}/${totalFiles}: ${file.name}... (State: ${fileResponse.file.state})`; setLoadingState(true, processMsg); console.log(`[File API] File ${file.name} state: ${fileResponse.file.state}. Waiting ${FILE_API_POLLING_INTERVAL_MS / 1000}s...`); await new Promise(resolve => setTimeout(resolve, FILE_API_POLLING_INTERVAL_MS)); try { fileResponse = await genAI.files.get({ name: apiFileName }); if (!fileResponse?.file) { throw new Error(`Polling failed: Invalid response from getFile for ${apiFileName}.`); } } catch (pollError) { console.error(`[File API] Error polling file ${apiFileName}:`, pollError); throw new Error(`Error checking processing status for ${file.name}: ${pollError.message}`); } } if (fileResponse.file.state !== 'ACTIVE') { console.error(`[File API] File processing failed for ${file.name}. Final State: ${fileResponse.file.state}`, fileResponse.file); try { await genAI.files.delete({ name: apiFileName }); console.log(`[File API] Deleted failed/inactive file: ${apiFileName}`); } catch (delErr) { console.warn(`[File API] Failed to delete failed/inactive file ${apiFileName}:`, delErr); } throw new Error(`File processing for ${file.name} resulted in state: ${fileResponse.file.state}.`); } console.log(`[File API] File ${file.name} (API: ${apiFileName}) processed successfully. URI: ${fileResponse.file.uri}`); return fileResponse.file; } catch (uploadError) { console.error(`[File API] Error during upload/processing for ${file.name}:`, uploadError); if (uploadResult?.file?.name) { try { await genAI.files.delete({ name: uploadResult.file.name }); console.log(`[File API] Cleaned up file ${uploadResult.file.name} after error.`); } catch (delErr) { console.warn(`[File API] Failed to cleanup file ${uploadResult.file.name} after error:`, delErr); } } throw uploadError; } }
+        // ***** TAMIL ***** PDF போன்ற பெரிய files-ஐ File API மூலம் upload செய்யும் function. Upload/Processing status இங்க காட்டுவோம்.
+        async function uploadAndProcessFile(file, index, totalFiles) {
+             if (!genAI?.files?.upload || !genAI?.files?.get || !genAI?.files?.delete) { console.error("[File API] Error: genAI.files service or required methods (upload, get, delete) are not available."); throw new Error("AI SDK File Service not initialized or missing methods."); }
+             const progressMsg = `Uploading file ${index + 1}/${totalFiles}: ${file.name}...`; // ***** TAMIL ***** Upload ஆரம்பிக்கும்போது status message
+             console.log(`[File API] ${progressMsg}`);
+             setLoadingState(true, progressMsg);
+             let uploadResult = null;
+             try {
+                 uploadResult = await genAI.files.upload({ file: file, mimeType: file.type, displayName: file.name, });
+                 console.log(`[File API] Upload initiated for ${file.name}. API File Name: ${uploadResult?.file?.name}, State: ${uploadResult?.file?.state}`);
+                 if (!uploadResult?.file?.name) { throw new Error(`File upload for ${file.name} did not return a valid file name.`); }
+                 const apiFileName = uploadResult.file.name;
+                 let fileResponse = await genAI.files.get({ name: apiFileName });
+                 const startTime = Date.now();
+                 while (fileResponse?.file?.state === 'PROCESSING') {
+                     if (Date.now() - startTime > FILE_API_PROCESSING_TIMEOUT_MS) { throw new Error(`File processing timed out for ${file.name} after ${FILE_API_PROCESSING_TIMEOUT_MS / 1000}s.`); }
+                     const processMsg = `Processing file ${index + 1}/${totalFiles}: ${file.name}... (State: ${fileResponse.file.state})`; // ***** TAMIL ***** Processing status message
+                     setLoadingState(true, processMsg);
+                     console.log(`[File API] File ${file.name} state: ${fileResponse.file.state}. Waiting ${FILE_API_POLLING_INTERVAL_MS / 1000}s...`);
+                     await new Promise(resolve => setTimeout(resolve, FILE_API_POLLING_INTERVAL_MS));
+                     try { fileResponse = await genAI.files.get({ name: apiFileName }); if (!fileResponse?.file) { throw new Error(`Polling failed: Invalid response from getFile for ${apiFileName}.`); } } catch (pollError) { console.error(`[File API] Error polling file ${apiFileName}:`, pollError); throw new Error(`Error checking processing status for ${file.name}: ${pollError.message}`); }
+                 }
+                 if (fileResponse.file.state !== 'ACTIVE') { console.error(`[File API] File processing failed for ${file.name}. Final State: ${fileResponse.file.state}`, fileResponse.file); try { await genAI.files.delete({ name: apiFileName }); console.log(`[File API] Deleted failed/inactive file: ${apiFileName}`); } catch (delErr) { console.warn(`[File API] Failed to delete failed/inactive file ${apiFileName}:`, delErr); } throw new Error(`File processing for ${file.name} resulted in state: ${fileResponse.file.state}.`); }
+                 console.log(`[File API] File ${file.name} (API: ${apiFileName}) processed successfully. URI: ${fileResponse.file.uri}`);
+                 return fileResponse.file;
+             } catch (uploadError) {
+                 console.error(`[File API] Error during upload/processing for ${file.name}:`, uploadError);
+                 if (uploadResult?.file?.name) { try { await genAI.files.delete({ name: uploadResult.file.name }); console.log(`[File API] Cleaned up file ${uploadResult.file.name} after error.`); } catch (delErr) { console.warn(`[File API] Failed to cleanup file ${uploadResult.file.name} after error:`, delErr); } }
+                 throw uploadError; // Re-throw error after attempting cleanup
+             } finally {
+                 // Ensure loading state is reset if this was the last file, even on error
+                 if(index === totalFiles - 1) {
+                     // We might transition to 'Generating response...' immediately after,
+                     // so a brief reset might not be visible, but it's good practice.
+                     // setLoadingState(false); // Reconsider if this causes flicker before 'Generating...'
+                 }
+             }
+         }
 
 
         // --- Message Sending (Gemini API & Firestore Save) ---
-        // ***** TAMIL ***** history array-ல் Firestore ID-யையும் சேர்த்து அனுப்புவோம்.
+        // (handleSendMessage remains mostly the same, but uses the enhanced uploadAndProcessFile)
         async function handleSendMessage() {
             const userMessageTextRaw = userInput.value.trim(); const mediaItemsToSend = [...selectedMediaItems]; const isMCQRequest = mcqModeCheckbox.checked; const youtubeMatch = userMessageTextRaw.match(youtubeRegex); const youtubeUrl = youtubeMatch ? youtubeMatch[0] : null;
             console.log("handleSendMessage: Text:", userMessageTextRaw ? userMessageTextRaw.substring(0, 50) + '...' : '(empty)', "Media items:", mediaItemsToSend.length, "YT URL:", youtubeUrl, "Model:", selectedModelId);
@@ -1005,23 +896,22 @@
             const timestamp = firebase.firestore.FieldValue.serverTimestamp(); const messagesColRef = db.collection('chats').doc(activeChatId).collection('messages'); const chatDocRef = db.collection('chats').doc(activeChatId);
             const userMsgData = { role: "user", text: userMessageTextRaw, timestamp: timestamp }; const singleAudioItem = mediaItemsToSend.find(item => item.type === 'audio'); const imageItems = mediaItemsToSend.filter(item => item.type === 'image'); const pdfItems = mediaItemsToSend.filter(item => item.type === 'pdf'); let potentialTestTitle = null;
             if (singleAudioItem) { userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; } else if (imageItems.length === 1) { userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; } else if (imageItems.length > 1) { userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); } else if (pdfItems.length > 0) { userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); } if (youtubeUrl && youtubeMatch && youtubeMatch[1]) userMsgData.youtubeVideoId = youtubeMatch[1];
-            let savedUserMessageId = null; // To store the ID for history
+            let savedUserMessageId = null;
              try {
                  const chatSnap = await chatDocRef.get(); let isFirstUserMessageInNewChat = false; if (chatSnap.exists && chatSnap.data().title === NEW_CHAT_TITLE) { const messagesSnap = await messagesColRef.limit(1).get(); if (messagesSnap.empty) { isFirstUserMessageInNewChat = true; } }
-                 const userMessageDocRef = await messagesColRef.add(userMsgData); savedUserMessageId = userMessageDocRef.id; // Store the ID
+                 const userMessageDocRef = await messagesColRef.add(userMsgData); savedUserMessageId = userMessageDocRef.id;
                  await chatDocRef.update({ lastUpdated: timestamp }); console.log("User message saved to Firestore:", savedUserMessageId);
                  const userPartsForHistory = []; let historyText = userMsgData.text; if (youtubeUrl && historyText && !historyText.includes(youtubeUrl)) { historyText += "\n" + youtubeUrl; } else if (youtubeUrl && !historyText) { historyText = youtubeUrl; } if (historyText) userPartsForHistory.push({ text: historyText });
-                  // Add to history WITH ID
                  if (userPartsForHistory.length > 0) { currentChatHistory.push({ role: 'user', parts: userPartsForHistory, firestoreId: savedUserMessageId }); }
                  if (isFirstUserMessageInNewChat) { let titleSource = userMessageTextRaw || (mediaItemsToSend[0]?.name) || (youtubeUrl ? 'YouTube Video Chat' : NEW_CHAT_TITLE); const generatedTitle = generateChatTitle(titleSource); if (generatedTitle && generatedTitle !== NEW_CHAT_TITLE) { await updateActiveChatTitle(generatedTitle); } }
              } catch(error) { console.error("Error saving user message:", error); displayError("Failed to save your message."); setLoadingState(false); return; }
             const thinking = displayMessage("Thinking...", 'ai', ['thinking']); scrollToBottom();
-            const partsForApi = []; let fileDataPartsForApi = []; let useCache = false; let cacheToUse = null; let isYouTubeRequest = false; let generatedResponse = null; let aiResponseSaved = false; let uploadedFileUris = []; let savedAiMessageId = null; // To store AI message ID
+            const partsForApi = []; let fileDataPartsForApi = []; let useCache = false; let cacheToUse = null; let isYouTubeRequest = false; let generatedResponse = null; let aiResponseSaved = false; let uploadedFileUris = []; let savedAiMessageId = null;
             try {
                  let textPromptForApi = userMessageTextRaw;
                  if (youtubeUrl && mediaItemsToSend.length === 0) { isYouTubeRequest = true; const youtubePart = { fileData: { fileUri: youtubeUrl } }; partsForApi.push(youtubePart); console.log("Added YouTube URL as fileData part for API:", youtubeUrl); textPromptForApi = userMessageTextRaw.replace(youtubeUrl, '').trim(); if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || "YouTube Video Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided video... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : `Generate multiple choice questions...` + mcqInstructions; console.log("MCQ mode for YouTube: Using prompt:", textPromptForApi); } else if (!textPromptForApi) { textPromptForApi = "Summarize this video."; console.log("YouTube URL only: Using default 'Summarize' prompt."); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text prompt part for YouTube request:", textPromptForApi); } }
-                 else if (mediaItemsToSend.length > 0) { if (singleAudioItem) { if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); } const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1); partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } }); console.log(`Added audio inlineData part.`); } else if (imageItems.length > 0) { const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file)); const imageBase64Results = await Promise.all(imageBase64Promises); let addedImageCount = 0; imageBase64Results.forEach((b64, index) => { if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; } const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1); if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; } else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); } }); console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`); if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); } } else if (pdfItems.length > 0) { console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`); const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length)); const uploadedFileResults = await Promise.all(uploadPromises); uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri); if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); } fileDataPartsForApi = uploadedFileUris.map(uri => { const originalFile = uploadedFileResults.find(f => f.uri === uri); return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } }; }); console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API (PDFs).`); const canAttemptCaching = currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent; if (canAttemptCaching) { const sortedUris = [...uploadedFileUris].sort(); if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) { console.log(`Attempting to use existing cache: ${currentMediaCacheName}`); useCache = true; cacheToUse = currentMediaCacheName; } else { console.log("No matching PDF cache found or URIs differ. Will attempt to create new cache."); currentMediaCacheName = null; cachedMediaUris = []; } } else if (fileDataPartsForApi.length > 0) { console.log(`Caching skipped for PDFs: Model ${selectedModelId} doesn't support it, or SDK caching API missing.`); } } textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || (mediaItemsToSend[0]?.name) || "Generated Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for uploaded media: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text prompt part for uploaded media request:", textPromptForApi); } }
-                 else { textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || "Text-Based Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for text only: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text-only prompt part:", textPromptForApi); } }
+                 else if (mediaItemsToSend.length > 0) { if (singleAudioItem) { if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); } const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1); partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } }); console.log(`Added audio inlineData part.`); setLoadingState(true, "Sending message with audio..."); } else if (imageItems.length > 0) { const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file)); const imageBase64Results = await Promise.all(imageBase64Promises); let addedImageCount = 0; imageBase64Results.forEach((b64, index) => { if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; } const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1); if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; } else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); } }); console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`); if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); } setLoadingState(true, `Sending message with ${addedImageCount} image(s)...`); } else if (pdfItems.length > 0) { console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`); const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length)); const uploadedFileResults = await Promise.all(uploadPromises); uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri); if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); } fileDataPartsForApi = uploadedFileUris.map(uri => { const originalFile = uploadedFileResults.find(f => f.uri === uri); return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } }; }); console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API (PDFs).`); const canAttemptCaching = currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent; if (canAttemptCaching) { const sortedUris = [...uploadedFileUris].sort(); if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) { console.log(`Attempting to use existing cache: ${currentMediaCacheName}`); useCache = true; cacheToUse = currentMediaCacheName; } else { console.log("No matching PDF cache found or URIs differ. Will attempt to create new cache."); currentMediaCacheName = null; cachedMediaUris = []; } } else if (fileDataPartsForApi.length > 0) { console.log(`Caching skipped for PDFs: Model ${selectedModelId} doesn't support it, or SDK caching API missing.`); } } textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || (mediaItemsToSend[0]?.name) || "Generated Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for uploaded media: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text prompt part for uploaded media request:", textPromptForApi); } }
+                 else { textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || "Text-Based Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for text only: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text-only prompt part:", textPromptForApi); } setLoadingState(true, "Sending message..."); }
                 let finalPartsForApi = []; if (isYouTubeRequest) { finalPartsForApi = partsForApi; } else if (fileDataPartsForApi.length > 0) { if (useCache) { finalPartsForApi = partsForApi.filter(p => p.text || p.inlineData); } else { finalPartsForApi = [...fileDataPartsForApi, ...partsForApi.filter(p => p.text || p.inlineData)]; } } else { finalPartsForApi = partsForApi; }
                  if (finalPartsForApi.length === 0 && !useCache) { throw new Error("No valid content to send."); }
                 console.log("Calling Gemini API via SDK..."); setLoadingState(true, "Generating response...");
@@ -1037,10 +927,9 @@
                 else if (generatedResponse.candidates && generatedResponse.candidates.length > 0) { const candidate = generatedResponse.candidates[0]; if (candidate.finishReason === 'SAFETY') { aiMsgData.text = `Blocked (Response Safety): ${candidate.safetyRatings?.map(r => `${r.category.replace('HARM_CATEGORY_','')} (${r.probability})`).join(', ') || 'Reason unspecified'}`; blocked = true; displayAsError = true; console.warn("Response blocked (Safety):", candidate.safetyRatings); } else if (candidate.finishReason === 'RECITATION') { aiMsgData.text = `Blocked (Response Recitation)`; blocked = true; displayAsError = true; console.warn("Response blocked (Recitation)"); } else if (candidate.content?.parts?.length > 0) { try { rawAiText = generatedResponse.text(); aiMsgData.text = rawAiText; displayAsError = false; if (isMCQRequest && !blocked) { try { const jsonMatch = rawAiText.match(/```json\s*([\s\S]*?)\s*```/); const jsonString = jsonMatch ? jsonMatch[1].trim() : rawAiText.trim(); if (jsonString.startsWith('[') && jsonString.endsWith(']')) { const mcqs = JSON.parse(jsonString); const isValid = Array.isArray(mcqs) && mcqs.length > 0 && mcqs.every(q => q.question?.en && q.options?.length === 4 && q.options.every(opt=>opt.en) && q.answer && q.explanation?.en); if (isValid) { mcqs.forEach(q => { q.question.ta = q.question.ta || q.question.en; q.explanation.ta = q.explanation.ta || q.explanation.en; q.options.forEach(opt => { opt.ta = opt.ta || opt.en; }); }); aiMsgData.text = `Generated ${mcqs.length} MCQs.`; aiMsgData.mcqData = mcqs; aiMsgData.mcqTitle = potentialTestTitle; console.log("MCQs parsed successfully."); displayAsError = false; } else { throw new Error("Invalid MCQ structure."); } } else { throw new Error("Not a JSON array."); } } catch (parseError) { console.warn("Failed to parse MCQ JSON:", parseError.message); aiMsgData.text = "MCQ format error.\n\n" + rawAiText; displayAsError = true; aiMsgData.mcqData = null; aiMsgData.mcqTitle = null; } } } catch (textError) { console.error("Error extracting text from SDK response:", textError); aiMsgData.text = "Error extracting text from response."; displayAsError = true; } } else if (candidate.finishReason === 'MAX_TOKENS') { console.warn("Response stopped: MAX_TOKENS."); aiMsgData.text = (generatedResponse.text ? generatedResponse.text() : "") + "\n\n(Response may be truncated due to token limit)"; displayAsError = false; } else if (candidate.finishReason === 'STOP' && (!candidate.content || candidate.content?.parts?.length === 0)){ aiMsgData.text = "(Model returned no content)"; displayAsError = false;} else { console.warn("API response finish reason:", candidate.finishReason); aiMsgData.text = `Response finished: ${candidate.finishReason || 'Unknown'}. ` + (generatedResponse.text ? generatedResponse.text() : ""); displayAsError = false; } }
                 else { console.error("API Error: No candidates in response."); aiMsgData.text = "Error: No response data from API."; displayAsError = true; }
                  try {
-                      const aiDocRef = await messagesColRef.add(aiMsgData); savedAiMessageId = aiDocRef.id; // Store AI message ID
+                      const aiDocRef = await messagesColRef.add(aiMsgData); savedAiMessageId = aiDocRef.id;
                       await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }); aiResponseSaved = true; console.log("AI response/error saved to Firestore:", savedAiMessageId);
                       if (!displayAsError && !blocked && aiMsgData.text) {
-                           // Add AI message to history WITH ID
                            currentChatHistory.push({ role: 'model', parts: [{ text: aiMsgData.text }], firestoreId: savedAiMessageId });
                       }
                  } catch (saveError) { console.error("Error saving AI response:", saveError); displayError(`Failed to save AI response.`); }
@@ -1069,8 +958,7 @@
         function scrollToBottom(immediate = false) { chatArea.scrollTo({top:chatArea.scrollHeight,behavior:immediate?'auto':'smooth'}); }
         function removeMessageElement(element) { if(element && element.parentNode === chatArea) { try { chatArea.removeChild(element); } catch(e) { /* ignore */ } } else if (element?.parentNode?.classList.contains('message-wrapper') && element.parentNode.parentNode === chatArea) { try { chatArea.removeChild(element.parentNode); } catch(e) { /* ignore */ } } }
 
-        // updateButtonStates: Checks unified upload button state
-        // ***** TAMIL ***** இங்க '+' button-ஐயும் handle பண்றோம்.
+        // (updateButtonStates remains the same)
          function updateButtonStates(isLoading = false) {
             const isLoggedIn = !!currentUser;
             const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold;
@@ -1086,37 +974,29 @@
             const canSendCombination = !(hasYouTubeUrlInInput && hasSelectedMedia);
             const canSendMessage = isAppReady && isChatSelected && !isLoading && !isRecording && canSendCombination && (userInput.value.trim() !== '' || hasSelectedMedia || hasYouTubeUrlInInput);
 
-            // Input Area Buttons
             userInput.disabled = !isAppReady || !isChatSelected || isLoading || isRecording;
             sendButton.disabled = !canSendMessage;
             mcqModeCheckbox.disabled = !canSendMessage;
 
-            // Media buttons
             const disableFileUpload = isLoading || isRecording || !isAppReady || !isChatSelected || hasYouTubeUrlInInput;
             const disableAudioRecord = isLoading || !isAppReady || !isChatSelected || hasYouTubeUrlInInput;
 
-            // ***** TAMIL ***** Unified '+' button state
-            unifiedUploadButton.disabled = disableFileUpload || hasSelectedMedia; // Disable if loading/recording/YT URL/media selected
+            unifiedUploadButton.disabled = disableFileUpload || hasSelectedMedia;
             unifiedUploadButton.title = unifiedUploadButton.disabled ? "File upload disabled (Check login, SDK, chat, media, or recording)" : "Upload File (Image, PDF, Audio)";
 
-            // Record button state
             recordAudioButton.disabled = disableAudioRecord || hasSelectedMedia;
             recordAudioButton.title = recordAudioButton.disabled ? "Audio recording disabled (Check login, SDK, chat, media, or conflicting input)" : (isRecording ? "Stop recording" : "Record audio");
 
-            // Re-enable record button if recording (to allow stopping)
             if (isRecording) { recordAudioButton.disabled = false; recordAudioButton.title = "Stop recording"; }
 
-            // Sidebar Buttons
             startChatButton.disabled = !isLoggedIn || isLoading || isRecording;
             testSearchInput.disabled = !isLoggedIn || isLoading || isRecording;
 
-            // Settings Buttons
             decreaseTextBtn.disabled = isLoading || isRecording || currentTextSizeMultiplier <= MIN_TEXT_SIZE_MULTIPLIER;
             increaseTextBtn.disabled = isLoading || isRecording || currentTextSizeMultiplier >= MAX_TEXT_SIZE_MULTIPLIER;
             themeToggleButton.disabled = isLoading || isRecording;
             modelSelector.disabled = isLoading || isRecording || !isLoggedIn;
 
-            // Auth Buttons
             loginBtn.disabled = isLoading;
             logoutBtn.disabled = isLoading;
          }
@@ -1127,15 +1007,12 @@
         // (switchView remains the same)
         function switchView(viewName, cameFromTests = false) { console.log("Switching view to:", viewName); chatView.classList.remove('active'); reviewView.classList.remove('active'); testView.classList.remove('active'); appContainer.classList.remove('hidden'); isTestMode = false; isReviewMode = false; cameFromAllTestsList = cameFromTests; saveReviewBtn.style.display = 'none'; exitReviewBtn.style.display = 'none'; if(viewName === 'test'){ appContainer.classList.add('hidden'); testView.classList.add('active'); isTestMode = true; } else if(viewName === 'review'){ reviewView.classList.add('active'); isReviewMode = true; exitReviewBtn.style.display = 'inline-block'; exitReviewBtn.textContent = cameFromAllTestsList ? "Back to All Tests" : "Back to Chat"; } else { chatView.classList.add('active'); if (currentUser && activeChatId && API_KEY && genAI && !isRecording) { setTimeout(() => userInput.focus(), 100); } } if (viewName !== 'test' && testTimerInterval) { clearInterval(testTimerInterval); testTimerInterval = null; } }
 
-        // displayMessage: Updated for message actions, image click, and media indicators
-        // ***** TAMIL ***** இங்கதான் message-ஐ chat-ல காட்டும் logic இருக்கு. Copy/Delete button, Image click எல்லாம் இங்க handle பண்றோம்.
+        // displayMessage: Updated for Audio Playback
+        // ***** TAMIL ***** இங்கதான் message-ஐ chat-ல காட்டும் logic இருக்கு. Audio player இங்க சேர்க்கிறோம்.
         function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null, firestoreId = null) {
             const messageWrapper = document.createElement('div');
             messageWrapper.classList.add('message-wrapper', `${sender}-wrapper`);
-            // ***** TAMIL ***** Store Firestore ID on the wrapper
-            if (firestoreId) {
-                 messageWrapper.dataset.firestoreId = firestoreId;
-            }
+            if (firestoreId) { messageWrapper.dataset.firestoreId = firestoreId; }
 
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
@@ -1145,37 +1022,38 @@
 
             // --- Media Rendering (Uploaded Files) ---
             if (messageData?.mediaType === 'image' && messageData.mediaData && messageData.mediaData !== '#error') {
-                try {
-                    const img = document.createElement('img');
-                    img.src = messageData.mediaData;
-                    img.alt = messageData.mediaName || "Uploaded Image";
-                    img.classList.add('uploaded-image');
-                    img.loading = "lazy";
-                    img.onerror = () => { img.alt = "Image load error"; img.src = ""; };
-                    // ***** TAMIL ***** Image click handler
-                    img.onclick = () => showImageModal(messageData.mediaData);
-                    messageElement.appendChild(img); hasContent = true;
-                } catch (e) { console.error("Error creating image element:", e); }
+                try { const img = document.createElement('img'); img.src = messageData.mediaData; img.alt = messageData.mediaName || "Uploaded Image"; img.classList.add('uploaded-image'); img.loading = "lazy"; img.onerror = () => { img.alt = "Image load error"; img.src = ""; }; img.onclick = () => showImageModal(messageData.mediaData); messageElement.appendChild(img); hasContent = true; } catch (e) { console.error("Error creating image element:", e); }
             } else if (messageData?.mediaType === 'multi-image' && messageData.mediaCount > 0) {
-                // Display indicator as before
                 try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} image${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-image indicator:", e); }
             } else if (messageData?.mediaType === 'multi-pdf' && messageData.mediaCount > 0) {
-                // ***** TAMIL ***** PDF Indicator
                 try { const indicator = document.createElement('div'); indicator.classList.add('pdf-indicator'); indicator.innerHTML = `📄 (${messageData.mediaCount} PDF${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-PDF indicator:", e); }
             } else if (messageData?.mediaType === 'audio' && messageData.mediaData) {
-                // ***** TAMIL ***** Audio Indicator (can make this playable if needed, simpler indicator now)
-                try { const indicator = document.createElement('div'); indicator.classList.add('audio-indicator'); indicator.innerHTML = `🎵 (Audio sent: ${messageData.mediaName || 'Audio'})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating audio indicator:", e); }
-                // Optional: Add the player back if desired
-                // try { const audioContainer = document.createElement('div'); audioContainer.classList.add('chat-audio-player'); const audioPlayer = document.createElement('audio'); audioPlayer.src = messageData.mediaData; audioPlayer.controls = true; audioPlayer.preload = "metadata"; if(messageData.mediaName) audioPlayer.title = messageData.mediaName; audioPlayer.onerror = () => { console.warn("Error loading audio player"); audioContainer.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(Audio load error)</span>`; }; audioContainer.appendChild(audioPlayer); messageElement.appendChild(audioContainer); hasContent = true; } catch (e) { console.error("Error creating audio element:", e); }
+                 // ***** TAMIL ***** Audio message வந்தால், <audio> tag உருவாக்கி காட்டுகிறோம்.
+                 try {
+                     const audioContainer = document.createElement('div');
+                     audioContainer.classList.add('chat-audio-player');
+                     const audioPlayer = document.createElement('audio');
+                     audioPlayer.src = messageData.mediaData; // Base64 data URL
+                     audioPlayer.controls = true;
+                     audioPlayer.preload = "metadata"; // Load only metadata initially
+                     if(messageData.mediaName) audioPlayer.title = messageData.mediaName;
+                     audioPlayer.onerror = () => {
+                         console.warn("Error loading audio player for:", messageData.mediaName);
+                         audioContainer.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>🎵 (Audio load error: ${messageData.mediaName || 'Audio'})</span>`;
+                     };
+                     audioContainer.appendChild(audioPlayer);
+                     messageElement.appendChild(audioContainer);
+                     hasContent = true;
+                 } catch (e) { console.error("Error creating audio element:", e); }
             }
 
-             // --- Text Content Rendering (with Code Block Handling) ---
+             // --- Text Content Rendering ---
             if (text) {
                 const messageContentContainer = document.createElement('div');
-                 messageContentContainer.classList.add('message-content'); // Add class for easier selection
+                 messageContentContainer.classList.add('message-content');
                 try {
                     const tempDiv = document.createElement('div'); tempDiv.innerText = text; let formattedText = tempDiv.innerHTML;
-                    if (messageData?.mediaType !== 'image') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); }
+                    if (messageData?.mediaType !== 'image' && messageData?.mediaType !== 'audio') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); }
                     formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => { containsCode = true; const safeLang = lang?.trim()?.match(/^[a-zA-Z0-9_-]+$/) ? lang.trim().toLowerCase() : 'plain'; const languageClass = `language-${safeLang}`; const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;"); return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`; });
                      formattedText = formattedText.replace(/`([^`]+?)`/g, (match, code) => { const escapedInlineCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;"); return `<code>${escapedInlineCode}</code>`; });
                     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>');
@@ -1184,7 +1062,7 @@
                 } catch (e) { console.error("Error formatting text content:", e); messageContentContainer.innerText = text; if (!messageElement.contains(messageContentContainer)) { messageElement.appendChild(messageContentContainer); } hasContent = true; }
             }
 
-            // --- YouTube Embed (Render based on Firestore data) ---
+            // --- YouTube Embed ---
             if (messageData?.youtubeVideoId) { try { const youtubeEmbedDiv = document.createElement('div'); youtubeEmbedDiv.classList.add('youtube-embed-container'); const iframe = document.createElement('iframe'); iframe.classList.add('chat-video'); iframe.src = `https://www.youtube.com/embed/${messageData.youtubeVideoId}`; iframe.title = "YouTube video player"; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"; iframe.allowFullscreen = true; iframe.loading = "lazy"; iframe.onerror = () => { youtubeEmbedDiv.innerHTML = `<span style='font-size:0.8em; color:var(--error-text);'>(YouTube embed error: ID ${messageData.youtubeVideoId})</span>`; }; youtubeEmbedDiv.appendChild(iframe); messageElement.appendChild(youtubeEmbedDiv); hasContent = true; console.log(`Displaying YouTube embed for ID: ${messageData.youtubeVideoId}`); } catch (e) { console.error("Error creating YouTube embed:", e); } }
 
              // --- MCQ Offer ---
@@ -1193,33 +1071,17 @@
             else if (appendHtml) { try { const appendDiv = document.createElement('div'); appendDiv.innerHTML = appendHtml; while (appendDiv.firstChild) { messageElement.appendChild(appendDiv.firstChild); } hasContent = true; } catch (e) { console.error("Error appending raw HTML:", e); } }
 
             // --- Message Actions (Copy/Delete) ---
-            // ***** TAMIL ***** Copy, Delete buttons இங்க சேர்க்கிறோம்
             if (firestoreId && !cssClasses.includes('thinking') && !cssClasses.includes('error-message')) {
                 const actionsContainer = document.createElement('div');
                 actionsContainer.classList.add('message-actions');
-
-                // Copy Button
-                const copyButton = document.createElement('button');
-                copyButton.classList.add('message-action-button', 'copy');
-                copyButton.innerHTML = COPY_ICON_SVG;
-                copyButton.title = 'Copy message';
-                copyButton.dataset.action = 'copy';
-                actionsContainer.appendChild(copyButton);
-
-                // Delete Button
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('message-action-button', 'delete');
-                deleteButton.innerHTML = DELETE_MESSAGE_ICON_SVG;
-                deleteButton.title = 'Delete message';
-                deleteButton.dataset.action = 'delete';
-                actionsContainer.appendChild(deleteButton);
-
-                messageWrapper.appendChild(actionsContainer); // Add actions to the wrapper
+                const copyButton = document.createElement('button'); copyButton.classList.add('message-action-button', 'copy'); copyButton.innerHTML = COPY_ICON_SVG; copyButton.title = 'Copy message'; copyButton.dataset.action = 'copy'; actionsContainer.appendChild(copyButton);
+                const deleteButton = document.createElement('button'); deleteButton.classList.add('message-action-button', 'delete'); deleteButton.innerHTML = DELETE_MESSAGE_ICON_SVG; deleteButton.title = 'Delete message'; deleteButton.dataset.action = 'delete'; actionsContainer.appendChild(deleteButton);
+                messageWrapper.appendChild(actionsContainer);
             }
 
-             // --- Append Message Wrapper to Chat Area ---
+            // --- Append Message Wrapper to Chat Area ---
             if (hasContent || cssClasses.includes('thinking') || cssClasses.includes('error-message')) {
-                 messageWrapper.appendChild(messageElement); // Add message element to wrapper
+                 messageWrapper.appendChild(messageElement);
                 if (!chatArea.contains(messageWrapper)) {
                     chatArea.appendChild(messageWrapper);
                     if (containsCode && typeof Prism !== 'undefined') {
@@ -1228,131 +1090,59 @@
                 }
             } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); }
 
-            return messageElement; // Return the core message element, not the wrapper
+            return messageElement;
         }
 
         // --- Image Modal Functions ---
-        // ***** TAMIL ***** Image-ஐ perusa kaatum functions
-        function showImageModal(imageUrl) {
-            if (!imageUrl || imageUrl === '#error') return;
-            modalImageContent.src = imageUrl;
-            imageModal.style.display = 'flex'; // Use flex to center vertically/horizontally
-            console.log("Showing image modal");
-        }
-        function hideImageModal() {
-            imageModal.style.display = 'none';
-            modalImageContent.src = ''; // Clear src
-             console.log("Hiding image modal");
-        }
+        // (showImageModal, hideImageModal remain the same)
+        function showImageModal(imageUrl) { if (!imageUrl || imageUrl === '#error') return; modalImageContent.src = imageUrl; imageModal.style.display = 'flex'; console.log("Showing image modal"); }
+        function hideImageModal() { imageModal.style.display = 'none'; modalImageContent.src = ''; console.log("Hiding image modal"); }
 
         // --- Chat Area Click Handler (Updated) ---
-        // ***** TAMIL ***** Chat area-ல click செய்தா என்ன நடக்கணும்னு இங்க சொல்றோம்.
+        // (handleChatAreaClick remains the same)
         function handleChatAreaClick(event) {
             const target = event.target;
-
-            // 1. Handle MCQ Start Button
-            const startButton = target.closest('.start-test-button');
-            if (startButton) { /* ... (MCQ logic - no change) ... */  const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; }
-
-            // 2. Handle Image Click (Open Modal)
-            const clickedChatImage = target.closest('img.chat-image, img.uploaded-image');
-            if (clickedChatImage?.src && !clickedChatImage.src.startsWith('#') && clickedChatImage.src.trim() !== '') {
-                showImageModal(clickedChatImage.src);
-                return; // Don't process other actions if image was clicked
-            }
-
-            // 3. Handle Message Action Buttons (Copy/Delete)
-            const actionButton = target.closest('.message-action-button');
-            if (actionButton) {
-                 const action = actionButton.dataset.action;
-                 const messageWrapper = actionButton.closest('.message-wrapper');
-                 const messageId = messageWrapper?.dataset.firestoreId;
-
-                 if (messageId && action === 'copy') {
-                     handleCopyMessage(messageWrapper, actionButton);
-                 } else if (messageId && action === 'delete') {
-                      handleDeleteMessage(messageWrapper, messageId);
-                 }
-                 return; // Stop processing after handling action
-            }
+            const startButton = target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; }
+            const clickedChatImage = target.closest('img.chat-image, img.uploaded-image'); if (clickedChatImage?.src && !clickedChatImage.src.startsWith('#') && clickedChatImage.src.trim() !== '') { showImageModal(clickedChatImage.src); return; }
+            const actionButton = target.closest('.message-action-button'); if (actionButton) { const action = actionButton.dataset.action; const messageWrapper = actionButton.closest('.message-wrapper'); const messageId = messageWrapper?.dataset.firestoreId; if (messageId && action === 'copy') { handleCopyMessage(messageWrapper, actionButton); } else if (messageId && action === 'delete') { handleDeleteMessage(messageWrapper, messageId); } return; }
         }
 
         // --- Message Action Handlers ---
-        // ***** TAMIL ***** Message copy/delete functions
+        // (handleCopyMessage, handleDeleteMessage remain the same)
         function handleCopyMessage(messageWrapper, copyButton) {
-            const messageElement = messageWrapper.querySelector('.message .message-content'); // Target the content div
+            const messageElement = messageWrapper.querySelector('.message .message-content');
             if (!messageElement) { console.warn("Could not find message content to copy."); return; }
-
-            // Attempt to get text content, fallback to innerText
-             let textToCopy = messageElement.innerText || messageElement.textContent || "";
-             textToCopy = textToCopy.trim(); // Clean up whitespace
-
+            let textToCopy = messageElement.innerText || messageElement.textContent || "";
+             textToCopy = textToCopy.trim();
             if (!textToCopy) { console.warn("Message content is empty, nothing to copy."); return; }
-
             navigator.clipboard.writeText(textToCopy).then(() => {
                 console.log("Message copied to clipboard:", textToCopy.substring(0,30) + "...");
-                // Show temporary feedback
                  const feedback = document.createElement('span');
                  feedback.textContent = 'Copied!';
                  feedback.classList.add('copied-feedback');
-                 // copyButton.appendChild(feedback); // Append to button? Or wrapper?
-                 messageWrapper.style.position = 'relative'; // Ensure wrapper can contain absolute feedback
-                 messageWrapper.appendChild(feedback);
-                 setTimeout(() => { feedback.remove(); }, 1500); // Remove feedback after 1.5s
+                 messageWrapper.appendChild(feedback); // Append to wrapper
+                 setTimeout(() => { try { feedback.remove(); } catch(e){} }, 1500);
             }).catch(err => {
-                console.error('Failed to copy message text: ', err);
-                alert("Could not copy message."); // Simple alert fallback
+                console.error('Failed to copy message text: ', err); alert("Could not copy message.");
             });
         }
-
         async function handleDeleteMessage(messageWrapper, messageId) {
             if (!currentUser || !activeChatId || !messageId || isDeletingMessage) return;
-
             if (confirm("Are you sure you want to delete this message?")) {
-                isDeletingMessage = true; // Set flag
-                console.log(`Attempting to delete message: ${messageId} from chat: ${activeChatId}`);
-                setLoadingState(true, "Deleting message..."); // Use general loading state
-
-                 // Visually remove immediately
-                 messageWrapper.style.opacity = '0.5';
-                 messageWrapper.style.transition = 'opacity 0.3s ease';
-                 setTimeout(() => {
-                     try { chatArea.removeChild(messageWrapper); } catch (e) {}
-                 }, 300);
-
+                isDeletingMessage = true; console.log(`Attempting to delete message: ${messageId} from chat: ${activeChatId}`);
+                setLoadingState(true, "Deleting message...");
+                 messageWrapper.style.opacity = '0.5'; messageWrapper.style.transition = 'opacity 0.3s ease';
+                 setTimeout(() => { try { chatArea.removeChild(messageWrapper); } catch (e) {} }, 300);
                 try {
-                    const messageRef = db.collection('chats').doc(activeChatId).collection('messages').doc(messageId);
-                    await messageRef.delete();
-                    console.log("Message deleted from Firestore successfully:", messageId);
-
-                    // Remove from in-memory history
-                    const historyIndex = currentChatHistory.findIndex(msg => msg.firestoreId === messageId);
-                    if (historyIndex > -1) {
-                        currentChatHistory.splice(historyIndex, 1);
-                        console.log("Message removed from local history array.");
-                    } else {
-                        console.warn("Message deleted from Firestore, but not found in local history:", messageId);
-                    }
-
-                    // Optionally update chat's lastUpdated timestamp? (Maybe not necessary for single msg delete)
-
-                } catch (error) {
-                    console.error("Error deleting message from Firestore:", error);
-                    displayError("Failed to delete message.");
-                    // Restore visual appearance if delete failed
-                     messageWrapper.style.opacity = '1';
-                } finally {
-                    setLoadingState(false); // Clear loading state
-                    isDeletingMessage = false; // Reset flag
-                    // The Firestore listener might trigger an update, but removing it visually first is faster.
-                    // The isDeletingMessage flag prevents the listener from re-adding it temporarily.
-                }
+                    const messageRef = db.collection('chats').doc(activeChatId).collection('messages').doc(messageId); await messageRef.delete(); console.log("Message deleted from Firestore successfully:", messageId);
+                    const historyIndex = currentChatHistory.findIndex(msg => msg.firestoreId === messageId); if (historyIndex > -1) { currentChatHistory.splice(historyIndex, 1); console.log("Message removed from local history array."); } else { console.warn("Message deleted from Firestore, but not found in local history:", messageId); }
+                } catch (error) { console.error("Error deleting message from Firestore:", error); displayError("Failed to delete message."); messageWrapper.style.opacity = '1'; } finally { setLoadingState(false); isDeletingMessage = false; }
             }
         }
 
 
         // --- MCQ/Test/Review/All Tests Functions ---
-        // (No changes needed in these functions from v10.3)
+        // (No changes needed in these functions from v10.4)
         function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
         function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
         function displayTestQuestion(index) { if (index < 0 || index >= currentTestMCQs.length) return; currentQuestionIndex = index; const questionData = currentTestMCQs[index]; const questionText = questionData.question?.en || "(Question missing)"; testQuestionNumber.textContent = `Question ${index + 1}`; testQuestion.innerHTML = questionText; testOptionsContainer.innerHTML = ''; const options = questionData.options || []; const optionLetters = ['A', 'B', 'C', 'D']; options.forEach((optionObj, optionIndex) => { if (optionIndex >= optionLetters.length) return; const optionText = optionObj?.en || '(Option missing)'; const label = document.createElement('label'); const input = document.createElement('input'); input.type = 'radio'; input.name = `q_${index}`; input.value = optionIndex; input.checked = (userAnswers[index] === optionIndex); input.onchange = () => handleOptionSelect(optionIndex); label.appendChild(input); label.appendChild(document.createTextNode(` ${optionLetters[optionIndex]}. ${optionText}`)); testOptionsContainer.appendChild(label); }); try { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { MathJax.typesetPromise([testQuestion, testOptionsContainer]).catch(err=>console.error('MathJax Test Q Error:', err)); } } catch(e){ console.error("MathJax call failed in test:", e); } prevQuestionBtn.disabled = (index === 0); nextQuestionBtn.disabled = (index === currentTestMCQs.length - 1); questionCounter.textContent = `Q: ${index + 1} / ${currentTestMCQs.length}`; }
