@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Version Updated -->
-    <title>Gemini Chat + Mock Test (v10.5 - Upload Progress & Audio Player)</title> <!-- Version Updated -->
+    <title>Gemini Chat + Mock Test (v10.5 - Upload Status)</title> <!-- Version Updated -->
     <script>
         // MathJax Configuration
         window.MathJax = {
@@ -56,22 +56,21 @@
 
 
     <style>
-        /* --- Styles (v10.5 - Added Audio Player Style) --- */
+        /* --- Styles (v10.5 - No new styles needed for status) --- */
         /* ***** TAMIL *****
-           இங்க CSS styles உள்ளன.
-           புதுசா audio player-க்கும் style சேர்த்திருக்கேன்.
+           CSS styles appadiye irukku. Upload status kaatradhuku puthu style theva illa.
         */
         :root { /* ... Theme Variables ... */
              --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; --sidebar-width: 260px; --message-font-size-base: 1rem;
             /* LIGHT */ --sidebar-bg: #f7f7f7; --main-bg: #ffffff; --input-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #2c2c2c; --text-secondary: #5f5f5f; --text-placeholder: #999999; --accent-color: #d97a7a; --user-message-bg: #cce0ff; --user-message-text: #1c1c1c; --ai-message-bg: #f0f0f0; --ai-message-text: #2c2c2c; --button-bg: #f0f0f0; --button-hover-bg: #e0e0e0; --active-item-bg: #e0e0e0; --code-bg: #e8e8e8; --scrollbar-thumb: #ccc; --scrollbar-thumb-hover: #bbb; --app-outer-bg: #e8e8e8; --send-button-bg: var(--accent-color); --send-button-hover-bg: #c76b6b; --send-button-text: #ffffff; --error-bg: #ffebee; --error-text: #c62828; --error-border: #ef9a9a; --message-font-size: var(--message-font-size-base); --delete-button-color: #aaa; --delete-button-hover-color: #dc3545; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text); --message-action-color: #888; --message-action-hover-color: #333; --modal-bg: rgba(0, 0, 0, 0.7); --modal-content-bg: #ffffff; --modal-close-color: #aaa; --modal-close-hover-color: #fff;
             /* Audio Specific */
-            --record-button-bg: #ff6b6b; --record-button-text: #ffffff; --stop-button-bg: #4a4a4a; --stop-button-text: #ffffff; --audio-player-bg: var(--ai-message-bg);
+            --record-button-bg: #ff6b6b; --record-button-text: #ffffff; --stop-button-bg: #4a4a4a; --stop-button-text: #ffffff;
             /* Model Selector Specific */
              --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
         body.dark-theme { /* DARK */ --sidebar-bg: #2a2a2e; --main-bg: #1e1e1e; --input-bg: #2a2a2e; --border-color: #404040; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --text-placeholder: #777777; --accent-color: #e58b8b; --user-message-bg: #3a4a6b; --user-message-text: #e8e8e8; --ai-message-bg: #333333; --ai-message-text: #e0e0e0; --button-bg: #404040; --button-hover-bg: #505050; --active-item-bg: #454545; --code-bg: #2c2c2e; --scrollbar-thumb: #555; --scrollbar-thumb-hover: #666; --app-outer-bg: #121212; --send-button-bg: var(--accent-color); --send-button-hover-bg: #f09f9f; --send-button-text: #1e1e1e; --error-bg: #5c2b2b; --error-text: #ffcdd2; --error-border: #8c4343; --delete-button-color: #666; --delete-button-hover-color: #f09f9f; --input-border-color: var(--border-color); --input-focus-border-color: var(--accent-color); --preview-bg: var(--button-bg); --preview-border: var(--border-color); --remove-btn-color: var(--text-secondary); --remove-btn-hover-color: var(--error-text); --message-action-color: #999; --message-action-hover-color: #eee; --modal-bg: rgba(0, 0, 0, 0.8); --modal-content-bg: #2a2a2e; --modal-close-color: #aaa; --modal-close-hover-color: #fff;
             /* Audio Specific */
-             --record-button-bg: #ff8787; --record-button-text: #1e1e1e; --stop-button-bg: #777777; --stop-button-text: #e0e0e0; --audio-player-bg: var(--ai-message-bg);
+             --record-button-bg: #ff8787; --record-button-text: #1e1e1e; --stop-button-bg: #777777; --stop-button-text: #e0e0e0;
             /* Model Selector Specific */
              --selector-bg: var(--input-bg); --selector-border: var(--border-color); --selector-text: var(--text-secondary);
         }
@@ -86,7 +85,7 @@
         .chat-area { flex-grow: 1; overflow-y: auto; padding: 30px 10% 20px; display: flex; flex-direction: column; max-width: 800px; margin: 0 auto; width: 80%; }
         .input-container { padding: 15px 10% 20px; border-top: 1px solid var(--border-color); background-color: var(--input-bg); max-width: 800px; margin: 0 auto; width: 80%; transition: background-color 0.3s ease, border-color 0.3s ease; display: none; }
 
-        /* Sidebar Elements (No changes) */
+        /* Sidebar Elements */
          .sidebar-header { padding: 10px 20px; font-size: 1.1em; font-weight: 600; color: var(--text-primary); }
          .sidebar-section { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; margin-top: 10px; }
          .sidebar-section-title { padding: 5px 20px; font-size: 0.85em; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; }
@@ -198,7 +197,7 @@
             pointer-events: none; /* Don't interfere with hover */
         }
 
-        /* --- Code Block Styling (No changes needed) --- */
+        /* --- Code Block Styling --- */
         .ai-message pre { background-color: var(--code-bg); color: var(--text-primary); padding: 12px 15px; border-radius: 6px; overflow-x: auto; font-size: 0.9em; transition: background-color 0.3s ease, color 0.3s ease; border: 1px solid var(--border-color); margin: 10px 0; position: relative; white-space: pre; word-wrap: normal; }
         .ai-message pre > code[class*="language-"] { font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; display: block; padding: 0; margin: 0; overflow: visible; background: none; color: inherit; font-size: 1em; line-height: inherit; text-shadow: none; white-space: inherit; word-wrap: inherit; }
         .ai-message :not(pre) > code { background-color: var(--code-bg); color: var(--text-primary); padding: 2px 5px; border-radius: 4px; font-size: 0.9em; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; transition: background-color 0.3s ease, color 0.3s ease; white-space: normal; word-wrap: break-word; }
@@ -214,7 +213,7 @@
         .error-message { background-color: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;}
         .info-message { text-align: center; color: var(--text-secondary); padding: 50px 20px; font-style: italic; }
         .message .multi-media-indicator { font-size: 0.9em; color: var(--text-secondary); margin-top: 8px; display: block; font-style: italic;}
-        .message .pdf-indicator {
+        .message .pdf-indicator, .message .audio-indicator {
              display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: var(--text-secondary); margin-top: 8px; padding: 3px 6px; background-color: var(--button-bg); border: 1px solid var(--border-color); border-radius: 4px;
         }
         .message mjx-container { color: inherit !important; font-size: inherit !important; }
@@ -234,32 +233,8 @@
         .message img.chat-image:hover, .message img.uploaded-image:hover {
              transform: scale(1.03);
         }
-        /* ***** TAMIL ***** Audio Player Styling */
-        .message .chat-audio-player {
-            margin-top: 8px;
-            max-width: 300px; /* Limit width */
-            width: 100%;
-        }
-        .message .chat-audio-player audio {
-            width: 100%;
-            height: 40px; /* Adjust height */
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background-color: var(--audio-player-bg); /* Match message bg slightly */
-            vertical-align: middle; /* Align better with text */
-        }
-        .message .chat-audio-player audio::-webkit-media-controls-panel {
-            background-color: var(--audio-player-bg);
-            border-radius: 6px;
-        }
-        .message .chat-audio-player span.audio-error {
-            font-size: 0.85em;
-            color: var(--error-text);
-            display: block;
-            margin-top: 4px;
-        }
 
-        /* YouTube Embed Styling (No change needed) */
+        /* YouTube Embed Styling */
         .message .youtube-embed-container { margin-top: 10px; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 8px; }
         .message iframe.chat-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
@@ -289,7 +264,7 @@
         #send-button:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.6; }
         #send-button svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* Media Previews (No changes needed) */
+        /* Media Previews */
         #media-preview-container { margin-bottom: 10px; padding: 8px; background-color: var(--preview-bg); border: 1px solid var(--preview-border); border-radius: 8px; display: none; flex-direction: column; gap: 8px; }
         #image-previews-list { display: flex; gap: 8px; flex-wrap: wrap; max-height: 120px; overflow-y: auto; }
         .pdf-preview-item { background-color: var(--main-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; padding: 4px 8px; font-size: 0.85em; display: flex; align-items: center; gap: 6px; max-width: 100%; box-sizing: border-box; }
@@ -315,7 +290,7 @@
          .start-test-button { background-color: var(--accent-color); color: var(--send-button-text); border: none; border-radius: 6px; padding: 8px 15px; margin-top: 10px; cursor: pointer; font-weight: 500; display: inline-block; transition: background-color 0.2s ease; }
          .start-test-button:hover { background-color: var(--send-button-hover-bg); }
 
-        /* Mock Test & Review View Styles (No changes needed) */
+        /* Mock Test & Review View Styles */
         .mock-test-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--main-bg); z-index: 100; flex-direction: column; padding: 20px; box-sizing: border-box; transition: background-color 0.3s ease; }
         .mock-test-view.active { display: flex; }
         .test-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
@@ -363,7 +338,7 @@
         #save-review-btn:hover:not(:disabled) { background-color: var(--button-hover-bg); }
         #save-review-btn:disabled { opacity: 0.6; cursor: not-allowed; background-color: #cccccc; border-color: #aaaaaa; }
 
-        /* Image Modal Styles (No changes needed) */
+        /* Image Modal Styles */
         .image-modal-overlay {
             display: none; /* Hidden by default */
             position: fixed;
@@ -419,7 +394,6 @@
             .input-container { padding-top: 10px; padding-bottom: 10px; }
             .message { max-width: calc(100% - 45px); font-size: calc(var(--message-font-size) * 0.95); } /* Adjust max-width for smaller screens */
             .message img.chat-image, .message img.uploaded-image { max-width: 200px; max-height: 120px; } /* Smaller previews on mobile */
-            .message .chat-audio-player { max-width: 250px; } /* Adjust audio player width */
             #unified-upload-button, #record-audio-button { font-size: 1.4em; padding: 0 3px; }
             #media-preview-container { padding: 6px; gap: 6px; }
             #image-previews-list { gap: 5px; max-height: 100px; }
@@ -442,7 +416,7 @@
             .account-info { margin-top: 15px; }
             #auth-controls { margin-top: 12px; }
 
-            /* Mock Test & Review (No changes needed) */
+            /* Mock Test & Review */
             .mock-test-view, .review-view { padding: 10px; }
             .test-header, .review-header { margin-bottom: 15px; padding-bottom: 8px; flex-direction: column; align-items: flex-start; }
             .test-header h2, .review-header h2 { font-size: 1.1em; margin-bottom: 5px;}
@@ -462,7 +436,7 @@
 <body>
 
     <div class="app-container" id="app-container">
-        <!-- Sidebar (No Changes Needed)-->
+        <!-- Sidebar -->
         <div class="sidebar">
              <div class="sidebar-header">Gemini Chat</div>
              <div id="all-tests-section"> <div class="sidebar-section-title">All Tests</div> <input type="search" id="test-search-input" placeholder="Search tests..." disabled> <div class="all-tests-list" id="all-tests-list"> <div style="padding:10px;color:var(--text-secondary);font-size:0.9em;">Login to see saved tests.</div> </div> </div>
@@ -501,15 +475,15 @@
                     </div>
                  </div>
             </div>
-            <!-- Review View (No Changes Needed) -->
+            <!-- Review View -->
             <div class="review-view" id="review-view"> <div class="review-header"> <h2 id="review-title">Test Review</h2> <div> <div class="review-summary" id="review-summary"></div> </div> <div class="review-filters" id="review-filters" style="display: none;"> <button data-filter="all" class="active-filter">All</button> <button data-filter="incorrect">Incorrect</button> <button data-filter="skipped">Skipped</button> </div> </div> <div class="review-content" id="review-content"></div> <div class="review-footer"> <button id="save-review-btn">Save Review</button> <button id="exit-review-btn">Back</button> </div> </div>
         </div>
     </div>
 
-    <!-- Mock Test View (No Changes Needed) -->
+    <!-- Mock Test View -->
     <div class="mock-test-view" id="mock-test-view"> <div class="test-header"> <h2 id="test-title">Mock Test</h2> <div class="test-info"> <span id="question-counter">Q: 1 / N</span> <span id="test-timer">Time: 00:00</span> </div> </div> <div class="test-content"> <div class="test-question-container"> <div class="test-question-number" id="test-question-number"></div> <div class="test-question" id="test-question"></div> <div class="test-options" id="test-options"></div> </div> </div> <div class="test-navigation"> <button id="prev-question-btn" disabled>Previous</button> <button id="next-question-btn">Next</button> <button id="submit-test-btn">Submit Test</button> </div> </div>
 
-    <!-- Image Modal Structure (No Changes Needed) -->
+    <!-- Image Modal Structure -->
     <div class="image-modal-overlay" id="image-modal">
         <div class="image-modal-content">
             <button class="image-modal-close" id="image-modal-close" title="Close image">&times;</button>
@@ -582,9 +556,6 @@
         // Media Elements
         const unifiedUploadButton = document.getElementById('unified-upload-button');
         const unifiedUploadInput = document.getElementById('unified-upload-input');
-        const imageUploadInput = document.getElementById('image-upload-input');
-        const pdfUploadInput = document.getElementById('pdf-upload-input');
-        const audioUploadInput = document.getElementById('audio-upload-input');
         const recordAudioButton = document.getElementById('record-audio-button');
         const mediaPreviewContainer = document.getElementById('media-preview-container');
         const imagePreviewsList = document.getElementById('image-previews-list');
@@ -594,6 +565,7 @@
         const removeMediaButton = document.getElementById('remove-media-button');
         const recordingStatus = document.getElementById('recording-status');
         const recordingTimerSpan = recordingStatus.querySelector('span');
+        // Image Modal Elements
         const imageModal = document.getElementById('image-modal');
         const modalImageContent = document.getElementById('modal-image-content');
         const imageModalClose = document.getElementById('image-modal-close');
@@ -631,15 +603,15 @@
         const MAX_IMAGE_SIZE_MB = 4;
         const MAX_TOTAL_IMAGE_SIZE_MB = 16;
         const MAX_IMAGE_COUNT = 10;
-        const MAX_PDF_SIZE_MB = 50;
+        const MAX_PDF_SIZE_MB = 50; // Increased limit for File API
         const MAX_PDF_COUNT = 5;
-        const MAX_AUDIO_SIZE_MB = 15;
+        const MAX_AUDIO_SIZE_MB = 15; // Limit for inline audio
         const SUPPORTED_AUDIO_MIMES = ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/aiff', 'audio/aac', 'audio/ogg', 'audio/flac'];
         const SUPPORTED_IMAGE_MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'];
         const RECORDING_TIME_LIMIT_SECONDS = 300;
-        const FILE_API_POLLING_INTERVAL_MS = 5000; // 5 seconds
-        const FILE_API_PROCESSING_TIMEOUT_MS = 180000; // 3 minutes
-        const CACHE_TTL_SECONDS = 3600; // 1 hour
+        const FILE_API_POLLING_INTERVAL_MS = 5000; // Check processing status every 5s
+        const FILE_API_PROCESSING_TIMEOUT_MS = 180000; // Give up after 3 minutes
+        const CACHE_TTL_SECONDS = 3600; // 1 hour for media cache
 
         // --- State Variables ---
         let API_KEY = '';
@@ -648,7 +620,7 @@
         let HarmBlockThreshold = null;
         let currentUser = null;
         let activeChatId = null;
-        // ***** TAMIL ***** History array-ல் இப்போ Firestore Document ID-யும் save செய்வோம் (delete-க்கு தேவை)
+        // ***** TAMIL ***** History array-ல் Firestore Document ID-யும் save செய்வோம்
         let currentChatHistory = []; // Stores { role, parts, firestoreId }
         let selectedModelId = DEFAULT_MODEL_ID;
         let currentTextSizeMultiplier = 1.0;
@@ -702,13 +674,13 @@
         nextQuestionBtn.addEventListener('click', () => handleTestNavigation('next'));
         submitTestBtn.addEventListener('click', submitTest);
         exitReviewBtn.addEventListener('click', exitReview);
-        // ***** TAMIL ***** Chat area click listener (image modal + message actions + MCQ + audio player error)
+        // ***** TAMIL ***** Chat area click listener (image modal + message actions + MCQ)
         chatArea.addEventListener('click', handleChatAreaClick);
         reviewFilters.addEventListener('click', handleReviewFilterClick);
         saveReviewBtn.addEventListener('click', saveTestReviewToCloud);
         loginBtn.addEventListener('click', signInWithGoogle);
         logoutBtn.addEventListener('click', signOut);
-        // Unified Upload Listener
+        // ***** TAMIL ***** Unified Upload Listener
         unifiedUploadButton.addEventListener('click', () => {
             if (!unifiedUploadButton.disabled) unifiedUploadInput.click();
         });
@@ -717,7 +689,7 @@
         recordAudioButton.addEventListener('click', () => { if (!recordAudioButton.disabled || isRecording) { toggleRecording(); } });
         // Media Preview Listener
         removeMediaButton.addEventListener('click', removeAllSelectedMedia);
-        // Image Modal Listeners
+        // ***** TAMIL ***** Image Modal Listeners
         imageModalClose.addEventListener('click', hideImageModal);
         imageModal.addEventListener('click', (e) => { if (e.target === imageModal) { hideImageModal(); } }); // Close on overlay click
 
@@ -735,7 +707,6 @@
 
 
         // --- Initialization Functions ---
-        // (initializeApp, populateModelSelector, loadGeminiApiKey, initializeGenAIInstance remain the same)
         async function initializeApp() { console.log("App Initializing (v10.5)..."); setLoadingState(true, "Initializing..."); chatArea.innerHTML = ''; populateModelSelector(); loadUserSettingsFromLocalStorage(); await loadGeminiApiKey(); fbAuth.onAuthStateChanged(handleAuthStateChange); switchView('chat'); userInput.focus(); console.log("App Initialization Complete."); }
         function populateModelSelector() { modelSelector.innerHTML = ''; AVAILABLE_MODELS.forEach(model => { const option = document.createElement('option'); option.value = model.id; option.textContent = model.name; if (model.id === selectedModelId) { option.selected = true; } modelSelector.appendChild(option); }); console.log("Model selector populated."); }
         async function loadGeminiApiKey() { console.log("Attempting to load Gemini API Key..."); API_KEY = localStorage.getItem(STORAGE_KEY_API_KEY); if(!API_KEY){ console.warn("!!! SECURITY WARNING !!! Using insecure API key storage. Use Cloud Functions in production."); if(API_KEY){ localStorage.setItem(STORAGE_KEY_API_KEY, API_KEY); console.log("Using potentially hardcoded insecure API Key."); } else { console.error("Gemini API Key is required. Please configure it in the script or localStorage."); displayMessage("Error: Gemini API Key is not configured. AI features are disabled.", 'ai', ['error-message']); API_KEY = ''; genAI = null; isAISdkReady = false; updateButtonStates(); return false; } } else { console.log("Loaded insecure API Key from localStorage."); } if (API_KEY && isAISdkReady && !genAI) { return initializeGenAIInstance(); } else if (API_KEY && !isAISdkReady) { console.log("API Key loaded, but AI SDK not ready yet. Waiting for 'google-ai-sdk-loaded' event."); return true; } else { return !!API_KEY; } }
@@ -743,7 +714,6 @@
 
 
         // --- Authentication Functions ---
-        // (signInWithGoogle, signOut, handleAuthStateChange, renderGreetingOrLoginPrompt remain the same)
         async function signInWithGoogle() { const provider = new firebase.auth.GoogleAuthProvider(); try { setLoadingState(true, "Logging in..."); await fbAuth.signInWithPopup(provider); } catch (error) { console.error("Google Sign-In Error:", error); displayError(`Login failed: ${error.message || 'Unknown error'}`); setLoadingState(false); } }
         async function signOut() { try { setLoadingState(true, "Logging out..."); await fbAuth.signOut(); } catch (error) { console.error("Sign Out Error:", error); displayError(`Logout failed: ${error.message || 'Unknown error'}`); setLoadingState(false); } }
         function handleAuthStateChange(user) { console.log("Auth state changed. User:", user ? user.uid : 'None'); setLoadingState(true, user ? "Loading user data..." : "Logging out..."); if (activeChatListener) { activeChatListener(); activeChatListener = null; console.log("Cleared active chat listener."); } if (chatListListener) { chatListListener(); chatListListener = null; console.log("Cleared chat list listener.");} if (testListListener) { testListListener(); testListListener = null; console.log("Cleared test list listener."); } stopRecording(true); chatArea.innerHTML = ''; chatListContainer.innerHTML = `<div style="padding:10px;color:var(--text-secondary);font-size:0.9em;">${user ? 'Loading chats...' : 'Please log in...'}</div>`; allTestsListContainer.innerHTML = `<div style="padding:10px;color:var(--text-secondary);font-size:0.9em;">${user ? 'Loading tests...' : 'Login to see tests.'}</div>`; allTestsSection.classList.remove('visible'); testSearchInput.value = ''; activeChatId = null; currentChatHistory = []; isDeletingChat = false; allSavedTestsData = []; currentMediaCacheName = null; cachedMediaUris = []; removeAllSelectedMedia(); if (user) { currentUser = user; console.log("User logged in:", currentUser.uid); loginBtn.style.display = 'none'; logoutBtn.style.display = 'inline-block'; accountEmail.textContent = currentUser.email || currentUser.displayName || `User`; accountAvatar.textContent = (currentUser.displayName || currentUser.email || 'U')[0].toUpperCase(); accountPlan.textContent = "Firebase User"; inputContainer.style.display = 'block'; suggestionsContainer.style.display = 'flex'; allTestsSection.classList.add('visible'); loadUserSettings(currentUser.uid); loadAndListenForChats(currentUser.uid); loadAndListenForTests(currentUser.uid); renderGreetingOrLoginPrompt(); } else { currentUser = null; console.log("User logged out"); loginBtn.style.display = 'inline-block'; logoutBtn.style.display = 'none'; accountEmail.textContent = "Not logged in"; accountAvatar.textContent = '?'; accountPlan.textContent = ""; inputContainer.style.display = 'none'; suggestionsContainer.style.display = 'none'; allTestsSection.classList.remove('visible'); renderGreetingOrLoginPrompt(); currentTheme = 'light'; applyTheme(); currentTextSizeMultiplier = 1.0; applyTextSize(); selectedModelId = DEFAULT_MODEL_ID; applyModelSelection(); } console.log("Updating button states after auth change."); updateButtonStates(); setLoadingState(false); }
@@ -751,7 +721,6 @@
 
 
         // --- Settings (Theme/Text Size/Model) ---
-        // (loadUserSettingsFromLocalStorage, loadUserSettings, saveUserSettings, applyTheme, toggleTheme, applyTextSize, adjustTextSize, applyModelSelection, handleModelSelectionChange remain the same)
         function loadUserSettingsFromLocalStorage() { const savedTheme = localStorage.getItem('chatTheme'); const savedTextSize = localStorage.getItem('chatTextSizeMultiplier'); const savedModelId = localStorage.getItem(STORAGE_KEY_MODEL_ID); currentTheme = savedTheme || 'light'; currentTextSizeMultiplier = savedTextSize ? parseFloat(savedTextSize) : 1.0; selectedModelId = AVAILABLE_MODELS.some(m => m.id === savedModelId) ? savedModelId : DEFAULT_MODEL_ID; applyTheme(); applyTextSize(); applyModelSelection(); }
         async function loadUserSettings(userId) { const userDocRef = db.collection('users').doc(userId); try { const docSnap = await userDocRef.get(); if (docSnap.exists) { const settings = docSnap.data(); currentTheme = settings.theme || currentTheme; currentTextSizeMultiplier = settings.textSizeMultiplier || currentTextSizeMultiplier; const firestoreModelId = settings.selectedModelId; selectedModelId = AVAILABLE_MODELS.some(m => m.id === firestoreModelId) ? firestoreModelId : selectedModelId; console.log("Loaded user settings from Firestore:", settings); } else { console.log("No user settings found in Firestore, using local/defaults."); } } catch (error) { console.error("Error loading user settings from Firestore:", error); } finally { applyTheme(); applyTextSize(); applyModelSelection(); } }
         async function saveUserSettings() { localStorage.setItem('chatTheme', currentTheme); localStorage.setItem('chatTextSizeMultiplier', currentTextSizeMultiplier.toString()); localStorage.setItem(STORAGE_KEY_MODEL_ID, selectedModelId); if (!currentUser) return; const userDocRef = db.collection('users').doc(currentUser.uid); const settings = { theme: currentTheme, textSizeMultiplier: currentTextSizeMultiplier, selectedModelId: selectedModelId }; try { await userDocRef.set(settings, { merge: true }); console.log("User settings saved to Firestore:", settings); } catch (error) { console.error("Error saving user settings to Firestore:", error); } }
@@ -764,15 +733,16 @@
 
 
         // --- Chat Storage & Loading (Firestore) ---
-        // (loadAndListenForChats, renderSidebarChatList, highlightActiveChatInSidebar remain the same)
         function loadAndListenForChats(userId) { if (chatListListener) { chatListListener(); chatListListener = null; } const chatsRef = db.collection('chats').where('userId', '==', userId).orderBy('lastUpdated', 'desc'); console.log(`Listening for chats for user ${userId}`); chatListListener = chatsRef.onSnapshot(snapshot => { if (isDeletingChat) { console.log("Skipping chat list update during delete."); return; } const chats = []; snapshot.forEach(doc => { chats.push({ id: doc.id, ...doc.data() }); }); console.log("Received chat list snapshot:", chats.length, "chats"); renderSidebarChatList(chats); let chatToLoad = activeChatId; if (!chatToLoad || !chats.some(c => c.id === chatToLoad)) { chatToLoad = chats.length > 0 ? chats[0].id : null; if (chatToLoad) console.log("Active chat gone or none selected, switching to newest:", chatToLoad); else console.log("No active chat and no existing chats found."); } if (chatToLoad && chatToLoad !== activeChatId) { switchChat(chatToLoad); } else if (chatToLoad && chatToLoad === activeChatId) { highlightActiveChatInSidebar(); console.log("Chat list updated, keeping same active chat. Updating button states."); updateButtonStates(); setLoadingState(false); } else { activeChatId = null; currentChatHistory = []; if (activeChatListener) { activeChatListener(); activeChatListener = null; } renderGreetingOrLoginPrompt(); console.log("No chat selected. Updating button states."); updateButtonStates(); setLoadingState(false); currentMediaCacheName = null; cachedMediaUris = []; } }, error => { console.error("Error listening for chats:", error); displayError("Could not load chat list."); chatListContainer.innerHTML = '<div style="padding:10px;color:var(--error-text);">Error loading chats.</div>'; setLoadingState(false); }); }
         function renderSidebarChatList(chats) { chatListContainer.innerHTML = ''; if (!currentUser) { chatListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">Please log in.</div>'; return; } if (chats.length === 0) { chatListContainer.innerHTML = '<div style="padding:10px;color:var(--text-secondary);">No chats yet. Start one!</div>'; } else { chats.forEach(chatData => { const itemElement = document.createElement('div'); itemElement.classList.add('chat-list-item'); let title = chatData.title; if (typeof title !== 'string' || !title.trim()) { title = '(Untitled Chat)'; } title = title.trim(); itemElement.textContent = title; itemElement.dataset.id = chatData.id; itemElement.title = title; const deleteBtn = document.createElement('button'); deleteBtn.classList.add('delete-chat-button'); deleteBtn.innerHTML = DELETE_ICON; deleteBtn.title = "Delete chat"; deleteBtn.dataset.id = chatData.id; itemElement.appendChild(deleteBtn); chatListContainer.appendChild(itemElement); }); } highlightActiveChatInSidebar(); }
         function highlightActiveChatInSidebar() { const items = chatListContainer.querySelectorAll('.chat-list-item'); items.forEach(item => { item.classList.toggle('active', item.dataset.id === activeChatId); }); }
 
 
         // --- Media Handling Functions ---
-
-        // ***** TAMIL ***** Unified File Selection Handler (No Changes)
+        // ***** TAMIL ***** Unified File Selection Handler
+        // இங்க '+' button click செய்ததும் user select செய்த files-ஐ handle செய்கிறோம்.
+        // Image, PDF, Audio எது select செய்தாலும் அதற்கேற்றவாறு செயல்படும்.
+        // இப்போதைக்கு, ஒரே நேரத்துல ஒரு வகை file தான் upload பண்ண முடியும்.
         function handleUnifiedFileSelect(event) {
             const files = event.target.files;
             if (!files || files.length === 0) {
@@ -819,16 +789,23 @@
             }
         }
 
-        // (handleImageFileSelect, handlePdfFileSelect remain the same)
+        // Process selected images
         function handleImageFileSelect(event) {
             console.log("Processing image selection...");
-            if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'image')) { alert("Cannot select images when PDF or audio is already selected."); unifiedUploadInput.value = ''; return; }
+            if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'image')) {
+                alert("Cannot select images when PDF or audio is already selected.");
+                unifiedUploadInput.value = ''; return;
+            }
             if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload images when a YouTube URL is present."); unifiedUploadInput.value = ''; return; }
-            const files = event.target.files; if (!files) { unifiedUploadInput.value = ''; return; }
+
+            const files = event.target.files;
+            if (!files) { unifiedUploadInput.value = ''; return; }
+
             let currentImageCount = selectedMediaItems.filter(item => item.type === 'image').length;
             let addedCount = 0;
             let totalSizeMB = selectedMediaItems.reduce((sum, item) => sum + (item.file?.size || 0), 0) / 1024 / 1024;
             const allowedTypes = SUPPORTED_IMAGE_MIMES;
+
             for (const file of files) {
                 if (!allowedTypes.includes(file.type)) continue;
                 if (currentImageCount >= MAX_IMAGE_COUNT) { alert(`Maximum ${MAX_IMAGE_COUNT} images allowed.`); break; }
@@ -840,85 +817,94 @@
                 currentImageCount++; totalSizeMB += fileSizeMB; addedCount++;
             }
              if (addedCount > 0) { console.log(`Added ${addedCount} images. Total images: ${currentImageCount}`); displayMediaPreview(); }
-             unifiedUploadInput.value = '';
+             unifiedUploadInput.value = ''; // Reset the unified input
         }
+        // Process selected PDFs
         function handlePdfFileSelect(event) {
             console.log("Processing PDF selection...");
-            if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'pdf')) { alert("Cannot select PDF(s) when images or audio are already selected."); unifiedUploadInput.value = ''; return; }
+            if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'pdf')) {
+                alert("Cannot select PDF(s) when images or audio are already selected.");
+                unifiedUploadInput.value = ''; return;
+            }
              if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload PDFs when a YouTube URL is present."); unifiedUploadInput.value = ''; return; }
              if (!genAI || !genAI.files) { alert("PDF upload is currently disabled (File API unavailable)."); unifiedUploadInput.value = ''; return; }
-            const files = event.target.files; if (!files) { unifiedUploadInput.value = ''; return; }
+
+            const files = event.target.files;
+            if (!files) { unifiedUploadInput.value = ''; return; }
+
             let currentPdfCount = selectedMediaItems.filter(item => item.type === 'pdf').length;
             let addedCount = 0;
             for (const file of files) {
                  if (file.type !== 'application/pdf') continue;
                  if (currentPdfCount >= MAX_PDF_COUNT) { alert(`Maximum ${MAX_PDF_COUNT} PDF files allowed.`); break; }
                 const fileSizeMB = file.size / 1024 / 1024;
-                if (fileSizeMB > MAX_PDF_SIZE_MB) { console.warn(`Large PDF selected: ${fileSizeMB.toFixed(1)}MB (Limit: ${MAX_PDF_SIZE_MB}MB). Upload may take time or fail.`); } // Allow upload attempt
+                 if (fileSizeMB > MAX_PDF_SIZE_MB) {
+                     // Check if File API can handle it (usually 2GB limit)
+                     if (!genAI.files) {
+                         alert(`PDF "${file.name}" (${fileSizeMB.toFixed(1)}MB) exceeds ${MAX_AUDIO_SIZE_MB}MB limit (File API unavailable).`);
+                         continue;
+                     } else {
+                         console.warn(`PDF "${file.name}" (${fileSizeMB.toFixed(1)}MB) is large, will use File API.`);
+                         // File API can potentially handle up to 2GB, so we allow it here.
+                     }
+                 }
                  const mediaId = nextMediaId++;
                  selectedMediaItems.push({ id: mediaId, type: 'pdf', file: file, name: file.name, mimeType: file.type });
                  currentPdfCount++; addedCount++;
             }
              if (addedCount > 0) { console.log(`Added ${addedCount} PDFs. Total PDFs: ${currentPdfCount}`); displayMediaPreview(); }
-             unifiedUploadInput.value = '';
+             unifiedUploadInput.value = ''; // Reset the unified input
         }
-
-        // ***** TAMIL ***** Audio file select பண்ணும்போது, local file reading progress காட்டுகிறோம்.
+        // Process selected Audio
         function handleAudioFileSelect(event) {
              console.log("Processing audio selection...");
-             if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'audio')) { alert("Cannot select audio when images or PDF(s) are already selected."); unifiedUploadInput.value = ''; return; }
+             if (selectedMediaItems.length > 0 && !selectedMediaItems.every(item => item.type === 'audio')) {
+                 alert("Cannot select audio when images or PDF(s) are already selected.");
+                 unifiedUploadInput.value = ''; return;
+             }
              if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot upload audio when a YouTube URL is present."); unifiedUploadInput.value = ''; return; }
 
              const file = event.target.files[0];
              if (!file) { unifiedUploadInput.value = ''; return; }
 
-             removeAllSelectedMedia();
+             removeAllSelectedMedia(); // Allow only one audio file
 
              if (!SUPPORTED_AUDIO_MIMES.includes(file.type)) { alert(`Unsupported audio file type: ${file.type}.`); unifiedUploadInput.value = ''; return; }
              const fileSizeMB = file.size / 1024 / 1024;
-             if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Audio file too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); unifiedUploadInput.value = ''; return; }
+             if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Audio file too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB for inline sending.`); unifiedUploadInput.value = ''; return; }
 
              const reader = new FileReader();
-             // ***** TAMIL ***** File Reader progress காட்டுகிறோம்
-             setLoadingState(true, `Reading audio: ${file.name} (0%)...`);
-             reader.onprogress = (e) => {
-                 if (e.lengthComputable) {
-                     const percentLoaded = Math.round((e.loaded / e.total) * 100);
-                     setLoadingState(true, `Reading audio: ${file.name} (${percentLoaded}%)...`);
-                 }
-             };
+             setLoadingState(true, "Reading audio file..."); // Show reading state
              reader.onload = (e) => {
-                 setLoadingState(true, `Processing audio: ${file.name}...`); // Show processing after read
                  const mediaId = nextMediaId++;
                 selectedMediaItems = [{ id: mediaId, type: 'audio', file: file, base64: e.target.result, mimeType: file.type, name: file.name }];
                 console.log("Audio selected and read:", file.name);
                 displayMediaPreview();
-                setLoadingState(false); // Clear loading state after preview is shown
+                setLoadingState(false); // Clear loading state after reading
              }
              reader.onerror = (error) => { console.error("Error reading audio file:", error); alert("Error reading audio file."); removeAllSelectedMedia(); setLoadingState(false); };
              unifiedUploadInput.value = '';
              reader.readAsDataURL(file);
         }
 
-
-        // (displayMediaPreview, renderImagePreviewItem, renderPdfPreviewItem, removeSelectedMediaItem, removeAllSelectedMedia remain the same)
+        // Display previews for selected media
         function displayMediaPreview() { console.log("displayMediaPreview. Items:", selectedMediaItems.length); imagePreviewsList.innerHTML = ''; previewAudioContainer.style.display = 'none'; previewAudio.removeAttribute('src'); mediaPreviewInfo.textContent = ''; imagePreviewsList.style.display = 'none'; imagePreviewsList.style.flexDirection = ''; imagePreviewsList.style.alignItems = ''; if (selectedMediaItems.length === 0) { mediaPreviewContainer.style.display = 'none'; updateButtonStates(); return; } const audioItem = selectedMediaItems.find(item => item.type === 'audio'); const imageItems = selectedMediaItems.filter(item => item.type === 'image'); const pdfItems = selectedMediaItems.filter(item => item.type === 'pdf'); let infoText = ""; if (audioItem) { imagePreviewsList.style.display = 'none'; try { previewAudio.src = audioItem.base64; previewAudio.load(); previewAudioContainer.style.display = 'flex'; infoText = `1 audio file: ${audioItem.name || 'Audio'}`; } catch (e) { console.error("Error setting audio src:", e); infoText = 'Error loading audio preview'; } } else if (imageItems.length > 0) { previewAudioContainer.style.display = 'none'; imagePreviewsList.style.display = 'flex'; imagePreviewsList.style.flexDirection = 'row'; imagePreviewsList.style.alignItems = 'flex-start'; imageItems.forEach(item => { if (!item.base64) { const reader = new FileReader(); reader.onload = (e) => { item.base64 = e.target.result; renderImagePreviewItem(item); }; reader.onerror = () => { item.base64 = '#error'; renderImagePreviewItem(item); }; reader.readAsDataURL(item.file); } else { renderImagePreviewItem(item); } }); infoText = `${imageItems.length} image(s) selected`; } else if (pdfItems.length > 0) { previewAudioContainer.style.display = 'none'; imagePreviewsList.style.display = 'flex'; imagePreviewsList.style.flexDirection = 'column'; imagePreviewsList.style.alignItems = 'stretch'; pdfItems.forEach(item => renderPdfPreviewItem(item)); infoText = `${pdfItems.length} PDF file(s) selected`; } mediaPreviewInfo.textContent = infoText; mediaPreviewContainer.style.display = 'flex'; updateButtonStates(); }
         function renderImagePreviewItem(item) { try { const existingItem = imagePreviewsList.querySelector(`.image-preview-item[data-media-id="${item.id}"]`); if (existingItem) return; const itemContainer = document.createElement('div'); itemContainer.classList.add('image-preview-item'); itemContainer.dataset.mediaId = item.id; const img = document.createElement('img'); img.src = item.base64 === '#error' ? '' : (item.base64 || ''); img.alt = item.base64 === '#error' ? 'Preview error' : (item.name || 'Image'); img.title = item.name || 'Image'; img.onerror = () => { img.alt = "Preview load error"; }; const removeBtn = document.createElement('button'); removeBtn.classList.add('remove-image-item-button'); removeBtn.innerHTML = '&times;'; removeBtn.title = `Remove ${item.name || 'image'}`; removeBtn.onclick = (e) => { e.stopPropagation(); removeSelectedMediaItem(item.id); }; itemContainer.appendChild(img); itemContainer.appendChild(removeBtn); imagePreviewsList.appendChild(itemContainer); } catch (e) { console.error("Error creating image preview element:", e); } }
         function renderPdfPreviewItem(item) { try { const existingItem = imagePreviewsList.querySelector(`.pdf-preview-item[data-media-id="${item.id}"]`); if (existingItem) return; const itemContainer = document.createElement('div'); itemContainer.classList.add('pdf-preview-item'); itemContainer.dataset.mediaId = item.id; const icon = document.createElement('span'); icon.textContent = '📄'; icon.style.marginRight = '4px'; const nameSpan = document.createElement('span'); nameSpan.textContent = item.name || 'PDF File'; nameSpan.title = item.name || 'PDF File'; const removeBtn = document.createElement('button'); removeBtn.innerHTML = '&times;'; removeBtn.title = `Remove ${item.name || 'PDF'}`; removeBtn.onclick = (e) => { e.stopPropagation(); removeSelectedMediaItem(item.id); }; itemContainer.appendChild(icon); itemContainer.appendChild(nameSpan); itemContainer.appendChild(removeBtn); imagePreviewsList.appendChild(itemContainer); } catch (e) { console.error("Error creating PDF preview element:", e); } }
+
+        // Remove specific or all media items
         function removeSelectedMediaItem(mediaId) { console.log(`Removing media item ID: ${mediaId}`); selectedMediaItems = selectedMediaItems.filter(item => item.id !== mediaId); displayMediaPreview(); if (currentMediaCacheName && cachedMediaUris.length > 0 && !selectedMediaItems.some(item => item.type === 'pdf')) { console.log("Removed last cached media type (PDF). Clearing cache state."); currentMediaCacheName = null; cachedMediaUris = []; } }
         function removeAllSelectedMedia() { console.log("removeAllSelectedMedia called."); stopRecording(true); selectedMediaItems = []; nextMediaId = 0; imagePreviewsList.innerHTML = ''; previewAudio.removeAttribute('src'); previewAudioContainer.style.display = 'none'; mediaPreviewContainer.style.display = 'none'; mediaPreviewInfo.textContent = ''; imagePreviewsList.style.flexDirection = ''; imagePreviewsList.style.alignItems = ''; unifiedUploadInput.value = ''; if (currentMediaCacheName) { console.log("All media removed. Clearing active media cache state."); currentMediaCacheName = null; cachedMediaUris = []; } console.log("All selected media removed, inputs reset, cache state cleared."); updateButtonStates(); }
 
 
         // --- Audio Recording Functions ---
-        // ***** TAMIL ***** Record செய்த audio-வை process பண்ணும்போது loading state காட்டுகிறோம்
-        async function toggleRecording() { if (isRecording) { stopRecording(); } else { if (selectedMediaItems.some(item => item.type === 'image' || item.type === 'pdf')) { alert("Cannot record audio when images or PDFs are selected. Remove them first."); return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot record audio when a YouTube URL is present in the input. Please remove the URL first."); return; } if (sendButton.disabled && !isRecording) { const appReady = currentUser && API_KEY && genAI && activeChatId; if (!appReady || userInput.placeholder.includes("Generating") || userInput.placeholder.includes("Sending") || userInput.placeholder.includes("Uploading") || userInput.placeholder.includes("Recording") || userInput.placeholder.includes("Processing")) { alert("Please wait for the current action to complete or ensure you are logged in with a valid API key and active chat."); return; } } await startRecording(); } }
-        async function startRecording() { console.log("Attempting to start recording..."); if (selectedMediaItems.length > 0) { alert("Cannot record audio when other media is selected. Please remove it first."); return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot record audio when a YouTube URL is present in the input. Please remove the URL first."); return; } if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert("Audio recording is not supported by your browser."); console.error("getUserMedia not supported."); return; } try { console.log("Requesting microphone access..."); if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); recorderStream = null; console.warn("Stopped lingering recorder stream."); } const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); recorderStream = stream; console.log("Microphone access granted."); recordAudioButton.disabled = true; let options = {}; const preferredMimeTypes = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/aac', 'audio/mp4']; for (const mimeType of preferredMimeTypes) { if (MediaRecorder.isTypeSupported(mimeType)) { options.mimeType = mimeType; break; } } if (!options.mimeType) console.warn("No preferred MIME type supported, using browser default."); mediaRecorder = new MediaRecorder(stream, options); const actualMimeType = mediaRecorder.mimeType; console.log("Initializing MediaRecorder. Options:", options, "Actual MIME type:", actualMimeType); audioChunks = []; mediaRecorder.ondataavailable = (event) => { if (event.data.size > 0) { audioChunks.push(event.data); } }; mediaRecorder.onstop = () => { console.log("MediaRecorder stopped. Chunks:", audioChunks.length); if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); console.log("Microphone stream tracks stopped."); recorderStream = null; } isRecording = false; recordingStatus.classList.remove('visible'); recordAudioButton.classList.remove('recording'); recordAudioButton.textContent = '🎙️'; recordAudioButton.title = 'Record audio'; if (recordingTimerInterval) { clearInterval(recordingTimerInterval); recordingTimerInterval = null; } if (audioChunks.length === 0) { console.warn("No audio data recorded."); setLoadingState(false); updateButtonStates(); return; } const audioBlob = new Blob(audioChunks, { type: actualMimeType }); audioChunks = []; const fileSizeMB = audioBlob.size / 1024 / 1024; console.log(`Recording complete. Blob size: ${fileSizeMB.toFixed(3)} MB, Type: ${actualMimeType}`); if (audioBlob.size === 0) { console.warn("Created Blob has size 0."); alert("Recording failed: No audio data captured."); setLoadingState(false); updateButtonStates(); return; } if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Recorded audio too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); setLoadingState(false); updateButtonStates(); return; } const reader = new FileReader(); // ***** TAMIL ***** Recording process செய்யும்போது loading state காட்டுகிறோம். setLoadingState(true, "Processing recorded audio..."); reader.onloadend = () => { if (reader.result && typeof reader.result === 'string' && reader.result.startsWith('data:')) { let finalMimeType = actualMimeType.split(';')[0]; const mediaId = nextMediaId++; selectedMediaItems = [{ id: mediaId, type: 'audio', file: new File([audioBlob], `recording.audio`, { type: finalMimeType }), base64: reader.result, mimeType: finalMimeType, name: `recording-${new Date().toISOString().substring(0, 19).replace(/[:T]/g, '-')}.${finalMimeType.split('/')[1] || 'audio'}` }]; displayMediaPreview(); } else { console.error("FileReader result invalid."); alert("Error processing recorded audio (Invalid data)."); } setLoadingState(false); }; reader.onerror = (error) => { console.error("Error converting recorded audio blob:", error); alert("Error processing recorded audio."); setLoadingState(false); updateButtonStates(); }; reader.readAsDataURL(audioBlob); }; mediaRecorder.onerror = (event) => { console.error("MediaRecorder error:", event.error || event); alert(`Recording error: ${event.error?.name || 'Unknown'}`); stopRecording(true); }; mediaRecorder.start(); isRecording = true; recordingStartTime = Date.now(); recordAudioButton.classList.add('recording'); recordAudioButton.textContent = '🛑'; recordAudioButton.title = 'Stop recording'; recordingStatus.classList.add('visible'); recordingTimerSpan.textContent = '0s'; setLoadingState(true, "Recording audio..."); // Update loading state for recording recordingTimerInterval = setInterval(() => { const elapsedSeconds = Math.floor((Date.now() - recordingStartTime) / 1000); recordingTimerSpan.textContent = `${elapsedSeconds}s`; if (elapsedSeconds >= RECORDING_TIME_LIMIT_SECONDS) { console.log("Recording time limit."); stopRecording(); alert(`Stopped after ${RECORDING_TIME_LIMIT_SECONDS} seconds.`); } }, 1000); console.log("Recording started..."); recordAudioButton.disabled = false; } catch (error) { console.error("Error starting recording:", error); if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') { alert("Microphone access denied. Please allow access in browser settings."); } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') { alert("No microphone found."); } else { alert(`Could not start recording: ${error.name}`); } stopRecording(true); } }
-        function stopRecording(force = false) { console.log("stopRecording called. isRecording:", isRecording, "force:", force); if (mediaRecorder && (isRecording || force)) { try { if (mediaRecorder.state === "recording" || mediaRecorder.state === "paused") { mediaRecorder.stop(); console.log("MediaRecorder.stop() called."); if (force && !isRecording) { resetRecordingUI(); setLoadingState(false); } else if (isRecording) { setLoadingState(true, "Processing recorded audio..."); // Show processing state immediately after stop } } else if (force) { console.log("Recorder not active, forcing cleanup."); resetRecordingUI(); setLoadingState(false); } } catch (error) { console.error("Error calling mediaRecorder.stop():", error); resetRecordingUI(); setLoadingState(false); } } else if (force) { console.log("No recorder or not recording, forced stop."); resetRecordingUI(); setLoadingState(false); } else { console.log("Not recording or recorder not available."); if (!isRecording) { setLoadingState(false); updateButtonStates(); } } }
+        async function toggleRecording() { if (isRecording) { stopRecording(); } else { if (selectedMediaItems.some(item => item.type === 'image' || item.type === 'pdf')) { alert("Cannot record audio when images or PDFs are selected. Remove them first."); return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot record audio when a YouTube URL is present in the input. Please remove the URL first."); return; } if (sendButton.disabled && !isRecording) { const appReady = currentUser && API_KEY && genAI && activeChatId; if (!appReady || userInput.placeholder.includes("Generating") || userInput.placeholder.includes("Sending") || userInput.placeholder.includes("Uploading") || userInput.placeholder.includes("Recording")) { alert("Please wait for the current action to complete or ensure you are logged in with a valid API key and active chat."); return; } } await startRecording(); } }
+        async function startRecording() { console.log("Attempting to start recording..."); if (selectedMediaItems.length > 0) { alert("Cannot record audio when other media is selected. Please remove it first."); return; } if (youtubeRegex.test(userInput.value.trim())) { alert("Cannot record audio when a YouTube URL is present in the input. Please remove the URL first."); return; } if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert("Audio recording is not supported by your browser."); console.error("getUserMedia not supported."); return; } try { console.log("Requesting microphone access..."); if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); recorderStream = null; console.warn("Stopped lingering recorder stream."); } const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); recorderStream = stream; console.log("Microphone access granted."); recordAudioButton.disabled = true; let options = {}; const preferredMimeTypes = ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/aac', 'audio/mp4']; for (const mimeType of preferredMimeTypes) { if (MediaRecorder.isTypeSupported(mimeType)) { options.mimeType = mimeType; break; } } if (!options.mimeType) console.warn("No preferred MIME type supported, using browser default."); mediaRecorder = new MediaRecorder(stream, options); const actualMimeType = mediaRecorder.mimeType; console.log("Initializing MediaRecorder. Options:", options, "Actual MIME type:", actualMimeType); audioChunks = []; mediaRecorder.ondataavailable = (event) => { if (event.data.size > 0) { audioChunks.push(event.data); } }; mediaRecorder.onstop = () => { console.log("MediaRecorder stopped. Chunks:", audioChunks.length); if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); console.log("Microphone stream tracks stopped."); recorderStream = null; } isRecording = false; recordingStatus.classList.remove('visible'); recordAudioButton.classList.remove('recording'); recordAudioButton.textContent = '🎙️'; recordAudioButton.title = 'Record audio'; if (recordingTimerInterval) { clearInterval(recordingTimerInterval); recordingTimerInterval = null; } if (audioChunks.length === 0) { console.warn("No audio data recorded."); setLoadingState(false); updateButtonStates(); return; } const audioBlob = new Blob(audioChunks, { type: actualMimeType }); audioChunks = []; const fileSizeMB = audioBlob.size / 1024 / 1024; console.log(`Recording complete. Blob size: ${fileSizeMB.toFixed(3)} MB, Type: ${actualMimeType}`); if (audioBlob.size === 0) { console.warn("Created Blob has size 0."); alert("Recording failed: No audio data captured."); setLoadingState(false); updateButtonStates(); return; } if (fileSizeMB > MAX_AUDIO_SIZE_MB) { alert(`Recorded audio too large (${fileSizeMB.toFixed(1)}MB). Max ${MAX_AUDIO_SIZE_MB}MB.`); setLoadingState(false); updateButtonStates(); return; } const reader = new FileReader(); setLoadingState(true, "Processing recorded audio..."); reader.onloadend = () => { if (reader.result && typeof reader.result === 'string' && reader.result.startsWith('data:')) { let finalMimeType = actualMimeType.split(';')[0]; const mediaId = nextMediaId++; selectedMediaItems = [{ id: mediaId, type: 'audio', file: new File([audioBlob], `recording.audio`, { type: finalMimeType }), base64: reader.result, mimeType: finalMimeType, name: `recording-${new Date().toISOString().substring(0, 19).replace(/[:T]/g, '-')}.${finalMimeType.split('/')[1] || 'audio'}` }]; displayMediaPreview(); } else { console.error("FileReader result invalid."); alert("Error processing recorded audio (Invalid data)."); } setLoadingState(false); }; reader.onerror = (error) => { console.error("Error converting recorded audio blob:", error); alert("Error processing recorded audio."); setLoadingState(false); updateButtonStates(); }; reader.readAsDataURL(audioBlob); }; mediaRecorder.onerror = (event) => { console.error("MediaRecorder error:", event.error || event); alert(`Recording error: ${event.error?.name || 'Unknown'}`); stopRecording(true); }; mediaRecorder.start(); isRecording = true; recordingStartTime = Date.now(); recordAudioButton.classList.add('recording'); recordAudioButton.textContent = '🛑'; recordAudioButton.title = 'Stop recording'; recordingStatus.classList.add('visible'); recordingTimerSpan.textContent = '0s'; setLoadingState(true, "Recording audio..."); // ***** TAMIL: Update loading state ***** recordingTimerInterval = setInterval(() => { const elapsedSeconds = Math.floor((Date.now() - recordingStartTime) / 1000); recordingTimerSpan.textContent = `${elapsedSeconds}s`; if (elapsedSeconds >= RECORDING_TIME_LIMIT_SECONDS) { console.log("Recording time limit."); stopRecording(); alert(`Stopped after ${RECORDING_TIME_LIMIT_SECONDS} seconds.`); } }, 1000); console.log("Recording started..."); recordAudioButton.disabled = false; } catch (error) { console.error("Error starting recording:", error); if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') { alert("Microphone access denied. Please allow access in browser settings."); } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') { alert("No microphone found."); } else { alert(`Could not start recording: ${error.name}`); } stopRecording(true); } }
+        function stopRecording(force = false) { console.log("stopRecording called. isRecording:", isRecording, "force:", force); if (mediaRecorder && (isRecording || force)) { try { if (mediaRecorder.state === "recording" || mediaRecorder.state === "paused") { mediaRecorder.stop(); console.log("MediaRecorder.stop() called."); if (force && !isRecording) { resetRecordingUI(); setLoadingState(false); } } else if (force) { console.log("Recorder not active, forcing cleanup."); resetRecordingUI(); setLoadingState(false); } } catch (error) { console.error("Error calling mediaRecorder.stop():", error); resetRecordingUI(); setLoadingState(false); } } else if (force) { console.log("No recorder or not recording, forced stop."); resetRecordingUI(); setLoadingState(false); } else { console.log("Not recording or recorder not available."); if (!isRecording) { setLoadingState(false); updateButtonStates(); } } }
         function resetRecordingUI() { console.log("Resetting recording UI/state."); isRecording = false; if (recordAudioButton) { recordAudioButton.classList.remove('recording'); recordAudioButton.textContent = '🎙️'; recordAudioButton.title = 'Record audio'; } if (recordingStatus) recordingStatus.classList.remove('visible'); if (recordingTimerInterval) { clearInterval(recordingTimerInterval); recordingTimerInterval = null; } if (recorderStream) { recorderStream.getTracks().forEach(track => track.stop()); console.log("Mic stream stopped (reset UI)."); recorderStream = null; } mediaRecorder = null; audioChunks = []; console.log("Updating button states after resetting recording UI."); updateButtonStates(); }
 
 
         // --- Chat Creation, Deletion, Switching ---
-        // (createNewChat, handleChatListClick, confirmAndDeleteChat, deleteChatFromFirestore, switchChat remain the same)
         async function createNewChat() { if (!currentUser || startChatButton.disabled) { displayError("Please log in or wait for current action."); return; } setLoadingState(true, "Creating chat..."); removeAllSelectedMedia(); const newChatRef = db.collection('chats').doc(); const timestamp = firebase.firestore.FieldValue.serverTimestamp(); try { await newChatRef.set({ userId: currentUser.uid, title: NEW_CHAT_TITLE, createdAt: timestamp, lastUpdated: timestamp }); console.log("New chat created:", newChatRef.id); } catch (error) { console.error("Error creating new chat:", error); displayError("Failed to create chat."); setLoadingState(false); } }
         function handleChatListClick(event) { const target = event.target; const deleteButton = target.closest('.delete-chat-button'); if (deleteButton) { event.stopPropagation(); const chatId = deleteButton.dataset.id; const chatListItem = deleteButton.closest('.chat-list-item'); const chatTitle = chatListItem?.textContent?.replace(deleteButton.textContent, '').trim() || 'this chat'; if (chatId) { confirmAndDeleteChat(chatId, chatTitle); } return; } const item = target.closest('.chat-list-item'); const clickedId = item?.dataset?.id; if (item && clickedId && clickedId !== activeChatId) { switchChat(clickedId); } }
         function confirmAndDeleteChat(chatId, chatTitle) { if (!currentUser || !chatId) return; if (confirm(`Delete chat "${chatTitle}" permanently?`)) { deleteChatFromFirestore(chatId); } else { console.log(`Deletion cancelled for chat: ${chatId}`); } }
@@ -927,7 +913,7 @@
 
 
         // --- Message Loading (Firestore) ---
-        // ***** TAMIL ***** Firestore-லிருந்து messages load செய்யும்போது, document ID-யையும் சேர்த்து history-ல் save செய்கிறோம். (No Changes Needed Here)
+        // ***** TAMIL ***** Firestore-லிருந்து messages load செய்யும்போது, document ID-யையும் சேர்த்து history-ல் save செய்கிறோம்.
         function loadAndListenForActiveChat(chatId) {
             if (!currentUser || !chatId) { chatArea.innerHTML = ''; if (activeChatListener) { activeChatListener(); activeChatListener = null; } renderGreetingOrLoginPrompt(); updateButtonStates(); setLoadingState(false); return; }
             if (activeChatListener) { activeChatListener(); activeChatListener = null; }
@@ -940,7 +926,11 @@
 
             activeChatListener = messagesRef.onSnapshot(snapshot => {
                 console.log(`Received messages snapshot for chat ${chatId}:`, snapshot.size, "messages. isDeletingMessage:", isDeletingMessage);
-                if (isDeletingMessage) { console.log("Skipping message snapshot processing due to active deletion."); return; }
+                 // If a message deletion is in progress, skip this update to avoid flicker
+                if (isDeletingMessage) {
+                     console.log("Skipping message snapshot processing due to active deletion.");
+                     return;
+                }
                 removeMessageElement(loadingMsg);
                 chatArea.innerHTML = '';
                 currentChatHistory = []; // Reset history before populating
@@ -987,21 +977,20 @@
 
 
         // --- File Upload Helper (Gemini File API) ---
-        // ***** TAMIL ***** File API upload progress காட்டுகிறோம் (Processing status மட்டும்).
-        // SDK நேரடி upload progress தராததால், processing status வைத்து காட்டுகிறோம்.
+        // ***** TAMIL ***** Indha function PDF madhiri periya file-ah Google File API use panni upload seiyyum.
+        // ***** TAMIL ***** Upload aagurappa "Uploading...", process aagurappa "Processing..." nu status kaatuvom.
         async function uploadAndProcessFile(file, index, totalFiles) {
             if (!genAI?.files?.upload || !genAI?.files?.get || !genAI?.files?.delete) {
                 console.error("[File API] Error: genAI.files service or required methods (upload, get, delete) are not available.");
                 throw new Error("AI SDK File Service not initialized or missing methods.");
             }
 
-            const initialProgressMsg = `Uploading file ${index + 1}/${totalFiles}: ${file.name}...`;
-            console.log(`[File API] ${initialProgressMsg}`);
-            setLoadingState(true, initialProgressMsg);
+            const uploadProgressMsg = `Uploading file ${index + 1}/${totalFiles}: ${file.name}...`;
+            console.log(`[File API] ${uploadProgressMsg}`);
+            setLoadingState(true, uploadProgressMsg); // <<< TAMIL: Upload status kaatum
 
             let uploadResult = null;
             try {
-                // Initial Upload Request (No direct progress from SDK here)
                 uploadResult = await genAI.files.upload({
                     file: file,
                     mimeType: file.type,
@@ -1012,23 +1001,20 @@
                 if (!uploadResult?.file?.name) {
                     throw new Error(`File upload for ${file.name} did not return a valid file name.`);
                 }
-                const apiFileName = uploadResult.file.name;
 
-                // Polling for Processing State
+                const apiFileName = uploadResult.file.name;
                 let fileResponse = await genAI.files.get({ name: apiFileName });
                 const startTime = Date.now();
-                let pollCount = 0;
 
+                // ***** TAMIL ***** File process aaguradhuku wait pannum loop
                 while (fileResponse?.file?.state === 'PROCESSING') {
                     if (Date.now() - startTime > FILE_API_PROCESSING_TIMEOUT_MS) {
                         throw new Error(`File processing timed out for ${file.name} after ${FILE_API_PROCESSING_TIMEOUT_MS / 1000}s.`);
                     }
-                    pollCount++;
-                    // ***** TAMIL ***** Processing status காட்டுகிறோம்
-                    const processMsg = `Processing file ${index + 1}/${totalFiles}: ${file.name}... (Status: ${fileResponse.file.state})`;
-                    setLoadingState(true, processMsg);
-                    console.log(`[File API] File ${file.name} state: ${fileResponse.file.state}. Poll #${pollCount}. Waiting ${FILE_API_POLLING_INTERVAL_MS / 1000}s...`);
 
+                    const processMsg = `Processing file ${index + 1}/${totalFiles}: ${file.name}... (State: ${fileResponse.file.state})`;
+                    setLoadingState(true, processMsg); // <<< TAMIL: Processing status kaatum
+                    console.log(`[File API] File ${file.name} state: ${fileResponse.file.state}. Waiting ${FILE_API_POLLING_INTERVAL_MS / 1000}s...`);
                     await new Promise(resolve => setTimeout(resolve, FILE_API_POLLING_INTERVAL_MS));
 
                     try {
@@ -1042,41 +1028,60 @@
                     }
                 }
 
-                // Check Final State
                 if (fileResponse.file.state !== 'ACTIVE') {
                     console.error(`[File API] File processing failed for ${file.name}. Final State: ${fileResponse.file.state}`, fileResponse.file);
-                    try { await genAI.files.delete({ name: apiFileName }); console.log(`[File API] Deleted failed/inactive file: ${apiFileName}`); }
-                    catch (delErr) { console.warn(`[File API] Failed to delete failed/inactive file ${apiFileName}:`, delErr); }
+                    try {
+                        await genAI.files.delete({ name: apiFileName });
+                        console.log(`[File API] Deleted failed/inactive file: ${apiFileName}`);
+                    } catch (delErr) {
+                        console.warn(`[File API] Failed to delete failed/inactive file ${apiFileName}:`, delErr);
+                    }
                     throw new Error(`File processing for ${file.name} resulted in state: ${fileResponse.file.state}.`);
                 }
 
-                // ***** TAMIL ***** Upload முடிந்தது!
-                console.log(`[File API] File ${file.name} (API: ${apiFileName}) processed successfully. State: ${fileResponse.file.state}, URI: ${fileResponse.file.uri}`);
-                setLoadingState(true, `File ${index + 1}/${totalFiles}: ${file.name} processed successfully.`); // Final success message for this file
-                return fileResponse.file;
+                console.log(`[File API] File ${file.name} (API: ${apiFileName}) processed successfully. URI: ${fileResponse.file.uri}`);
+                return fileResponse.file; // Return the file object with URI, mimeType etc.
 
             } catch (uploadError) {
                 console.error(`[File API] Error during upload/processing for ${file.name}:`, uploadError);
+                // Attempt to clean up the file on Google's side if upload started but failed processing
                 if (uploadResult?.file?.name) {
-                    try { await genAI.files.delete({ name: uploadResult.file.name }); console.log(`[File API] Cleaned up file ${uploadResult.file.name} after error.`); }
-                    catch (delErr) { console.warn(`[File API] Failed to cleanup file ${uploadResult.file.name} after error:`, delErr); }
+                    try {
+                        await genAI.files.delete({ name: uploadResult.file.name });
+                        console.log(`[File API] Cleaned up file ${uploadResult.file.name} after error.`);
+                    } catch (delErr) {
+                        console.warn(`[File API] Failed to cleanup file ${uploadResult.file.name} after error:`, delErr);
+                    }
                 }
                 throw uploadError; // Re-throw the error to be caught by handleSendMessage
             }
-            // setLoadingState(false); // Do not set false here, let handleSendMessage manage the overall state
         }
 
 
         // --- Message Sending (Gemini API & Firestore Save) ---
-        // ***** TAMIL ***** history array-ல் Firestore ID-யையும் சேர்த்து அனுப்புவோம். (No Changes Needed Here)
+        // ***** TAMIL ***** history array-ல் Firestore ID-யையும் சேர்த்து அனுப்புவோம். Upload status update pannirken.
         async function handleSendMessage() {
             const userMessageTextRaw = userInput.value.trim(); const mediaItemsToSend = [...selectedMediaItems]; const isMCQRequest = mcqModeCheckbox.checked; const youtubeMatch = userMessageTextRaw.match(youtubeRegex); const youtubeUrl = youtubeMatch ? youtubeMatch[0] : null;
             console.log("handleSendMessage: Text:", userMessageTextRaw ? userMessageTextRaw.substring(0, 50) + '...' : '(empty)', "Media items:", mediaItemsToSend.length, "YT URL:", youtubeUrl, "Model:", selectedModelId);
             if (!currentUser) { displayError("Please log in to send messages."); return; } if (!activeChatId) { displayError("Please select or create a chat first."); return; } if (!API_KEY || !genAI || !isAISdkReady || !HarmCategory || !HarmBlockThreshold) { displayError("API Key or AI SDK not ready/fully initialized. Cannot send message."); return; } const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === selectedModelId); if (!currentModelInfo) { displayError("Selected AI model is invalid. Please choose another model."); return; } if (youtubeUrl && mediaItemsToSend.length > 0) { displayError("Cannot process a YouTube URL and uploaded media in the same message."); setLoadingState(false); return; } const hasPdfs = mediaItemsToSend.some(item => item.type === 'pdf'); if (hasPdfs && (!genAI.files || !genAI.files.upload)) { displayError("File API is unavailable. Cannot send PDF files."); return; } if (!userMessageTextRaw && mediaItemsToSend.length === 0 && !youtubeUrl) { console.log("Empty message and no media/URL. Nothing to send."); return; } if (sendButton.disabled || isRecording) { console.log("Send disabled (loading/recording)."); return; }
-            setLoadingState(true, "Preparing message...");
+
+            // ***** TAMIL ***** Initial loading state based on content type
+            let initialLoadingMessage = "Sending message...";
+            const singleAudioItem = mediaItemsToSend.find(item => item.type === 'audio');
+            const imageItems = mediaItemsToSend.filter(item => item.type === 'image');
+            const pdfItems = mediaItemsToSend.filter(item => item.type === 'pdf');
+            if (pdfItems.length > 0) {
+                initialLoadingMessage = `Preparing to upload ${pdfItems.length} PDF(s)...`; // File API has separate upload status
+            } else if (imageItems.length > 0) {
+                initialLoadingMessage = `Processing ${imageItems.length} image(s)...`;
+            } else if (singleAudioItem) {
+                initialLoadingMessage = "Processing audio...";
+            }
+            setLoadingState(true, initialLoadingMessage);
+
             userInput.value = ''; autoGrowTextarea(); if (isMCQRequest) mcqModeCheckbox.checked = false;
             const timestamp = firebase.firestore.FieldValue.serverTimestamp(); const messagesColRef = db.collection('chats').doc(activeChatId).collection('messages'); const chatDocRef = db.collection('chats').doc(activeChatId);
-            const userMsgData = { role: "user", text: userMessageTextRaw, timestamp: timestamp }; const singleAudioItem = mediaItemsToSend.find(item => item.type === 'audio'); const imageItems = mediaItemsToSend.filter(item => item.type === 'image'); const pdfItems = mediaItemsToSend.filter(item => item.type === 'pdf'); let potentialTestTitle = null;
+            const userMsgData = { role: "user", text: userMessageTextRaw, timestamp: timestamp }; let potentialTestTitle = null;
             if (singleAudioItem) { userMsgData.mediaType = 'audio'; userMsgData.mediaData = singleAudioItem.base64; userMsgData.mediaMimeType = singleAudioItem.mimeType; userMsgData.mediaName = singleAudioItem.name; } else if (imageItems.length === 1) { userMsgData.mediaType = 'image'; userMsgData.mediaName = imageItems[0].name; userMsgData.mediaMimeType = imageItems[0].mimeType; if (!imageItems[0].base64) { try { imageItems[0].base64 = await readFileAsBase64(imageItems[0].file); } catch (e) { console.error("Error reading image for DB:", e); imageItems[0].base64 = '#error'; } } userMsgData.mediaData = imageItems[0].base64; } else if (imageItems.length > 1) { userMsgData.mediaType = 'multi-image'; userMsgData.mediaCount = imageItems.length; userMsgData.mediaNames = imageItems.map(img => img.name || 'image'); } else if (pdfItems.length > 0) { userMsgData.mediaType = 'multi-pdf'; userMsgData.mediaCount = pdfItems.length; userMsgData.mediaNames = pdfItems.map(pdf => pdf.name || 'pdf'); } if (youtubeUrl && youtubeMatch && youtubeMatch[1]) userMsgData.youtubeVideoId = youtubeMatch[1];
             let savedUserMessageId = null;
              try {
@@ -1084,7 +1089,8 @@
                  const userMessageDocRef = await messagesColRef.add(userMsgData); savedUserMessageId = userMessageDocRef.id;
                  await chatDocRef.update({ lastUpdated: timestamp }); console.log("User message saved to Firestore:", savedUserMessageId);
                  const userPartsForHistory = []; let historyText = userMsgData.text; if (youtubeUrl && historyText && !historyText.includes(youtubeUrl)) { historyText += "\n" + youtubeUrl; } else if (youtubeUrl && !historyText) { historyText = youtubeUrl; } if (historyText) userPartsForHistory.push({ text: historyText });
-                  if (userPartsForHistory.length > 0) { currentChatHistory.push({ role: 'user', parts: userPartsForHistory, firestoreId: savedUserMessageId }); }
+                  // Add to history WITH ID
+                 if (userPartsForHistory.length > 0) { currentChatHistory.push({ role: 'user', parts: userPartsForHistory, firestoreId: savedUserMessageId }); }
                  if (isFirstUserMessageInNewChat) { let titleSource = userMessageTextRaw || (mediaItemsToSend[0]?.name) || (youtubeUrl ? 'YouTube Video Chat' : NEW_CHAT_TITLE); const generatedTitle = generateChatTitle(titleSource); if (generatedTitle && generatedTitle !== NEW_CHAT_TITLE) { await updateActiveChatTitle(generatedTitle); } }
              } catch(error) { console.error("Error saving user message:", error); displayError("Failed to save your message."); setLoadingState(false); return; }
             const thinking = displayMessage("Thinking...", 'ai', ['thinking']); scrollToBottom();
@@ -1092,11 +1098,11 @@
             try {
                  let textPromptForApi = userMessageTextRaw;
                  if (youtubeUrl && mediaItemsToSend.length === 0) { isYouTubeRequest = true; const youtubePart = { fileData: { fileUri: youtubeUrl } }; partsForApi.push(youtubePart); console.log("Added YouTube URL as fileData part for API:", youtubeUrl); textPromptForApi = userMessageTextRaw.replace(youtubeUrl, '').trim(); if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || "YouTube Video Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions based on the provided video... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : `Generate multiple choice questions...` + mcqInstructions; console.log("MCQ mode for YouTube: Using prompt:", textPromptForApi); } else if (!textPromptForApi) { textPromptForApi = "Summarize this video."; console.log("YouTube URL only: Using default 'Summarize' prompt."); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text prompt part for YouTube request:", textPromptForApi); } }
-                 else if (mediaItemsToSend.length > 0) { if (singleAudioItem) { if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); } const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1); partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } }); console.log(`Added audio inlineData part.`); } else if (imageItems.length > 0) { const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file)); const imageBase64Results = await Promise.all(imageBase64Promises); let addedImageCount = 0; imageBase64Results.forEach((b64, index) => { if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; } const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1); if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; } else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); } }); console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`); if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); } } else if (pdfItems.length > 0) { console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`); const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length)); const uploadedFileResults = await Promise.all(uploadPromises); uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri); if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); } fileDataPartsForApi = uploadedFileUris.map(uri => { const originalFile = uploadedFileResults.find(f => f.uri === uri); return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } }; }); console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API (PDFs).`); const canAttemptCaching = currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent; if (canAttemptCaching) { const sortedUris = [...uploadedFileUris].sort(); if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) { console.log(`Attempting to use existing cache: ${currentMediaCacheName}`); useCache = true; cacheToUse = currentMediaCacheName; } else { console.log("No matching PDF cache found or URIs differ. Will attempt to create new cache."); currentMediaCacheName = null; cachedMediaUris = []; } } else if (fileDataPartsForApi.length > 0) { console.log(`Caching skipped for PDFs: Model ${selectedModelId} doesn't support it, or SDK caching API missing.`); } } textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || (mediaItemsToSend[0]?.name) || "Generated Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for uploaded media: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text prompt part for uploaded media request:", textPromptForApi); } }
+                 else if (mediaItemsToSend.length > 0) { if (singleAudioItem) { if (!singleAudioItem.base64 || !singleAudioItem.mimeType) { throw new Error("Audio data is missing or invalid."); } const base64Data = singleAudioItem.base64.substring(singleAudioItem.base64.indexOf(',') + 1); partsForApi.push({ inlineData: { mimeType: singleAudioItem.mimeType, data: base64Data } }); console.log(`Added audio inlineData part.`); setLoadingState(true, "Processing audio and sending..."); // Update status } else if (imageItems.length > 0) { setLoadingState(true, `Processing ${imageItems.length} image(s) and sending...`); // Update status const imageBase64Promises = imageItems.map(item => item.base64 || readFileAsBase64(item.file)); const imageBase64Results = await Promise.all(imageBase64Promises); let addedImageCount = 0; imageBase64Results.forEach((b64, index) => { if (!b64 || b64 === '#error') { console.error(`Skipping image ${imageItems[index]?.name || index}: Invalid base64 data.`); return; } const mime = imageItems[index].mimeType; const data = b64.substring(b64.indexOf(',') + 1); if(data && mime) { partsForApi.push({ inlineData: { mimeType: mime, data: data } }); addedImageCount++; } else { console.error(`Skipping image ${imageItems[index]?.name || index}: Missing data or mimeType.`); } }); console.log(`Added ${addedImageCount}/${imageItems.length} images as inlineData parts.`); if (addedImageCount === 0 && imageItems.length > 0) { throw new Error("Failed to process any selected images."); } } else if (pdfItems.length > 0) { console.log(`Uploading ${pdfItems.length} PDF(s) via File API...`); // Status updated inside uploadAndProcessFile const uploadPromises = pdfItems.map((item, index) => uploadAndProcessFile(item.file, index, pdfItems.length)); const uploadedFileResults = await Promise.all(uploadPromises); uploadedFileUris = uploadedFileResults.map(f => f.uri).filter(uri => uri); if (uploadedFileUris.length === 0 && pdfItems.length > 0) { throw new Error("Failed to upload or process any selected PDF files."); } fileDataPartsForApi = uploadedFileUris.map(uri => { const originalFile = uploadedFileResults.find(f => f.uri === uri); return { fileData: { mimeType: originalFile.mimeType, fileUri: uri } }; }); console.log(`Prepared ${fileDataPartsForApi.length} fileData parts for API (PDFs).`); setLoadingState(true, "Sending files and prompt..."); // Update status after successful upload/processing const canAttemptCaching = currentModelInfo.supportsCaching && fileDataPartsForApi.length > 0 && !!genAI?.caching?.createCachedContent; if (canAttemptCaching) { const sortedUris = [...uploadedFileUris].sort(); if (currentMediaCacheName && cachedMediaUris.length === sortedUris.length && cachedMediaUris.every((uri, i) => uri === sortedUris[i])) { console.log(`Attempting to use existing cache: ${currentMediaCacheName}`); useCache = true; cacheToUse = currentMediaCacheName; } else { console.log("No matching PDF cache found or URIs differ. Will attempt to create new cache."); currentMediaCacheName = null; cachedMediaUris = []; } } else if (fileDataPartsForApi.length > 0) { console.log(`Caching skipped for PDFs: Model ${selectedModelId} doesn't support it, or SDK caching API missing.`); } } textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || (mediaItemsToSend[0]?.name) || "Generated Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for uploaded media: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text prompt part for uploaded media request:", textPromptForApi); } }
                  else { textPromptForApi = userMessageTextRaw; if (isMCQRequest) { potentialTestTitle = generateChatTitle(textPromptForApi || "Text-Based Test") + ` (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`; const mcqInstructions = `\n\nPlease generate multiple choice questions... [MCQ JSON instructions]`; textPromptForApi = textPromptForApi ? textPromptForApi + mcqInstructions : mcqInstructions; console.log("MCQ mode for text only: Using prompt:", textPromptForApi); } if (textPromptForApi) { partsForApi.push({ text: textPromptForApi }); console.log("Added text-only prompt part:", textPromptForApi); } }
                 let finalPartsForApi = []; if (isYouTubeRequest) { finalPartsForApi = partsForApi; } else if (fileDataPartsForApi.length > 0) { if (useCache) { finalPartsForApi = partsForApi.filter(p => p.text || p.inlineData); } else { finalPartsForApi = [...fileDataPartsForApi, ...partsForApi.filter(p => p.text || p.inlineData)]; } } else { finalPartsForApi = partsForApi; }
                  if (finalPartsForApi.length === 0 && !useCache) { throw new Error("No valid content to send."); }
-                console.log("Calling Gemini API via SDK..."); setLoadingState(true, "Generating response...");
+                console.log("Calling Gemini API via SDK..."); setLoadingState(true, "Generating response..."); // Final status before API call
                  const selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === selectedModelId); const maxTokens = selectedModelConfig?.maxTokens || DEFAULT_MAX_TOKENS; console.log(`Using model: ${selectedModelId}, Setting maxOutputTokens: ${maxTokens}`);
                 const model = genAI.getGenerativeModel({ model: selectedModelId, safetySettings: [ { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }, { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }, { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }, { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }, ], generationConfig: { maxOutputTokens: maxTokens } });
                 const historyForSDK = currentChatHistory.map(msg => ({ role: msg.role, parts: msg.parts.filter(part => typeof part.text === 'string').map(part => ({ text: part.text })) })).filter(msg => msg.parts.length > 0);
@@ -1112,6 +1118,7 @@
                       const aiDocRef = await messagesColRef.add(aiMsgData); savedAiMessageId = aiDocRef.id;
                       await chatDocRef.update({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }); aiResponseSaved = true; console.log("AI response/error saved to Firestore:", savedAiMessageId);
                       if (!displayAsError && !blocked && aiMsgData.text) {
+                           // Add AI message to history WITH ID
                            currentChatHistory.push({ role: 'model', parts: [{ text: aiMsgData.text }], firestoreId: savedAiMessageId });
                       }
                  } catch (saveError) { console.error("Error saving AI response:", saveError); displayError(`Failed to save AI response.`); }
@@ -1122,16 +1129,13 @@
 
 
         // --- Chat Title Generation/Update ---
-        // (generateChatTitle, updateActiveChatTitle remain the same)
         function generateChatTitle(sourceText) { if (!sourceText || typeof sourceText !== 'string') return NEW_CHAT_TITLE; const text = sourceText.trim(); if (!text) return NEW_CHAT_TITLE; const title = text.split(/\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]+$/, ''); return title.length > 35 ? title.substring(0, 32) + '...' : title; }
         async function updateActiveChatTitle(newTitle) { if (!currentUser || !activeChatId || !newTitle || typeof newTitle !== 'string' || !newTitle.trim() || newTitle.trim() === NEW_CHAT_TITLE) return; const finalTitle = newTitle.trim(); const chatDocRef = db.collection('chats').doc(activeChatId); try { await chatDocRef.update({ title: finalTitle }); console.log(`Chat ${activeChatId} title updated: "${finalTitle}"`); } catch (error) { console.error("Error updating chat title:", error); } }
 
         // --- File Reader Helper ---
-        // (readFileAsBase64 remains the same)
         function readFileAsBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = (error) => reject(error); reader.readAsDataURL(file); }); }
 
         // --- UI & Message Display Helpers ---
-        // (autoGrowTextarea, handleInputKeydown, handleSuggestionClick, displayError, scrollToBottom, removeMessageElement remain the same)
         function autoGrowTextarea() { userInput.style.height='auto'; userInput.style.height=(userInput.scrollHeight)+'px'; }
         function handleInputKeydown(event) { if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();if(!sendButton.disabled) handleSendMessage();} }
         function handleSuggestionClick(event) { if(event.target.classList.contains('suggestion-chip')){ const prompt = event.target.dataset.prompt || ''; userInput.value = prompt; if (prompt.toLowerCase().includes("video") || prompt.toLowerCase().includes("youtube")) { userInput.value += " "; userInput.placeholder = "Paste YouTube URL after the prompt..."; } autoGrowTextarea();userInput.focus(); updateButtonStates();} }
@@ -1139,8 +1143,8 @@
         function scrollToBottom(immediate = false) { chatArea.scrollTo({top:chatArea.scrollHeight,behavior:immediate?'auto':'smooth'}); }
         function removeMessageElement(element) { if(element && element.parentNode === chatArea) { try { chatArea.removeChild(element); } catch(e) { /* ignore */ } } else if (element?.parentNode?.classList.contains('message-wrapper') && element.parentNode.parentNode === chatArea) { try { chatArea.removeChild(element.parentNode); } catch(e) { /* ignore */ } } }
 
-        // (updateButtonStates remains the same)
-         function updateButtonStates(isLoading = false) {
+        // ***** TAMIL ***** Buttons-oda state-ah update pannum function
+        function updateButtonStates(isLoading = false) {
             const isLoggedIn = !!currentUser;
             const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold;
             const canUseFileAPI = isSdkFullyReady && !!genAI.files?.upload;
@@ -1171,6 +1175,8 @@
             // Record button state
             recordAudioButton.disabled = disableAudioRecord || hasSelectedMedia;
             recordAudioButton.title = recordAudioButton.disabled ? "Audio recording disabled (Check login, SDK, chat, media, or conflicting input)" : (isRecording ? "Stop recording" : "Record audio");
+
+            // Re-enable record button if recording (to allow stopping)
             if (isRecording) { recordAudioButton.disabled = false; recordAudioButton.title = "Stop recording"; }
 
             // Sidebar Buttons
@@ -1188,18 +1194,44 @@
             logoutBtn.disabled = isLoading;
          }
 
-        // (setLoadingState remains the same)
-        function setLoadingState(isLoading, message = "Generating...") { updateButtonStates(isLoading); let placeholderText = ""; const isLoggedIn = !!currentUser; const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold; if (isRecording) { placeholderText = "Recording audio..."; } else if (isLoading) { placeholderText = message; } else if (!isLoggedIn) { placeholderText = "Please log in"; } else if (!isSdkFullyReady) { placeholderText = "API Key/SDK Error. Check settings/reload."; } else if (!activeChatId) { placeholderText = "Select or create a chat"; } else { placeholderText = "Enter prompt, attach media, or paste URL"; } if (userInput.placeholder !== placeholderText) { userInput.placeholder = placeholderText; } }
+        // ***** TAMIL ***** Loading state-ah set panni, user-ku status kaatum function
+        function setLoadingState(isLoading, message = "Generating...") {
+            updateButtonStates(isLoading); // Always update button states based on loading
+            let placeholderText = "";
+            const isLoggedIn = !!currentUser;
+            const isSdkFullyReady = isLoggedIn && !!API_KEY && !!genAI && isAISdkReady && !!HarmCategory && !!HarmBlockThreshold;
 
-        // (switchView remains the same)
+            if (isRecording) {
+                placeholderText = "Recording audio...";
+            } else if (isLoading) {
+                // ***** TAMIL ***** இங்கதான் upload/process status message set aagudhu
+                placeholderText = message; // Show the specific message passed (e.g., "Uploading file 1/2...")
+            } else if (!isLoggedIn) {
+                placeholderText = "Please log in";
+            } else if (!isSdkFullyReady) {
+                placeholderText = "API Key/SDK Error. Check settings/reload.";
+            } else if (!activeChatId) {
+                placeholderText = "Select or create a chat";
+            } else {
+                placeholderText = "Enter prompt, attach media, or paste URL";
+            }
+
+            // Update placeholder only if it changed
+            if (userInput.placeholder !== placeholderText) {
+                userInput.placeholder = placeholderText;
+            }
+        }
+
         function switchView(viewName, cameFromTests = false) { console.log("Switching view to:", viewName); chatView.classList.remove('active'); reviewView.classList.remove('active'); testView.classList.remove('active'); appContainer.classList.remove('hidden'); isTestMode = false; isReviewMode = false; cameFromAllTestsList = cameFromTests; saveReviewBtn.style.display = 'none'; exitReviewBtn.style.display = 'none'; if(viewName === 'test'){ appContainer.classList.add('hidden'); testView.classList.add('active'); isTestMode = true; } else if(viewName === 'review'){ reviewView.classList.add('active'); isReviewMode = true; exitReviewBtn.style.display = 'inline-block'; exitReviewBtn.textContent = cameFromAllTestsList ? "Back to All Tests" : "Back to Chat"; } else { chatView.classList.add('active'); if (currentUser && activeChatId && API_KEY && genAI && !isRecording) { setTimeout(() => userInput.focus(), 100); } } if (viewName !== 'test' && testTimerInterval) { clearInterval(testTimerInterval); testTimerInterval = null; } }
 
-        // displayMessage: Added audio player rendering
-        // ***** TAMIL ***** இங்கதான் message-ஐ chat-ல காட்டும் logic இருக்கு. Audio player சேர்க்கப்பட்டுள்ளது.
+        // ***** TAMIL ***** இங்கதான் message-ஐ chat-ல காட்டும் logic இருக்கு. Copy/Delete button, Image click எல்லாம் இங்க handle பண்றோம்.
         function displayMessage(text, sender, cssClasses = [], appendHtml = null, messageData = null, firestoreId = null) {
             const messageWrapper = document.createElement('div');
             messageWrapper.classList.add('message-wrapper', `${sender}-wrapper`);
-            if (firestoreId) { messageWrapper.dataset.firestoreId = firestoreId; }
+            // ***** TAMIL ***** Store Firestore ID on the wrapper
+            if (firestoreId) {
+                 messageWrapper.dataset.firestoreId = firestoreId;
+            }
 
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
@@ -1209,43 +1241,23 @@
 
             // --- Media Rendering (Uploaded Files) ---
             if (messageData?.mediaType === 'image' && messageData.mediaData && messageData.mediaData !== '#error') {
-                try { const img = document.createElement('img'); img.src = messageData.mediaData; img.alt = messageData.mediaName || "Uploaded Image"; img.classList.add('uploaded-image'); img.loading = "lazy"; img.onerror = () => { img.alt = "Image load error"; img.src = ""; }; img.onclick = () => showImageModal(messageData.mediaData); messageElement.appendChild(img); hasContent = true; } catch (e) { console.error("Error creating image element:", e); }
+                try {
+                    const img = document.createElement('img');
+                    img.src = messageData.mediaData;
+                    img.alt = messageData.mediaName || "Uploaded Image";
+                    img.classList.add('uploaded-image');
+                    img.loading = "lazy";
+                    img.onerror = () => { img.alt = "Image load error"; img.src = ""; };
+                    // ***** TAMIL ***** Image click handler
+                    img.onclick = () => showImageModal(messageData.mediaData);
+                    messageElement.appendChild(img); hasContent = true;
+                } catch (e) { console.error("Error creating image element:", e); }
             } else if (messageData?.mediaType === 'multi-image' && messageData.mediaCount > 0) {
                  try { const indicator = document.createElement('div'); indicator.classList.add('multi-media-indicator'); indicator.textContent = `(${messageData.mediaCount} image${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-image indicator:", e); }
             } else if (messageData?.mediaType === 'multi-pdf' && messageData.mediaCount > 0) {
                  try { const indicator = document.createElement('div'); indicator.classList.add('pdf-indicator'); indicator.innerHTML = `📄 (${messageData.mediaCount} PDF${messageData.mediaCount > 1 ? 's' : ''} sent: ${messageData.mediaNames?.join(', ') || ''})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating multi-PDF indicator:", e); }
-            // ***** TAMIL ***** Audio Player Rendering
             } else if (messageData?.mediaType === 'audio' && messageData.mediaData) {
-                try {
-                    const audioContainer = document.createElement('div');
-                    audioContainer.classList.add('chat-audio-player');
-
-                    const audioPlayer = document.createElement('audio');
-                    audioPlayer.src = messageData.mediaData; // Base64 data URL
-                    audioPlayer.controls = true;
-                    audioPlayer.preload = "metadata"; // Load only metadata initially
-                    if (messageData.mediaName) audioPlayer.title = messageData.mediaName;
-
-                    // Error handling for the audio player itself
-                    audioPlayer.onerror = (e) => {
-                        console.warn("Error loading audio player:", e);
-                        // Display an error message within the container
-                        audioContainer.innerHTML = `<span class="audio-error">(Audio load error: ${messageData.mediaName || 'Audio'})</span>`;
-                    };
-
-                    audioContainer.appendChild(audioPlayer);
-                    messageElement.appendChild(audioContainer);
-                    hasContent = true;
-                    console.log(`Displayed audio player for: ${messageData.mediaName || 'Audio'}`);
-                } catch (e) {
-                    console.error("Error creating audio element:", e);
-                    // Fallback text indicator if player creation fails
-                    const indicator = document.createElement('div');
-                    indicator.classList.add('audio-indicator'); // Reuse style if available
-                    indicator.innerHTML = `🎵 (Audio sent - Player Error: ${messageData.mediaName || 'Audio'})`;
-                    messageElement.appendChild(indicator);
-                    hasContent = true;
-                }
+                 try { const indicator = document.createElement('div'); indicator.classList.add('audio-indicator'); indicator.innerHTML = `🎵 (Audio sent: ${messageData.mediaName || 'Audio'})`; messageElement.appendChild(indicator); hasContent = true; } catch (e) { console.error("Error creating audio indicator:", e); }
             }
 
              // --- Text Content Rendering (with Code Block Handling) ---
@@ -1254,7 +1266,7 @@
                  messageContentContainer.classList.add('message-content');
                 try {
                     const tempDiv = document.createElement('div'); tempDiv.innerText = text; let formattedText = tempDiv.innerHTML;
-                    if (messageData?.mediaType !== 'image' && messageData?.mediaType !== 'audio') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); } // Don't auto-render image URLs if message *is* an image/audio
+                    if (messageData?.mediaType !== 'image') { formattedText = formattedText.replace(imageUrlRegex, (match, imgUrl) => `<img src="${imgUrl}" class="chat-image" alt="Chat Image" loading="lazy" onerror="this.alt='Image URL load error'; this.src='';">`); }
                     formattedText = formattedText.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => { containsCode = true; const safeLang = lang?.trim()?.match(/^[a-zA-Z0-9_-]+$/) ? lang.trim().toLowerCase() : 'plain'; const languageClass = `language-${safeLang}`; const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;"); return `<pre class="${languageClass}"><code class="${languageClass}">${escapedCode}</code></pre>`; });
                      formattedText = formattedText.replace(/`([^`]+?)`/g, (match, code) => { const escapedInlineCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;"); return `<code>${escapedInlineCode}</code>`; });
                     formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/\n/g, '<br>');
@@ -1272,17 +1284,33 @@
             else if (appendHtml) { try { const appendDiv = document.createElement('div'); appendDiv.innerHTML = appendHtml; while (appendDiv.firstChild) { messageElement.appendChild(appendDiv.firstChild); } hasContent = true; } catch (e) { console.error("Error appending raw HTML:", e); } }
 
             // --- Message Actions (Copy/Delete) ---
-            // ***** TAMIL ***** Copy, Delete buttons இங்க சேர்க்கிறோம் (No Changes Needed)
+            // ***** TAMIL ***** Copy, Delete buttons இங்க சேர்க்கிறோம்
             if (firestoreId && !cssClasses.includes('thinking') && !cssClasses.includes('error-message')) {
-                const actionsContainer = document.createElement('div'); actionsContainer.classList.add('message-actions');
-                const copyButton = document.createElement('button'); copyButton.classList.add('message-action-button', 'copy'); copyButton.innerHTML = COPY_ICON_SVG; copyButton.title = 'Copy message'; copyButton.dataset.action = 'copy'; actionsContainer.appendChild(copyButton);
-                const deleteButton = document.createElement('button'); deleteButton.classList.add('message-action-button', 'delete'); deleteButton.innerHTML = DELETE_MESSAGE_ICON_SVG; deleteButton.title = 'Delete message'; deleteButton.dataset.action = 'delete'; actionsContainer.appendChild(deleteButton);
-                messageWrapper.appendChild(actionsContainer);
+                const actionsContainer = document.createElement('div');
+                actionsContainer.classList.add('message-actions');
+
+                // Copy Button
+                const copyButton = document.createElement('button');
+                copyButton.classList.add('message-action-button', 'copy');
+                copyButton.innerHTML = COPY_ICON_SVG;
+                copyButton.title = 'Copy message';
+                copyButton.dataset.action = 'copy';
+                actionsContainer.appendChild(copyButton);
+
+                // Delete Button
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('message-action-button', 'delete');
+                deleteButton.innerHTML = DELETE_MESSAGE_ICON_SVG;
+                deleteButton.title = 'Delete message';
+                deleteButton.dataset.action = 'delete';
+                actionsContainer.appendChild(deleteButton);
+
+                messageWrapper.appendChild(actionsContainer); // Add actions to the wrapper
             }
 
              // --- Append Message Wrapper to Chat Area ---
             if (hasContent || cssClasses.includes('thinking') || cssClasses.includes('error-message')) {
-                 messageWrapper.appendChild(messageElement);
+                 messageWrapper.appendChild(messageElement); // Add message element to wrapper
                 if (!chatArea.contains(messageWrapper)) {
                     chatArea.appendChild(messageWrapper);
                     if (containsCode && typeof Prism !== 'undefined') {
@@ -1291,31 +1319,111 @@
                 }
             } else { console.warn(`Skipping display of empty message. Sender: ${sender}, Classes: ${cssClasses.join(', ')}`); }
 
-            return messageElement;
+            return messageElement; // Return the core message element, not the wrapper
         }
 
         // --- Image Modal Functions ---
-        // (showImageModal, hideImageModal remain the same)
-        function showImageModal(imageUrl) { if (!imageUrl || imageUrl === '#error') return; modalImageContent.src = imageUrl; imageModal.style.display = 'flex'; console.log("Showing image modal"); }
-        function hideImageModal() { imageModal.style.display = 'none'; modalImageContent.src = ''; console.log("Hiding image modal"); }
+        // ***** TAMIL ***** Image-ஐ perusa kaatum functions
+        function showImageModal(imageUrl) {
+            if (!imageUrl || imageUrl === '#error') return;
+            modalImageContent.src = imageUrl;
+            imageModal.style.display = 'flex';
+            console.log("Showing image modal");
+        }
+        function hideImageModal() {
+            imageModal.style.display = 'none';
+            modalImageContent.src = '';
+             console.log("Hiding image modal");
+        }
 
         // --- Chat Area Click Handler (Updated) ---
-        // ***** TAMIL ***** Chat area-ல click செய்தா என்ன நடக்கணும்னு இங்க சொல்றோம். (No Changes Needed)
+        // ***** TAMIL ***** Chat area-ல click செய்தா என்ன நடக்கணும்னு இங்க சொல்றோம்.
         function handleChatAreaClick(event) {
             const target = event.target;
-            const startButton = target.closest('.start-test-button'); if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; }
-            const clickedChatImage = target.closest('img.chat-image, img.uploaded-image'); if (clickedChatImage?.src && !clickedChatImage.src.startsWith('#') && clickedChatImage.src.trim() !== '') { showImageModal(clickedChatImage.src); return; }
-            const actionButton = target.closest('.message-action-button'); if (actionButton) { const action = actionButton.dataset.action; const messageWrapper = actionButton.closest('.message-wrapper'); const messageId = messageWrapper?.dataset.firestoreId; if (messageId && action === 'copy') { handleCopyMessage(messageWrapper, actionButton); } else if (messageId && action === 'delete') { handleDeleteMessage(messageWrapper, messageId); } return; }
+
+            // 1. Handle MCQ Start Button
+            const startButton = target.closest('.start-test-button');
+            if (startButton) { const mcqDataString = startButton.dataset.mcq; const titleFromButton = startButton.dataset.mcqTitle; let mcqs = null; if (mcqDataString) { try { mcqs = JSON.parse(mcqDataString); } catch (e) { console.error("Failed parse MCQ data from button:", e); displayError("Could not start test. Invalid data."); return; } } if (mcqs?.length > 0) { startMockTest(mcqs, titleFromButton || null); } else { displayError("MCQ data missing or invalid."); } return; }
+
+            // 2. Handle Image Click (Open Modal)
+            const clickedChatImage = target.closest('img.chat-image, img.uploaded-image');
+            if (clickedChatImage?.src && !clickedChatImage.src.startsWith('#') && clickedChatImage.src.trim() !== '') {
+                showImageModal(clickedChatImage.src);
+                return;
+            }
+
+            // 3. Handle Message Action Buttons (Copy/Delete)
+            const actionButton = target.closest('.message-action-button');
+            if (actionButton) {
+                 const action = actionButton.dataset.action;
+                 const messageWrapper = actionButton.closest('.message-wrapper');
+                 const messageId = messageWrapper?.dataset.firestoreId;
+
+                 if (messageId && action === 'copy') {
+                     handleCopyMessage(messageWrapper, actionButton);
+                 } else if (messageId && action === 'delete') {
+                      handleDeleteMessage(messageWrapper, messageId);
+                 }
+                 return;
+            }
         }
 
         // --- Message Action Handlers ---
-        // (handleCopyMessage, handleDeleteMessage remain the same)
-        function handleCopyMessage(messageWrapper, copyButton) { const messageElement = messageWrapper.querySelector('.message .message-content'); if (!messageElement) { console.warn("Could not find message content to copy."); return; } let textToCopy = messageElement.innerText || messageElement.textContent || ""; textToCopy = textToCopy.trim(); if (!textToCopy) { console.warn("Message content is empty, nothing to copy."); return; } navigator.clipboard.writeText(textToCopy).then(() => { console.log("Message copied to clipboard:", textToCopy.substring(0,30) + "..."); const feedback = document.createElement('span'); feedback.textContent = 'Copied!'; feedback.classList.add('copied-feedback'); messageWrapper.style.position = 'relative'; messageWrapper.appendChild(feedback); setTimeout(() => { feedback.remove(); }, 1500); }).catch(err => { console.error('Failed to copy message text: ', err); alert("Could not copy message."); }); }
-        async function handleDeleteMessage(messageWrapper, messageId) { if (!currentUser || !activeChatId || !messageId || isDeletingMessage) return; if (confirm("Are you sure you want to delete this message?")) { isDeletingMessage = true; console.log(`Attempting to delete message: ${messageId} from chat: ${activeChatId}`); setLoadingState(true, "Deleting message..."); messageWrapper.style.opacity = '0.5'; messageWrapper.style.transition = 'opacity 0.3s ease'; setTimeout(() => { try { chatArea.removeChild(messageWrapper); } catch (e) {} }, 300); try { const messageRef = db.collection('chats').doc(activeChatId).collection('messages').doc(messageId); await messageRef.delete(); console.log("Message deleted from Firestore successfully:", messageId); const historyIndex = currentChatHistory.findIndex(msg => msg.firestoreId === messageId); if (historyIndex > -1) { currentChatHistory.splice(historyIndex, 1); console.log("Message removed from local history array."); } else { console.warn("Message deleted from Firestore, but not found in local history:", messageId); } } catch (error) { console.error("Error deleting message from Firestore:", error); displayError("Failed to delete message."); messageWrapper.style.opacity = '1'; } finally { setLoadingState(false); isDeletingMessage = false; } } }
+        // ***** TAMIL ***** Message copy/delete functions
+        function handleCopyMessage(messageWrapper, copyButton) {
+            const messageElement = messageWrapper.querySelector('.message .message-content');
+            if (!messageElement) { console.warn("Could not find message content to copy."); return; }
+             let textToCopy = messageElement.innerText || messageElement.textContent || "";
+             textToCopy = textToCopy.trim();
+            if (!textToCopy) { console.warn("Message content is empty, nothing to copy."); return; }
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                console.log("Message copied to clipboard:", textToCopy.substring(0,30) + "...");
+                 const feedback = document.createElement('span');
+                 feedback.textContent = 'Copied!';
+                 feedback.classList.add('copied-feedback');
+                 messageWrapper.style.position = 'relative';
+                 messageWrapper.appendChild(feedback);
+                 setTimeout(() => { feedback.remove(); }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy message text: ', err);
+                alert("Could not copy message.");
+            });
+        }
+        async function handleDeleteMessage(messageWrapper, messageId) {
+            if (!currentUser || !activeChatId || !messageId || isDeletingMessage) return;
+            if (confirm("Are you sure you want to delete this message?")) {
+                isDeletingMessage = true;
+                console.log(`Attempting to delete message: ${messageId} from chat: ${activeChatId}`);
+                setLoadingState(true, "Deleting message...");
+                 messageWrapper.style.opacity = '0.5';
+                 messageWrapper.style.transition = 'opacity 0.3s ease';
+                 setTimeout(() => {
+                     try { chatArea.removeChild(messageWrapper); } catch (e) {}
+                 }, 300);
+                try {
+                    const messageRef = db.collection('chats').doc(activeChatId).collection('messages').doc(messageId);
+                    await messageRef.delete();
+                    console.log("Message deleted from Firestore successfully:", messageId);
+                    const historyIndex = currentChatHistory.findIndex(msg => msg.firestoreId === messageId);
+                    if (historyIndex > -1) {
+                        currentChatHistory.splice(historyIndex, 1);
+                        console.log("Message removed from local history array.");
+                    } else {
+                        console.warn("Message deleted from Firestore, but not found in local history:", messageId);
+                    }
+                } catch (error) {
+                    console.error("Error deleting message from Firestore:", error);
+                    displayError("Failed to delete message.");
+                     messageWrapper.style.opacity = '1';
+                } finally {
+                    setLoadingState(false);
+                    isDeletingMessage = false;
+                }
+            }
+        }
 
 
         // --- MCQ/Test/Review/All Tests Functions ---
-        // (No changes needed in these functions from v10.4)
         function displayMCQOffer(mcqData, mcqTitle, aiMessageElement) { if (aiMessageElement.querySelector('.start-test-button')) return; const questionCount = mcqData.length; const button = document.createElement('button'); button.classList.add('start-test-button'); button.textContent = `Start Mock Test (${questionCount} Qs)`; button.title = mcqTitle || `Start generated test`; try { button.dataset.mcq = JSON.stringify(mcqData); if (mcqTitle) { button.dataset.mcqTitle = mcqTitle; } } catch (e) { console.error("Failed stringify MCQ data for button:", e); return; } const buttonContainer = document.createElement('div'); buttonContainer.style.marginTop = '10px'; buttonContainer.appendChild(button); aiMessageElement.appendChild(buttonContainer); }
         function startMockTest(mcqs, title = null) { if (!currentUser) { displayError("Log in to start test."); return; } if (!mcqs?.length) { displayError("No questions for test."); if (cameFromAllTestsList) { switchView('chat'); } return; } console.log("Starting mock test:", mcqs.length, "Qs. Title:", title); currentTestMCQs = mcqs; currentQuestionIndex = 0; userAnswers = new Array(mcqs.length).fill(null); reviewResultsCache = null; switchView('test'); displayTestQuestion(0); startTestTimer(); const finalTitle = (title && title.trim()) ? title.trim() : `Mock Test (${mcqs.length} Qs)`; testTitle.textContent = finalTitle; }
         function displayTestQuestion(index) { if (index < 0 || index >= currentTestMCQs.length) return; currentQuestionIndex = index; const questionData = currentTestMCQs[index]; const questionText = questionData.question?.en || "(Question missing)"; testQuestionNumber.textContent = `Question ${index + 1}`; testQuestion.innerHTML = questionText; testOptionsContainer.innerHTML = ''; const options = questionData.options || []; const optionLetters = ['A', 'B', 'C', 'D']; options.forEach((optionObj, optionIndex) => { if (optionIndex >= optionLetters.length) return; const optionText = optionObj?.en || '(Option missing)'; const label = document.createElement('label'); const input = document.createElement('input'); input.type = 'radio'; input.name = `q_${index}`; input.value = optionIndex; input.checked = (userAnswers[index] === optionIndex); input.onchange = () => handleOptionSelect(optionIndex); label.appendChild(input); label.appendChild(document.createTextNode(` ${optionLetters[optionIndex]}. ${optionText}`)); testOptionsContainer.appendChild(label); }); try { if (typeof MathJax !== "undefined" && MathJax.typesetPromise) { MathJax.typesetPromise([testQuestion, testOptionsContainer]).catch(err=>console.error('MathJax Test Q Error:', err)); } } catch(e){ console.error("MathJax call failed in test:", e); } prevQuestionBtn.disabled = (index === 0); nextQuestionBtn.disabled = (index === currentTestMCQs.length - 1); questionCounter.textContent = `Q: ${index + 1} / ${currentTestMCQs.length}`; }
